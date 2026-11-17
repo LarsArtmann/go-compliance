@@ -180,3 +180,34 @@ func FoldEvidence(input FoldInput) []RepoEvidence {
 
 	return result
 }
+
+// CompleteWithDiscovery unions evidence with the discovery source's
+// repository list: repositories a discovery source knows but for which no
+// evidence exists get a zero RepoEvidence row, which DeriveState maps to
+// never-covered. The result is sorted by repository name, deterministic
+// regardless of input order.
+func CompleteWithDiscovery(evidence []RepoEvidence, discovered []RepoName) []RepoEvidence {
+	if len(discovered) == 0 {
+		return evidence
+	}
+
+	known := make(map[RepoName]struct{}, len(evidence))
+	for _, record := range evidence {
+		known[record.Repo] = struct{}{}
+	}
+
+	completed := make([]RepoEvidence, 0, len(evidence)+len(discovered))
+	completed = append(completed, evidence...)
+
+	for _, repo := range discovered {
+		if _, ok := known[repo]; ok {
+			continue
+		}
+
+		completed = append(completed, RepoEvidence{Repo: repo})
+	}
+
+	sort.Slice(completed, func(i, j int) bool { return completed[i].Repo.Get() < completed[j].Repo.Get() })
+
+	return completed
+}
