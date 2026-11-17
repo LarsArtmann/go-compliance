@@ -19,7 +19,7 @@
 | Persistence  | SQLite (hub evidence cache; BuildFlow state DB stays source of truth, consumed via adapter)                                    |
 | Interfaces   | terminal tables, HTTP + SSE WebUI (Datastar), JSON API (frozen v1 overview-compat + hub v2), unix-socket HTTP (discovery)      |
 | Scale target | Single operator, fleet of ~280 local repos, one single-binary hub service                                                      |
-| Constraints  | nix flake build, public-capable modules (no private deps — daemon spoken to via plain HTTP), Go 1.27 floor, systemd via sd_notify |
+| Constraints  | nix flake build, public-capable modules (no private deps — daemon spoken to via plain HTTP), Go 1.27 floor, systemd via sd_notify; hosting: Forgejo (evo-x2) primary + GitHub mirror, both public |
 
 ## Module layout (mirrors the go-health / go-health-dashboard split rationale)
 
@@ -110,3 +110,7 @@ decision.
   BuildFlow `compliance` extraction evaluation — the v1 contract, state model
   and evidence fold port over; the BuildFlow-schema SQL stays in BuildFlow
   behind the adapter).
+- 2026-11-17 — Hosting decided (owner): Forgejo (`forgejo@evo-x2.home.lan:lars/go-compliance.git`)
+  is primary (`origin`), GitHub (`git@github.com:LarsArtmann/go-compliance.git`)
+  is the mirror remote (`github`), both public — the fleet convention observed
+  in quotaboard/pim-sync. Answers status-report question g3.
