@@ -9,11 +9,11 @@ import (
 
 // Sentinel errors for use with errors.Is.
 var (
-	ErrValidation         = errors.New("compliance: validation error")
-	ErrIO                 = errors.New("compliance: I/O error")
-	ErrParse              = errors.New("compliance: parse error")
-	ErrUnsupportedSchema  = errors.New("compliance: unsupported schema version")
-	ErrInternal           = errors.New("compliance: internal error")
+	ErrValidation        = errors.New("compliance: validation error")
+	ErrIO                = errors.New("compliance: I/O error")
+	ErrParse             = errors.New("compliance: parse error")
+	ErrUnsupportedSchema = errors.New("compliance: unsupported schema version")
+	ErrInternal          = errors.New("compliance: internal error")
 )
 
 // ErrorCategory categorizes errors for programmatic handling.

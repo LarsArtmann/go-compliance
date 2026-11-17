@@ -31,10 +31,10 @@ const (
 // nil-slice `[]` normalization all mirror the producer. MarshalV1
 // additionally canonicalizes map key order (deterministic JSON).
 type V1Report struct {
-	SchemaVersion int      `json:"schema_version"`
-	GeneratedAt   string   `json:"generated_at"`
-	Since         string   `json:"since"`
-	StaleAfter    string   `json:"stale_after"`
+	SchemaVersion int    `json:"schema_version"`
+	GeneratedAt   string `json:"generated_at"`
+	Since         string `json:"since"`
+	StaleAfter    string `json:"stale_after"`
 	// BuildFlowVersion is the producing system's version; the JSON key is
 	// frozen by the v1 contract. Non-BuildFlow producers fill their own
 	// version here.
@@ -44,15 +44,15 @@ type V1Report struct {
 
 // V1Repo is one repository's row in a V1Report.
 type V1Repo struct {
-	Repo              string   `json:"repo"`
-	State             string   `json:"state"`
-	Runs              int64    `json:"runs"`
-	StepRows          int64    `json:"step_rows"`
-	Failures          int64    `json:"failures"`
-	FailRate          float64  `json:"fail_rate"`
-	LastRunAt         string   `json:"last_run_at"`
-	LastRunVerdict    string   `json:"last_run_verdict"`
-	GateFindings      map[string]int `json:"gate_findings"`
+	Repo           string         `json:"repo"`
+	State          string         `json:"state"`
+	Runs           int64          `json:"runs"`
+	StepRows       int64          `json:"step_rows"`
+	Failures       int64          `json:"failures"`
+	FailRate       float64        `json:"fail_rate"`
+	LastRunAt      string         `json:"last_run_at"`
+	LastRunVerdict string         `json:"last_run_verdict"`
+	GateFindings   map[string]int `json:"gate_findings"`
 	// BuildFlowVersions lists the producer versions seen in the window;
 	// the JSON key is frozen by the v1 contract.
 	BuildFlowVersions []string `json:"buildflow_versions"`
