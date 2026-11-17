@@ -19,7 +19,10 @@ require (
 require (
 	charm.land/fang/v2 v2.0.1 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
+	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
 	github.com/a-h/templ v0.3.1100 // indirect
+	github.com/andybalholm/brotli v1.2.7 // indirect
+	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20261023060817-a45b7c86333f // indirect
 	github.com/charmbracelet/x/ansi v0.11.9 // indirect
@@ -27,9 +30,12 @@ require (
 	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/charmbracelet/x/termios v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
+	github.com/cli/browser v1.3.0 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
+	github.com/fatih/color v1.19.0 // indirect
+	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-faster/errors v0.8.0 // indirect
 	github.com/go-faster/jx v1.2.0 // indirect
 	github.com/go-faster/yaml v0.4.6 // indirect
@@ -49,6 +55,7 @@ require (
 	github.com/larsartmann/go-atomic-write v0.6.2 // indirect
 	github.com/larsartmann/go-branded-id v0.7.1 // indirect
 	github.com/larsartmann/go-datastar v0.6.2 // indirect
+	github.com/larsartmann/go-datastar/datastartest v0.6.2 // indirect
 	github.com/larsartmann/go-datastar/static v0.6.1 // indirect
 	github.com/larsartmann/go-error-family v0.12.0 // indirect
 	github.com/larsartmann/go-ndjson v0.0.1 // indirect
@@ -65,6 +72,7 @@ require (
 	github.com/larsartmann/go-sse/sseparse v0.2.1 // indirect
 	github.com/larsartmann/samber-do-auditlog v0.12.3 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-runewidth v0.0.31 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -74,6 +82,7 @@ require (
 	github.com/muesli/mango-cobra v1.3.0 // indirect
 	github.com/muesli/mango-pflag v0.2.0 // indirect
 	github.com/muesli/roff v0.1.0 // indirect
+	github.com/natefinch/atomic v1.0.1 // indirect
 	github.com/ncruces/go-strftime v1.1.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
@@ -103,3 +112,5 @@ require (
 // Dev-only until core is tagged: the release procedure drops this replace
 // and pins the published version (go-finding sibling-module precedent).
 replace github.com/larsartmann/go-compliance => ../
+
+tool github.com/a-h/templ/cmd/templ

@@ -1,0 +1,28 @@
+package dashboard
+
+import (
+	"fmt"
+
+	"github.com/larsartmann/go-compliance/hub/internal/events"
+)
+
+// FleetRows renders the tbody content for a set of rows. It is patched into
+// the rows region (inner mode) on snapshots and appended to (append mode)
+// when refreshes add repos.
+templ FleetRows(rows []events.RepoRow) {
+	for _, row := range rows {
+		@FleetRow(row)
+	}
+}
+
+// FleetRow renders one fleet table row. The data-repo attribute is the
+// per-row patch target: state changes replace this row, disappearances
+// remove it.
+templ FleetRow(row events.RepoRow) {
+	<tr data-repo={ row.Repo }>
+		<td>{ row.Repo }</td>
+		<td>{ string(row.State) }</td>
+		<td>{ fmt.Sprintf("%d", row.Findings) }</td>
+		<td>{ row.LastRunAt.UTC().Format("2006-01-02 15:04") }</td>
+	</tr>
+}

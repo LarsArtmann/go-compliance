@@ -28,6 +28,8 @@ const (
 	defaultHeartbeat        = 15 * time.Second
 )
 
+var marshalOpts = json.Deterministic(true)
+
 // Snapshot is the full-state payload of EventSnapshot.
 type Snapshot struct {
 	GeneratedAt time.Time      `json:"generatedAt"`

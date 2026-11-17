@@ -59,7 +59,7 @@ var _ = Describe("hub drop accounting", func() {
 		Expect(subscription).NotTo(BeNil())
 
 		for range 3 {
-			_, err := hub.publish(EventSnapshot, Snapshot{})
+			_, err := hub.publish(EventSnapshot, Snapshot{}, &Snapshot{}, nil)
 			Expect(err).NotTo(HaveOccurred())
 		}
 
