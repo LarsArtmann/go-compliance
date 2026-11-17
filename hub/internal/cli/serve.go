@@ -8,33 +8,39 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-compliance"
+	"github.com/larsartmann/go-compliance/hub/internal/dashboard"
+	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
 
-// runServe runs the hub HTTP server. The M7 surface is the evidence JSON
-// API; the realtime stack (SSE, patches, UI) replaces the internals in
-// the hub milestone.
+// runServe runs the hub HTTP server: the realtime dashboard (page, DataStar
+// patch stream, SDK bundle), the evidence JSON API, and health.
 func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) error {
 	return func(ctx context.Context, _ *Config, flags ServeFlags) error {
-		evidence, _, staleAfter, err := queryEvidence(ctx, flags.QueryFlags)
+		evidence, since, staleAfter, err := queryEvidence(ctx, flags.QueryFlags)
 		if err != nil {
 			return err
 		}
 
+		hub := events.NewHub()
+		if _, err := hub.PublishSnapshot(events.RowsFromEvidence(evidence, time.Now(), staleAfter)); err != nil {
+			return err
+		}
+
+		board := dashboard.New(hub)
+
 		mux := http.NewServeMux()
+		board.RegisterRoutesAt(dashboard.Routes{
+			Page:   "/",
+			Stream: "/events",
+			Script: "/datastar.js",
+		}, mux)
 
 		mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			fmt.Fprintln(w, `{"status":"ok"}`)
 		})
 
-		mux.HandleFunc("GET /v1/compliance", func(w http.ResponseWriter, r *http.Request) {
-			since, err := parseSinceDuration(flags.Since)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-
-				return
-			}
-
+		mux.HandleFunc("GET /v1/compliance", func(w http.ResponseWriter, _ *http.Request) {
 			report := compliance.BuildV1Report(evidence, since, staleAfter, Version, time.Now())
 
 			encoded, err := compliance.MarshalV1(report)
@@ -61,6 +67,7 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 			defer cancel()
 
 			_ = server.Shutdown(shutdownCtx)
+			_ = hub.Shutdown(shutdownCtx)
 		}()
 
 		fmt.Fprintf(out, "compliance-hub listening on http://%s (localhost-only default; see docs/decisions)\n", flags.Addr)

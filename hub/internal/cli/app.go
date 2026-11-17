@@ -87,7 +87,14 @@ func queryEvidence(
 		return nil, time.Time{}, 0, err
 	}
 
-	source, err := resolveSource(flags)
+	source, closer, err := resolveSource(ctx, flags)
+	if err != nil {
+		return nil, time.Time{}, 0, err
+	}
+
+	if closer != nil {
+		defer func() { _ = closer.Close() }()
+	}
 	if err != nil {
 		return nil, time.Time{}, 0, err
 	}

@@ -98,7 +98,7 @@ var _ = Describe("routes and content negotiation", func() {
 		body := recorder.Body.String()
 		Expect(body).To(ContainSubstring("data-repo=\"broken\""))
 		Expect(body).NotTo(ContainSubstring("data-repo=\"ok\""))
-		Expect(body).To(ContainSubstring(`data-signals="{&quot;stateFilter&quot;:&quot;failing&quot;}"`))
+		Expect(body).To(ContainSubstring(`data-signals="{&#34;stateFilter&#34;:&#34;failing&#34;}"`))
 	})
 
 	It("renders filter chips wired to the stateFilter signal", func() {
@@ -110,10 +110,10 @@ var _ = Describe("routes and content negotiation", func() {
 		mux.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/", nil))
 
 		body := recorder.Body.String()
-		Expect(body).To(ContainSubstring(`data-on-click="$stateFilter='failing'"`))
-		Expect(body).To(ContainSubstring(`data-on-click="$stateFilter='all'"`))
+		Expect(body).To(ContainSubstring(`data-on-click="$stateFilter=&#39;failing&#39;"`))
+		Expect(body).To(ContainSubstring(`data-on-click="$stateFilter=&#39;all&#39;"`))
 		Expect(body).To(ContainSubstring(`aria-pressed="true"`))
-		Expect(strings.Count(body, `data-show="$stateFilter==='all'`)).To(Equal(2))
+		Expect(strings.Count(body, `data-show="$stateFilter===&#39;all&#39;`)).To(Equal(2))
 	})
 
 	It("supports custom route prefixes", func() {

@@ -1,12 +1,15 @@
 package cli
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/larsartmann/go-compliance"
+	"github.com/larsartmann/go-compliance/hub/internal/cache"
 )
 
 // QueryFlags are the evidence-query flags shared by report and table,
@@ -16,8 +19,9 @@ type QueryFlags struct {
 	StaleAfter string `flag:"stale-after" default:"336h" help:"Time since a repo's last run after which it counts as stale (e.g. 168h, 336h, 14d)"`
 	WorstSteps int    `flag:"worst-steps" default:"3" help:"Worst steps listed per repository"`
 	Step       string `flag:"step" default:"" help:"Scope the view to ONE step (EXACT name; fan-out keys count)"`
-	Source     string `flag:"source" default:"file" help:"Evidence source" values:"file,buildflow"`
+	Source     string `flag:"source" default:"file" help:"Evidence source" values:"file,buildflow,cache"`
 	File       string `flag:"file" default:"/var/lib/overview/compliance.json" help:"Piped v1 evidence document (source=file)"`
+	DB         string `flag:"db" default:"" help:"SQLite evidence cache path (source=cache)"`
 }
 
 // ServeFlags are the hub server flags. The bind default is localhost
@@ -28,20 +32,33 @@ type ServeFlags struct {
 	QueryFlags
 }
 
-// resolveSource builds the Source the flags select.
-func resolveSource(flags QueryFlags) (compliance.Source, error) {
+// resolveSource builds the Source the flags select. The cache store is
+// returned alongside so long-running callers (serve) can close it on
+// shutdown; one-shot callers ignore it.
+func resolveSource(ctx context.Context, flags QueryFlags) (compliance.Source, io.Closer, error) {
 	switch flags.Source {
 	case "", "file":
 		if flags.File == "" {
-			return nil, compliance.NewValidationError("--file must not be empty for --source file")
+			return nil, nil, compliance.NewValidationError("--file must not be empty for --source file")
 		}
 
-		return compliance.NewFileSource(flags.File), nil
+		return compliance.NewFileSource(flags.File), nil, nil
 	case "buildflow":
-		return compliance.NewBuildFlowCommandSource(), nil
+		return compliance.NewBuildFlowCommandSource(), nil, nil
+	case "cache":
+		if flags.DB == "" {
+			return nil, nil, compliance.NewValidationError("--db must not be empty for --source cache")
+		}
+
+		store, err := cache.Open(ctx, flags.DB)
+		if err != nil {
+			return nil, nil, fmt.Errorf("open cache %s: %w", flags.DB, err)
+		}
+
+		return store, store, nil
 	default:
-		return nil, compliance.NewValidationError(
-			"invalid --source value %q (supported: file, buildflow)", flags.Source)
+		return nil, nil, compliance.NewValidationError(
+			"invalid --source value %q (supported: file, buildflow, cache)", flags.Source)
 	}
 }
 
