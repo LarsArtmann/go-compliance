@@ -3,6 +3,7 @@ package cli_test
 import (
 	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -106,6 +107,26 @@ var _ = Describe("compliance-hub CLI", func() {
 
 			return resp.StatusCode
 		}, "5s", "50ms").Should(Equal(200))
+
+		for _, path := range []string{"/readyz", "/startupz", "/version", "/", "/events", "/datastar.js"} {
+			Eventually(func() int {
+				resp, err := Get("http://127.0.0.1:18477" + path)
+				if err != nil {
+					return 0
+				}
+				defer func() { _ = resp.Body.Close() }()
+
+				return resp.StatusCode
+			}, "5s", "50ms").Should(Equal(200), "path %s", path)
+		}
+
+		ready, err := Get("http://127.0.0.1:18477/readyz")
+		Expect(err).NotTo(HaveOccurred())
+		body, err := io.ReadAll(ready.Body)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(string(body)).To(ContainSubstring(`"evidence"`))
+		Expect(string(body)).To(ContainSubstring(`"status":"pass"`))
+		Expect(ready.Body.Close()).NotTo(HaveOccurred())
 
 		cancel()
 	})

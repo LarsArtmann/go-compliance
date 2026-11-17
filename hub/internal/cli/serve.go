@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
+	"path/filepath"
 	"time"
+
+	"github.com/larsartmann/go-health"
 
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/dashboard"
@@ -13,7 +17,8 @@ import (
 )
 
 // runServe runs the hub HTTP server: the realtime dashboard (page, DataStar
-// patch stream, SDK bundle), the evidence JSON API, and health.
+// patch stream, SDK bundle), the evidence JSON API, and the health probe
+// surface (/healthz /readyz /startupz /version).
 func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) error {
 	return func(ctx context.Context, _ *Config, flags ServeFlags) error {
 		evidence, since, staleAfter, err := queryEvidence(ctx, flags.QueryFlags)
@@ -26,6 +31,16 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 			return err
 		}
 
+		cacheDir := ""
+		if flags.DB != "" {
+			cacheDir = filepath.Dir(flags.DB)
+		}
+
+		probe, err := buildHealthProbe(Version, hub, cacheDir)
+		if err != nil {
+			return err
+		}
+
 		board := dashboard.New(hub)
 
 		mux := http.NewServeMux()
@@ -35,10 +50,7 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 			Script: "/datastar.js",
 		}, mux)
 
-		mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, `{"status":"ok"}`)
-		})
+		probe.RegisterRoutes(mux, health.DefaultRoutes())
 
 		mux.HandleFunc("GET /v1/compliance", func(w http.ResponseWriter, _ *http.Request) {
 			report := compliance.BuildV1Report(evidence, since, staleAfter, Version, time.Now())
@@ -60,24 +72,18 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 			ReadHeaderTimeout: 10 * time.Second,
 		}
 
-		go func() {
-			<-ctx.Done()
-
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-
-			_ = server.Shutdown(shutdownCtx)
-			_ = hub.Shutdown(shutdownCtx)
-		}()
-
 		fmt.Fprintf(out, "compliance-hub listening on http://%s (localhost-only default; see docs/decisions)\n", flags.Addr)
 
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Fprintf(errW, "serve: %v\n", err)
+		serveError := serveListener(ctx, server, flags.Addr, slog.Default())
 
-			return err
+		probe.MarkShuttingDown()
+		probe.Shutdown()
+		_ = hub.Shutdown(context.Background())
+
+		if serveError != nil {
+			fmt.Fprintf(errW, "serve: %v\n", serveError)
 		}
 
-		return nil
+		return serveError
 	}
 }

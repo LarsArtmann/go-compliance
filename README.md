@@ -23,6 +23,32 @@ contract, a realtime WebUI, and adapters instead of per-project plumbing.
 Integration goal: BuildFlow-covered projects are compliant by default (zero
 changes); everything else reports with one CLI line or one SDK call.
 
+## Embedding the dashboard
+
+Any Go service can mount the realtime fleet dashboard in one call:
+
+```go
+hub := events.NewHub()                       // publish snapshots/refreshes here
+board := dashboard.New(hub)
+
+mux := http.NewServeMux()
+board.RegisterRoutes(mux)                    // / (page), /events (patches), /datastar.js
+```
+
+Feed it evidence and everything downstream updates live:
+
+```go
+rows := events.RowsFromEvidence(evidence, time.Now(), staleAfter)
+published, err := hub.PublishRefresh(rows)   // snapshot first, diffs after
+```
+
+`RegisterRoutesAt(dashboard.Routes{...}, mux)` relocates the surface (e.g.
+behind `/compliance/`); the page route serves JSON to `Accept:
+application/json` clients.
+
+Or run the packaged service: `compliance-hub serve --source file --file
+compliance.json` (also `--source buildflow`, `--source cache --db path`).
+
 ## Documentation
 
 - [STACK.md](STACK.md) — foundation decision record (enforced by

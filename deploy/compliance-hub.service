@@ -1,0 +1,54 @@
+# compliance-hub systemd unit (upstream reference; the NixOS module in the
+# fleet config derives from this shape).
+#
+# Install to /etc/systemd/system/compliance-hub.service or drop into a
+# systemd unit search path, then:
+#   systemctl enable --now compliance-hub
+#
+# Hardening follows the fleet's stateless-network-daemon pattern from
+# go-health-dashboard's NixOS module: dynamic user, strict filesystem
+# protection, no capabilities, only the address families a localhost hub
+# needs. The unix socket for project-discovery lives in /run and is granted
+# via RuntimeDirectory.
+
+[Unit]
+Description=Fleet compliance hub (go-compliance)
+Documentation=https://github.com/LarsArtmann/go-compliance
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+# sd_notify wiring: the hub notifies READY once the listener accepts
+# traffic and STOPPING on shutdown; WatchdogSec is fed by the daemon
+# watchdog loop.
+WatchdogSec=30s
+Restart=on-failure
+RestartSec=5s
+StartLimitBurst=5
+StartLimitIntervalSec=300
+
+DynamicUser=true
+ExecStart=/usr/bin/compliance-hub serve --source cache --db /var/lib/compliance/evidence.db --addr 127.0.0.1:8477
+Environment=GO_COMPLIANCE_EVIDENCE_FILE=/var/lib/overview/compliance.json
+
+StateDirectory=compliance
+RuntimeDirectory=compliance
+WorkingDirectory=/var/lib/compliance
+
+# Hardening: stateless network daemon.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target
