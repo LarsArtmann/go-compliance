@@ -10,6 +10,8 @@ require (
 	github.com/larsartmann/go-output v0.38.7
 	github.com/larsartmann/go-output/table v0.38.7
 	github.com/larsartmann/go-sqlitestore v0.1.1
+	github.com/larsartmann/go-sse v0.6.2
+	github.com/larsartmann/go-sse/ssetest v0.5.0
 	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 )
@@ -58,9 +60,7 @@ require (
 	github.com/larsartmann/go-output/plantuml v0.38.7 // indirect
 	github.com/larsartmann/go-output/serialization v0.38.7 // indirect
 	github.com/larsartmann/go-output/tree v0.38.7 // indirect
-	github.com/larsartmann/go-sse v0.6.2 // indirect
 	github.com/larsartmann/go-sse/sseparse v0.2.1 // indirect
-	github.com/larsartmann/go-sse/ssetest v0.5.0 // indirect
 	github.com/larsartmann/samber-do-auditlog v0.12.3 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
