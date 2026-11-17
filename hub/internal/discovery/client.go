@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json/v2"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -117,7 +118,12 @@ func (c *Client) Discover(ctx context.Context, searchPaths []string) ([]Project,
 	}
 
 	var decoded discoverResponse
-	if err := json.NewDecoder(resp.Body).Decode(&decoded); err != nil {
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, compliance.NewIOError(err, "read discover response")
+	}
+
+	if err := json.Unmarshal(responseBody, &decoded); err != nil {
 		return nil, compliance.NewParseError(err, "decode discover response")
 	}
 

@@ -2,7 +2,9 @@ package discovery_test
 
 import (
 	"context"
+	"encoding/json/v2"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -55,7 +57,9 @@ var _ = Describe("discovery client", func() {
 			var request struct {
 				SearchPaths []string `json:"searchPaths"`
 			}
-			Expect(jsonNewDecoder(r.Body).Decode(&request)).To(Succeed())
+			requestBody, err := io.ReadAll(r.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(json.Unmarshal(requestBody, &request)).To(Succeed())
 			Expect(request.SearchPaths).To(Equal([]string{"/home/lars/projects"}))
 
 			w.Header().Set("Content-Type", "application/json")
@@ -143,5 +147,3 @@ var _ = Describe("discovery client", func() {
 			To(Equal(compliance.StateNeverCovered))
 	})
 })
-
-func jsonNewDecoder(r io.Reader) *jsonDecoder { return newJSONDecoder(r) }
