@@ -48,6 +48,8 @@ require (
 	github.com/knadh/koanf/v2 v2.4.1 // indirect
 	github.com/larsartmann/go-atomic-write v0.6.2 // indirect
 	github.com/larsartmann/go-branded-id v0.7.1 // indirect
+	github.com/larsartmann/go-datastar v0.6.2 // indirect
+	github.com/larsartmann/go-datastar/static v0.6.1 // indirect
 	github.com/larsartmann/go-error-family v0.12.0 // indirect
 	github.com/larsartmann/go-ndjson v0.0.1 // indirect
 	github.com/larsartmann/go-output/d2 v0.38.7 // indirect

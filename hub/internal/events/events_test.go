@@ -16,7 +16,7 @@ var _ = Describe("rows projection", func() {
 	DescribeTable("deriving row state",
 		func(evidence compliance.RepoEvidence, expected compliance.State) {
 			rows := events.RowsFromEvidence([]compliance.RepoEvidence{evidence},
-				time.Unix(1_000_000, 0), compliance.DefaultStaleAfter)
+				time.Unix(1_000_000, 0), 24*time.Hour)
 			Expect(rows).To(HaveLen(1))
 			Expect(rows[0].State).To(Equal(expected))
 		},
