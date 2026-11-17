@@ -1,5 +1,7 @@
 package dashboard
 
+import "sort"
+
 // severityLabel upper-cases a severity for the compact ERR/WARN/INFO cell
 // display, keeping unknown severities readable as-is.
 func severityLabel(severity string) string {
@@ -26,4 +28,45 @@ func severityTone(severity string) string {
 	default:
 		return "text-sky-600 dark:text-sky-400"
 	}
+}
+
+// severityOrder ranks known severities for deterministic rendering; unknown
+// severities sort after the known ones, alphabetically.
+var severityOrder = map[string]int{
+	"error":    0,
+	"critical": 1,
+	"warning":  2,
+	"info":     3,
+	"note":     4,
+	"unknown":  5,
+}
+
+// sortedSeverities returns the map's keys in canonical severity order so
+// renders (and therefore patch diffs) are deterministic.
+func sortedSeverities(severities map[string]int) []string {
+	keys := make([]string, 0, len(severities))
+	for severity := range severities {
+		keys = append(keys, severity)
+	}
+
+	sort.Slice(keys, func(i, j int) bool {
+		left, right := keys[i], keys[j]
+		leftRank, leftKnown := severityOrder[left]
+		rightRank, rightKnown := severityOrder[right]
+
+		switch {
+		case leftKnown && rightKnown:
+			if leftRank != rightRank {
+				return leftRank < rightRank
+			}
+		case leftKnown:
+			return true
+		case rightKnown:
+			return false
+		}
+
+		return left < right
+	})
+
+	return keys
 }

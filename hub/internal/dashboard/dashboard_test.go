@@ -35,10 +35,10 @@ var _ = Describe("datastar patch stream", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		received := datastartest.CollectN(GinkgoTB(), dashboard.New(hub).StreamHandler(), 2,
+		received := datastartest.CollectN(GinkgoTB(), dashboard.New(hub).StreamHandler(), 3,
 			datastartest.WithPath("/events"))
 
-		datastartest.RequireEventCount(GinkgoTB(), received, 2)
+		datastartest.RequireEventCount(GinkgoTB(), received, 3)
 		Expect(received[0].IsSignals()).To(BeTrue())
 		datastartest.RequireSignalsContain(GinkgoTB(), received[0], "counts")
 		datastartest.RequireSignalsContain(GinkgoTB(), received[0], "total")
@@ -52,11 +52,16 @@ var _ = Describe("datastar patch stream", func() {
 
 		Expect(received[1].IsElements()).To(BeTrue())
 		datastartest.RequireElementsContains(GinkgoTB(), received[1],
-			dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeInner), `<tr data-repo="alpha">`)
+			"#"+dashboard.StatCardsID, string(datastar.ElementPatchModeInner), `Total repos`)
 		datastartest.RequireElementsContains(GinkgoTB(), received[1],
-			dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeInner), `<tr data-repo="beta">`)
-		datastartest.RequireElementsContains(GinkgoTB(), received[1],
-			dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeInner), `<td>compliant</td>`)
+			"#"+dashboard.StatCardsID, string(datastar.ElementPatchModeInner), `Never covered`)
+		Expect(received[2].IsElements()).To(BeTrue())
+		datastartest.RequireElementsContains(GinkgoTB(), received[2],
+			dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeInner), `<tr data-repo="alpha" data-show=`)
+		datastartest.RequireElementsContains(GinkgoTB(), received[2],
+			dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeInner), `<tr data-repo="beta" data-show=`)
+		datastartest.RequireElementsContains(GinkgoTB(), received[2],
+			dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeInner), `compliant`)
 	})
 
 	It("projects refreshes as appends, replaces, and removes", func() {
@@ -82,12 +87,13 @@ var _ = Describe("datastar patch stream", func() {
 			published <- err
 		}()
 
-		// 2 initial (signals + rows) + 4 update events (signals, append
-		// newcomer, replace flipped, remove doomed).
-		received := datastartest.CollectN(GinkgoTB(), stream, 6, datastartest.WithPath("/events"))
+		// 3 initial (signals + stat cards + rows) + 5 update events
+		// (signals, stat cards, append newcomer, replace flipped, remove
+		// doomed).
+		received := datastartest.CollectN(GinkgoTB(), stream, 8, datastartest.WithPath("/events"))
 		Expect(<-published).NotTo(HaveOccurred())
 
-		signals, found := datastartest.FindSignals(received[2:])
+		signals, found := datastartest.FindSignals(received[3:])
 		Expect(found).To(BeTrue())
 		var decoded struct {
 			Total  int            `json:"total"`
@@ -101,7 +107,7 @@ var _ = Describe("datastar patch stream", func() {
 		Expect(replaced).To(HaveLen(1))
 		Expect(replaced[0].Mode()).To(Equal(string(datastar.ElementPatchModeReplace)))
 		datastartest.RequireElementsContains(GinkgoTB(), replaced[0],
-			`tr[data-repo="flipped"]`, string(datastar.ElementPatchModeReplace), `<td>failing</td>`)
+			`tr[data-repo="flipped"]`, string(datastar.ElementPatchModeReplace), `failing</span>`)
 
 		removals := datastartest.FindAllElements(received, `tr[data-repo="doomed"]`)
 		Expect(removals).To(HaveLen(1))
@@ -111,7 +117,7 @@ var _ = Describe("datastar patch stream", func() {
 		Expect(appends).To(HaveLen(2)) // initial inner patch + update append patch
 		Expect(appends[1].Mode()).To(Equal(string(datastar.ElementPatchModeAppend)))
 		datastartest.RequireElementsContains(GinkgoTB(), appends[1],
-			dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeAppend), `<td>never-covered</td>`)
+			dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeAppend), `never-covered</span>`)
 	})
 
 	It("serves the pinned DataStar bundle", func() {

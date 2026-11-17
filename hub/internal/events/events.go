@@ -263,6 +263,17 @@ func (h *Hub) SubscriberCount() int { return h.broadcaster.SubscriberCount() }
 // Shutdown stops broadcasting and waits for subscriber drain or ctx.
 func (h *Hub) Shutdown(ctx context.Context) error { return h.broadcaster.Shutdown(ctx) }
 
+// SnapshotJSON renders the hub snapshot payload for rows — the same shape
+// the JSON stream's snapshot events carry — as canonical JSON.
+func SnapshotJSON(rows []RepoRow) string {
+	return mustMarshal(Snapshot{
+		GeneratedAt: time.Now().UTC(),
+		Rows:        rows,
+		Counts:      CountStates(rows),
+		Total:       len(rows),
+	})
+}
+
 // CountStates tallies rows per state name (string form), for stat cards and
 // signals.
 func CountStates(rows []RepoRow) map[string]int {

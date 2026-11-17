@@ -13,6 +13,9 @@ type ViewModel struct {
 	// Rows is the initial fleet state, rendered server-side so the page
 	// paints before the stream connects.
 	Rows []events.RepoRow
+	// StateFilter is the initially-selected filter chip ("all" when
+	// empty); it seeds the stateFilter signal and filters the rows.
+	StateFilter string
 }
 
 // Element identifiers the patch stream targets. The rows selector doubles

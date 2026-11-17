@@ -1,0 +1,44 @@
+package dashboard
+
+import "fmt"
+
+// filterChips is the chip model: the signal value it selects and its label.
+type filterChip struct {
+	State string
+	Label string
+}
+
+// filterChips is ordered worst-first to mirror the table ordering.
+var filterChips = []filterChip{
+	{State: "all", Label: "All"},
+	{State: "failing", Label: "Failing"},
+	{State: "stale", Label: "Stale"},
+	{State: "never-covered", Label: "Never covered"},
+	{State: "compliant", Label: "Compliant"},
+}
+
+// StateFilterChips renders the state filter as zero-navigation buttons:
+// each sets the stateFilter signal, and every fleet row's data-show
+// expression reacts instantly. No-JS clients filter via the ?state= query
+// parameter on the page URL instead.
+templ StateFilterChips(selected string) {
+	<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by state">
+		for _, chip := range filterChips {
+			<button
+				type="button"
+				data-on-click={ fmt.Sprintf("$stateFilter='%s'", chip.State) }
+				data-class={ fmt.Sprintf("$stateFilter==='%s' ? '%s' : '%s'", chip.State, chipSelectedClass, chipUnselectedClass) }
+				class={ chipBaseClass }
+				aria-pressed={ fmt.Sprintf("%t", chip.State == selected) }
+			>
+				{ chip.Label }
+			</button>
+		}
+	</div>
+}
+
+const (
+	chipBaseClass      = "rounded-full border px-3 py-1 text-xs font-medium transition-colors"
+	chipSelectedClass  = "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-900/30 dark:text-sky-300"
+	chipUnselectedClass = "border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400"
+)

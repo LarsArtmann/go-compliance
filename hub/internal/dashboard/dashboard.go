@@ -21,6 +21,9 @@ import (
 // snapshot patch targets.
 const DefaultRowsSelector = "#fleet-rows"
 
+// defaultTitle heads the dashboard page.
+const defaultTitle = "Fleet compliance"
+
 const (
 	heartbeatInterval = 15 * time.Second
 
@@ -41,6 +44,7 @@ type stateSignals struct {
 type Dashboard struct {
 	hub          *events.Hub
 	rowsSelector string
+	title        string
 }
 
 // Option configures a Dashboard at construction.
@@ -55,9 +59,18 @@ func WithRowsSelector(selector string) Option {
 	}
 }
 
+// WithTitle overrides the page title (default "Fleet compliance").
+func WithTitle(title string) Option {
+	return func(d *Dashboard) {
+		if title != "" {
+			d.title = title
+		}
+	}
+}
+
 // New returns a Dashboard projecting the hub's events as DataStar patches.
 func New(hub *events.Hub, opts ...Option) *Dashboard {
-	dashboard := &Dashboard{hub: hub, rowsSelector: DefaultRowsSelector}
+	dashboard := &Dashboard{hub: hub, rowsSelector: DefaultRowsSelector, title: defaultTitle}
 	for _, opt := range opts {
 		opt(dashboard)
 	}

@@ -22,7 +22,7 @@ templ FleetRows(rows []events.RepoRow) {
 // per-row patch target: state changes replace this row, disappearances
 // remove it.
 templ FleetRow(row events.RepoRow) {
-	<tr data-repo={ row.Repo }>
+	<tr data-repo={ row.Repo } data-show={ fmt.Sprintf("$stateFilter==='all' || $stateFilter==='%s'", row.State) }>
 		<td class="font-medium">{ row.Repo }</td>
 		<td>@StateBadge(row.State)</td>
 		<td>@severityCells(row.Severities)</td>
@@ -66,12 +66,15 @@ templ StateBadge(state compliance.State) {
 }
 
 // severityCells renders the latest run's severity counts inline: errors
-// red, warnings amber, the rest muted. Absent severities stay absent.
+// red, warnings amber, the rest muted. Absent severities stay absent; the
+// order is canonical (ERR, WARN, INFO, then unknowns) so renders are
+// deterministic.
 templ severityCells(severities map[string]int) {
 	if len(severities) == 0 {
 		<span class="text-gray-400">—</span>
 	}
-	for severity, count := range severities {
+	for _, severity := range sortedSeverities(severities) {
+		{{ count := severities[severity] }}
 		{{ tone := severityTone(severity) }}
 		<span class={ fmt.Sprintf("mr-2 font-mono text-xs %s", tone) }>
 			{ fmt.Sprintf("%s %d", severityLabel(severity), count) }
