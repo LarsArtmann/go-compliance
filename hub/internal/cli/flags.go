@@ -12,7 +12,7 @@ import (
 // QueryFlags are the evidence-query flags shared by report and table,
 // matching BuildFlow compliance muscle memory.
 type QueryFlags struct {
-	Since string `flag:"since" default:"7d" help:"Evidence window (e.g. 24h, 7d, 30d)"`
+	Since      string `flag:"since" default:"7d" help:"Evidence window (e.g. 24h, 7d, 30d)"`
 	StaleAfter string `flag:"stale-after" default:"336h" help:"Time since a repo's last run after which it counts as stale (e.g. 168h, 336h, 14d)"`
 	WorstSteps int    `flag:"worst-steps" default:"3" help:"Worst steps listed per repository"`
 	Step       string `flag:"step" default:"" help:"Scope the view to ONE step (EXACT name; fan-out keys count)"`
@@ -56,7 +56,7 @@ func parseSinceDuration(raw string) (time.Time, error) {
 	d, err := parseDurationSupportingDays(raw)
 	if err != nil {
 		return time.Time{}, compliance.NewValidationError(
-			"invalid --since value: "+raw+" (supported: 24h, 7d, 30d, 2h45m)")
+			"invalid --since value: %s (supported: 24h, 7d, 30d, 2h45m)", raw)
 	}
 
 	return time.Now().Add(-d), nil
@@ -68,7 +68,7 @@ func parseStaleAfter(raw string) (time.Duration, error) {
 	d, err := parseDurationSupportingDays(raw)
 	if err != nil || d <= 0 {
 		return 0, compliance.NewValidationError(
-			"invalid --stale-after value: "+raw+" (supported: 168h, 336h, 14d)")
+			"invalid --stale-after value: %s (supported: 168h, 336h, 14d)", raw)
 	}
 
 	return d, nil
