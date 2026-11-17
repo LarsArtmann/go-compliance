@@ -153,6 +153,7 @@ choices were not validated against the tag vocabulary.
 ## f) Next up to 50 (grouped; S/M/L = size)
 
 **Core port (BuildFlow → go-compliance) — the 1% that unlocks everything**
+
 1. Port `DeriveComplianceState`, add `never-covered` state (S)
 2. Port evidence fold + `ComplianceRepoEvidence`-shaped aggregation types (S)
 3. Port v1 wire types byte-exact (`schema_version`, nil-map `{}`/`[]` semantics) (S)
@@ -203,7 +204,7 @@ choices were not validated against the tag vocabulary.
 **Cross-repo**
 43. BuildFlow TODO_LIST pointer: extraction verdict → go-compliance (S)
 44. Decide overview endgame: hub replaces its compliance views or stays a
-    peer consumer [owner Q2] (S)
+peer consumer [owner Q2] (S)
 45. Research hub ↔ go-health-dashboard federation interop (M)
 46. STACK.md row upkeep as deps land (drift-check in the loop) (S)
 

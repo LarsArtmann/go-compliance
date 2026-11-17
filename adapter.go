@@ -150,12 +150,7 @@ func V1ReportToEvidence(report V1Report, worstStepLimit int) []RepoEvidence {
 
 		steps := make([]StepEvidence, 0, len(row.WorstSteps))
 		for _, step := range row.WorstSteps {
-			steps = append(steps, StepEvidence{
-				Step:      step.Step,
-				Failures:  step.Failures,
-				TotalRuns: step.TotalRuns,
-				FailRate:  step.FailRate,
-			})
+			steps = append(steps, StepEvidence(step))
 		}
 
 		if len(steps) > worstStepLimit {

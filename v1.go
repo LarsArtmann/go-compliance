@@ -144,12 +144,7 @@ func BuildV1Report(
 		}
 
 		for _, step := range record.WorstSteps {
-			row.WorstSteps = append(row.WorstSteps, V1Step{
-				Step:      step.Step,
-				Failures:  step.Failures,
-				TotalRuns: step.TotalRuns,
-				FailRate:  step.FailRate,
-			})
+			row.WorstSteps = append(row.WorstSteps, V1Step(step))
 		}
 
 		repos = append(repos, row)

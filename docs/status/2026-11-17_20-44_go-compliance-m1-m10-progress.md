@@ -189,12 +189,12 @@ before moving on, honest reporting of everything that broke along the way.
    add an `evidence_steps` table (migration v2) instead of overloading
    gate_findings.
 3. **Severity cells unreachable via file source** — the v1 wire cannot carry
-  severities (frozen contract), so the CLI table renders dashes for piped
-  documents; only cache/reporter paths can fill them. The UI (M13) should
-  read from the cache, not from v1 files, for the same reason.
+   severities (frozen contract), so the CLI table renders dashes for piped
+   documents; only cache/reporter paths can fill them. The UI (M13) should
+   read from the cache, not from v1 files, for the same reason.
 4. **Two sources of truth for "producer version"**: hub `cli.Version = "dev"`
    vs the report's `buildflow_version` field. Set via ldflags at release;
-  add a version-check script before tagging (go-finding precedent).
+   add a version-check script before tagging (go-finding precedent).
 5. **Serve captures evidence once at startup** — a long-running serve serves
    a stale snapshot until M27 lands; document this in the M11 rebuild.
 6. **Edit-tool vs daemon races**: prefer `write` (full file) or python
@@ -275,9 +275,9 @@ before moving on, honest reporting of everything that broke along the way.
    repos). Needs one manual click by the owner.
 2. **g1 — hub auth/bind posture**: localhost-only is the safe default (and
    is what ships). Should the hub ever bind the LAN (plain HTTP? unix socket
-   + reverse proxy? auth token?), and if so which mechanism is the fleet
-   standard? Blocks M20's unix-socket mode value and any remote dashboard
-   use.
+   - reverse proxy? auth token?), and if so which mechanism is the fleet
+     standard? Blocks M20's unix-socket mode value and any remote dashboard
+     use.
 3. **g2 — overview endgame**: replace overview's compliance views with the
    hub (embed via RegisterRoutes + migration sketch), or keep overview as
    the consumer and the hub as a parallel producer forever? Blocks M26;

@@ -69,7 +69,7 @@ var _ = Describe("FoldEvidence", func() {
 	Describe("worst-step caps", func() {
 		steps := func(repo compliance.RepoName, n int) compliance.RepoSteps {
 			out := compliance.RepoSteps{Repo: repo}
-			for i := 0; i < n; i++ {
+			for i := range n {
 				out.Steps = append(out.Steps, compliance.StepEvidence{
 					Step: string(rune('a' + i)), Failures: int64(n - i), TotalRuns: 10,
 				})

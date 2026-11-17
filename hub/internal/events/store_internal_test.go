@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -57,12 +58,19 @@ var _ = Describe("hub drop accounting", func() {
 		subscription := hub.broadcaster.Subscribe()
 		Expect(subscription).NotTo(BeNil())
 
-		for i := 0; i < 3; i++ {
+		for range 3 {
 			_, err := hub.publish(EventSnapshot, Snapshot{})
 			Expect(err).NotTo(HaveOccurred())
 		}
 
 		Expect(hub.Dropped()).To(Equal(int64(2)))
-		Expect(hub.Shutdown(context.Background())).NotTo(HaveOccurred())
+
+		for len(subscription) > 0 {
+			<-subscription
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		Expect(hub.Shutdown(ctx)).NotTo(HaveOccurred())
 	})
 })

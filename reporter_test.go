@@ -80,7 +80,7 @@ var _ = Describe("MemoryStore", func() {
 		store := compliance.NewMemoryStore()
 
 		var wg sync.WaitGroup
-		for i := 0; i < 16; i++ {
+		for i := range 16 {
 			wg.Add(1)
 			go func(i int) {
 				defer wg.Done()
@@ -158,7 +158,7 @@ var _ = Describe("FileStore", func() {
 		wg.Add(2)
 		go func() {
 			defer wg.Done()
-			for i := 0; i < 25; i++ {
+			for range 25 {
 				Expect(store.WriteEvidence(ctx, compliance.NewRepoName("writer"), compliance.RunResult{
 					Verdict: compliance.VerdictPassed, ProducerVersion: "v",
 				})).To(Succeed())
@@ -166,7 +166,7 @@ var _ = Describe("FileStore", func() {
 		}()
 		go func() {
 			defer wg.Done()
-			for i := 0; i < 25; i++ {
+			for range 25 {
 				report, err := store.Load(ctx)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(report.SchemaVersion).To(Equal(1))

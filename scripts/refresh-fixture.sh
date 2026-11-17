@@ -7,6 +7,6 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-buildflow compliance --json | go run ./scripts/redactfixture > testdata/buildflow-v1-fixture.json
+buildflow compliance --json | go run ./scripts/redactfixture >testdata/buildflow-v1-fixture.json
 
 echo "OK: testdata/buildflow-v1-fixture.json refreshed (redacted)"

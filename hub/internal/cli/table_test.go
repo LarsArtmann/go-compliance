@@ -97,7 +97,7 @@ var _ = Describe("fleet table", func() {
 		rendered := render(path)
 
 		lines := []string{}
-		for _, line := range strings.Split(rendered, "\n") {
+		for line := range strings.SplitSeq(rendered, "\n") {
 			if strings.HasPrefix(line, "│") {
 				lines = append(lines, line)
 			}

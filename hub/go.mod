@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-compliance/hub
 
-go 1.27.3
+go 1.27
 
 require (
 	charm.land/lipgloss/v2 v2.0.6

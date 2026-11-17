@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-compliance
 
-go 1.27.3
+go 1.27
 
 require (
 	github.com/larsartmann/go-branded-id v0.7.1
