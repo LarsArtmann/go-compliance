@@ -246,14 +246,26 @@ func mergeRecord(document *V1Report, repo RepoName, result RunResult) bool {
 	return true
 }
 
-// resolvedAt returns the result time, defaulting to now.
-func (r RunResult) resolvedAt() time.Time {
+// ResolvedAt returns the result time, defaulting to now.
+func (r RunResult) ResolvedAt() time.Time {
 	if r.At.IsZero() {
 		return time.Now()
 	}
 
 	return r.At
 }
+
+// ResolvedRuns returns the aggregated run count, defaulting to 1.
+func (r RunResult) ResolvedRuns() int64 {
+	if r.Runs == 0 {
+		return 1
+	}
+
+	return r.Runs
+}
+
+// resolvedAt returns the result time, defaulting to now.
+func (r RunResult) resolvedAt() time.Time { return r.ResolvedAt() }
 
 // newerRun reports whether stored is strictly newer than incoming.
 func newerRun(stored, incoming time.Time) bool {
