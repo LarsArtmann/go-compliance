@@ -61,7 +61,7 @@ var _ = Describe("state diffing", func() {
 		return events.RepoRow{Repo: repo, State: state, Severities: map[string]int{}}
 	}
 
-	It("reports new and changed repos, omitting unchanged ones", func() {
+	It("splits added and changed repos, omitting unchanged ones", func() {
 		previous := []events.RepoRow{
 			baseRow("stable", compliance.StateCompliant),
 			baseRow("flipped", compliance.StateCompliant),
@@ -72,10 +72,12 @@ var _ = Describe("state diffing", func() {
 			baseRow("fresh", compliance.StateNeverCovered),
 		}
 
-		changed, removed := events.DiffRows(previous, next)
-		Expect(changed).To(HaveLen(2))
+		added, changed, removed := events.DiffRows(previous, next)
+		Expect(added).To(HaveLen(1))
+		Expect(added[0].Repo).To(Equal("fresh"))
+		Expect(changed).To(HaveLen(1))
 		Expect(changed[0].Repo).To(Equal("flipped"))
-		Expect(changed[1].Repo).To(Equal("fresh"))
+		Expect(changed[0].State).To(Equal(compliance.StateFailing))
 		Expect(removed).To(BeEmpty())
 	})
 
@@ -86,15 +88,16 @@ var _ = Describe("state diffing", func() {
 		moved := baseRow("r", compliance.StateFailing)
 		moved.Severities = map[string]int{"error": 2}
 
-		changed, _ := events.DiffRows([]events.RepoRow{row}, []events.RepoRow{moved})
+		_, changed, _ := events.DiffRows([]events.RepoRow{row}, []events.RepoRow{moved})
 		Expect(changed).To(HaveLen(1))
 	})
 
 	It("reports disappeared repos as removed", func() {
-		changed, removed := events.DiffRows(
+		added, changed, removed := events.DiffRows(
 			[]events.RepoRow{baseRow("gone", compliance.StateStale), baseRow("kept", compliance.StateStale)},
 			[]events.RepoRow{baseRow("kept", compliance.StateStale)},
 		)
+		Expect(added).To(BeEmpty())
 		Expect(changed).To(BeEmpty())
 		Expect(removed).To(Equal([]string{"gone"}))
 	})
@@ -107,12 +110,14 @@ var _ = Describe("events hub endpoint", func() {
 
 	It("sends the current snapshot first, then live updates", func() {
 		hub := events.NewHub()
-		handler := hub.Handler(func() []events.RepoRow { return rowsFor("fleet", compliance.StateCompliant) })
+		Expect(hub.PublishSnapshot(rowsFor("fleet", compliance.StateCompliant))).To(Equal("1"))
+
+		handler := hub.Handler()
 
 		published := make(chan error, 1)
 		go func() {
 			waitForSubscriber(hub)
-			_, err := hub.PublishSnapshot(rowsFor("fleet", compliance.StateFailing))
+			_, err := hub.PublishRefresh(rowsFor("fleet", compliance.StateFailing))
 			published <- err
 		}()
 
@@ -122,7 +127,8 @@ var _ = Describe("events hub endpoint", func() {
 		ssetest.RequireEventCount(GinkgoTB(), received, 2)
 		ssetest.RequireEventType(GinkgoTB(), received[0], events.EventSnapshot)
 		ssetest.RequireDataContains(GinkgoTB(), received[0], `"repo":"fleet"`)
-		ssetest.RequireEventType(GinkgoTB(), received[1], events.EventSnapshot)
+		ssetest.RequireEventType(GinkgoTB(), received[1], events.EventUpdate)
+		ssetest.RequireDataContains(GinkgoTB(), received[1], `"repo":"fleet"`)
 		ssetest.RequireDataContains(GinkgoTB(), received[1], `"state":"failing"`)
 	})
 
@@ -130,35 +136,62 @@ var _ = Describe("events hub endpoint", func() {
 		hub := events.NewHub()
 		first, err := hub.PublishSnapshot(rowsFor("a", compliance.StateCompliant))
 		Expect(err).NotTo(HaveOccurred())
-		_, err = hub.PublishSnapshot(rowsFor("a", compliance.StateFailing))
+		_, err = hub.PublishRefresh(rowsFor("a", compliance.StateFailing))
 		Expect(err).NotTo(HaveOccurred())
 
-		handler := hub.Handler(func() []events.RepoRow { return nil })
-
-		received := ssetest.CollectN(GinkgoTB(), handler, 1,
+		received := ssetest.CollectN(GinkgoTB(), hub.Handler(), 1,
 			ssetest.WithPath("/events"),
 			ssetest.WithLastEventID(sse.NewEventID(first)),
 		)
 
-		Expect(received[0].ID).NotTo(Equal(first))
-		ssetest.RequireEventType(GinkgoTB(), received[0], events.EventSnapshot)
+		Expect(received[0].ID).To(Equal("2"))
+		ssetest.RequireEventType(GinkgoTB(), received[0], events.EventUpdate)
 		ssetest.RequireDataContains(GinkgoTB(), received[0], `"state":"failing"`)
 	})
 
 	It("publishes diffs only when refreshes change displayed state", func() {
 		hub := events.NewHub()
 
-		published, err := hub.PublishRefresh(nil, rowsFor("a", compliance.StateCompliant))
+		published, err := hub.PublishRefresh(rowsFor("a", compliance.StateCompliant))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(published).To(BeTrue())
 
-		published, err = hub.PublishRefresh(rowsFor("a", compliance.StateCompliant), rowsFor("a", compliance.StateCompliant))
+		published, err = hub.PublishRefresh(rowsFor("a", compliance.StateCompliant))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(published).To(BeFalse())
 
-		published, err = hub.PublishRefresh(rowsFor("a", compliance.StateCompliant), rowsFor("a", compliance.StateStale))
+		published, err = hub.PublishRefresh(rowsFor("a", compliance.StateStale))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(published).To(BeTrue())
+	})
+
+	It("keeps the latest rows queryable and detached from caller mutation", func() {
+		hub := events.NewHub()
+		rows := rowsFor("a", compliance.StateCompliant)
+		rows[0].Severities["error"] = 1
+
+		_, err := hub.PublishSnapshot(rows)
+		Expect(err).NotTo(HaveOccurred())
+		rows[0].Severities["error"] = 99
+
+		current := hub.Rows()
+		Expect(current).To(HaveLen(1))
+		Expect(current[0].Severities).To(Equal(map[string]int{"error": 1}))
+	})
+
+	It("carries state counts and totals on snapshots and updates", func() {
+		hub := events.NewHub()
+		_, err := hub.PublishSnapshot([]events.RepoRow{
+			{Repo: "a", State: compliance.StateFailing, Severities: map[string]int{}},
+			{Repo: "b", State: compliance.StateFailing, Severities: map[string]int{}},
+			{Repo: "c", State: compliance.StateCompliant, Severities: map[string]int{}},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		received := ssetest.CollectN(GinkgoTB(), hub.Handler(), 1, ssetest.WithPath("/events"))
+		ssetest.RequireDataContains(GinkgoTB(), received[0], `"total":3`)
+		ssetest.RequireDataContains(GinkgoTB(), received[0], `"failing":2`)
+		ssetest.RequireDataContains(GinkgoTB(), received[0], `"compliant":1`)
 	})
 
 	It("numbers published events monotonically", func() {
@@ -166,7 +199,7 @@ var _ = Describe("events hub endpoint", func() {
 
 		first, err := hub.PublishSnapshot(nil)
 		Expect(err).NotTo(HaveOccurred())
-		second, err := hub.PublishUpdate(nil, []string{"gone"})
+		second, err := hub.PublishUpdate(nil, nil, []string{"gone"})
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(first).To(Equal("1"))

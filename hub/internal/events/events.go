@@ -5,6 +5,7 @@ import (
 	"encoding/json/v2"
 	"net/http"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -16,8 +17,8 @@ const (
 	// EventSnapshot carries the full fleet state: one row per repo. Fresh
 	// clients render from it immediately.
 	EventSnapshot = "snapshot"
-	// EventUpdate carries a state diff: only repos whose displayed state
-	// moved plus repos that disappeared.
+	// EventUpdate carries a state diff: repos added, repos whose displayed
+	// state moved, and repos that disappeared.
 	EventUpdate = "update"
 )
 
@@ -29,26 +30,45 @@ const (
 
 // Snapshot is the full-state payload of EventSnapshot.
 type Snapshot struct {
-	GeneratedAt time.Time `json:"generatedAt"`
-	Rows        []RepoRow `json:"rows"`
+	GeneratedAt time.Time      `json:"generatedAt"`
+	Rows        []RepoRow      `json:"rows"`
+	Counts      map[string]int `json:"counts"`
+	Total       int            `json:"total"`
 }
 
 // Update is the diff payload of EventUpdate.
 type Update struct {
-	GeneratedAt time.Time `json:"generatedAt"`
-	Changed     []RepoRow `json:"changed"`
-	Removed     []string  `json:"removed"`
+	GeneratedAt time.Time      `json:"generatedAt"`
+	Added       []RepoRow      `json:"added"`
+	Changed     []RepoRow      `json:"changed"`
+	Removed     []string       `json:"removed"`
+	Counts      map[string]int `json:"counts"`
+	Total       int            `json:"total"`
 }
 
-// Hub fans report state out to SSE subscribers with replay support. It is
-// safe for concurrent use; Close is owned by Shutdown.
+// Published is one event as it left the Hub: the wire form (Name, ID, Data)
+// plus the typed payload (exactly one of Snapshot or Update is set).
+type Published struct {
+	Name     string
+	ID       string
+	Data     string
+	Snapshot *Snapshot
+	Update   *Update
+}
+
+// Hub fans report state out to SSE subscribers with replay support. It owns
+// the latest published rows so every surface (JSON stream, DataStar patches)
+// reads one source of truth. Safe for concurrent use.
 type Hub struct {
-	broadcaster      *sse.Broadcaster[sse.Event]
+	broadcaster      *sse.Broadcaster[Published]
 	store            *ringStore
 	heartbeat        time.Duration
 	subscriberBuffer int
 	seq              atomic.Uint64
 	dropped          atomic.Int64
+
+	rowsMu sync.RWMutex
+	rows   []RepoRow
 }
 
 // Option configures a Hub at construction.
@@ -83,8 +103,6 @@ func WithHeartbeat(interval time.Duration) Option {
 	}
 }
 
-var marshalOpts = json.Deterministic(true)
-
 // NewHub returns a Hub with fleet-default replay, buffering, and heartbeat.
 func NewHub(opts ...Option) *Hub {
 	hub := &Hub{
@@ -96,49 +114,88 @@ func NewHub(opts ...Option) *Hub {
 		opt(hub)
 	}
 
-	hub.broadcaster = sse.NewBroadcaster[sse.Event](
-		sse.WithOnDrop(func(sse.Event) { hub.dropped.Add(1) }),
-		sse.WithBufferSize[sse.Event](hub.subscriberBuffer),
+	hub.broadcaster = sse.NewBroadcaster[Published](
+		sse.WithOnDrop(func(Published) { hub.dropped.Add(1) }),
+		sse.WithBufferSize[Published](hub.subscriberBuffer),
 	)
 
 	return hub
 }
 
-// PublishSnapshot broadcasts the full state to all subscribers and records
-// it for replay. Returns the minted event ID.
-func (h *Hub) PublishSnapshot(rows []RepoRow) (string, error) {
-	return h.publish(EventSnapshot, Snapshot{GeneratedAt: time.Now().UTC(), Rows: rows})
+// Rows returns a copy of the latest published rows; nil before the first
+// snapshot.
+func (h *Hub) Rows() []RepoRow {
+	h.rowsMu.RLock()
+	defer h.rowsMu.RUnlock()
+
+	rows := make([]RepoRow, len(h.rows))
+	for i, row := range h.rows {
+		row.Severities = copySeverities(row.Severities)
+		row.WorstSteps = append([]string(nil), row.WorstSteps...)
+		rows[i] = row
+	}
+
+	return rows
 }
 
-// PublishUpdate broadcasts a state diff and records it for replay.
-func (h *Hub) PublishUpdate(changed []RepoRow, removed []string) (string, error) {
-	return h.publish(EventUpdate, Update{GeneratedAt: time.Now().UTC(), Changed: changed, Removed: removed})
+// PublishSnapshot broadcasts the full state and records it for replay.
+func (h *Hub) PublishSnapshot(rows []RepoRow) (string, error) {
+	snapshot := Snapshot{
+		GeneratedAt: time.Now().UTC(),
+		Rows:        rows,
+		Counts:      CountStates(rows),
+		Total:       len(rows),
+	}
+
+	h.setRows(rows)
+
+	return h.publish(EventSnapshot, snapshot, &snapshot, nil)
+}
+
+// PublishUpdate broadcasts an explicit diff and records it for replay. The
+// diff must already describe the transition from the Hub's current rows.
+func (h *Hub) PublishUpdate(added, changed []RepoRow, removed []string) (string, error) {
+	update := Update{
+		GeneratedAt: time.Now().UTC(),
+		Added:       added,
+		Changed:     changed,
+		Removed:     removed,
+	}
+
+	rows := h.Rows()
+	update.Counts = CountStates(rows)
+	update.Total = len(rows)
+
+	return h.publish(EventUpdate, update, nil, &update)
 }
 
 // PublishRefresh is the evidence-refresh entry point (the watch/re-derive
-// loops call it): the first refresh publishes a snapshot, later ones publish
-// only the diff. Nothing is published when nothing changed. Returns whether
-// an event went out.
-func (h *Hub) PublishRefresh(previous, next []RepoRow) (bool, error) {
+// loops call it): it diffs against the Hub's current rows and publishes the
+// smallest event that describes the change — a snapshot when no state has
+// been published yet (or rows are empty), an update otherwise. Nothing is
+// published when nothing changed. Returns whether an event went out.
+func (h *Hub) PublishRefresh(next []RepoRow) (bool, error) {
+	previous := h.Rows()
 	if len(previous) == 0 {
 		_, err := h.PublishSnapshot(next)
 		return len(next) > 0, err
 	}
 
-	changed, removed := DiffRows(previous, next)
-	if len(changed) == 0 && len(removed) == 0 {
+	added, changed, removed := DiffRows(previous, next)
+	if len(added) == 0 && len(changed) == 0 && len(removed) == 0 {
 		return false, nil
 	}
 
-	_, err := h.PublishUpdate(changed, removed)
+	h.setRows(next)
+
+	_, err := h.PublishUpdate(added, changed, removed)
 	return true, err
 }
 
-// Handler serves the SSE stream: replayed events after a Last-Event-ID, the
-// current snapshot (so fresh clients render immediately), then live events
-// with a comment heartbeat. The current callback runs on every connection;
-// it must be safe for concurrent reads.
-func (h *Hub) Handler(current func() []RepoRow) http.Handler {
+// Handler serves the JSON SSE stream: replayed events after a
+// Last-Event-ID, the current snapshot (so fresh clients render
+// immediately), then live events with a comment heartbeat.
+func (h *Hub) Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		stream := sse.NewStream(w, r)
 		defer func() { _ = stream.Close() }()
@@ -149,15 +206,22 @@ func (h *Hub) Handler(current func() []RepoRow) http.Handler {
 			}
 		}
 
-		if rows := current(); rows != nil {
+		if rows := h.Rows(); rows != nil {
+			snapshot := Snapshot{
+				GeneratedAt: time.Now().UTC(),
+				Rows:        rows,
+				Counts:      CountStates(rows),
+				Total:       len(rows),
+			}
+
 			_ = stream.Send(sse.Event{
 				Event: EventSnapshot,
-				Data:  mustMarshal(Snapshot{GeneratedAt: time.Now().UTC(), Rows: rows}),
+				Data:  mustMarshal(snapshot),
 			})
 		}
 
-		subscription := h.broadcaster.Subscribe()
-		defer h.broadcaster.Unsubscribe(subscription)
+		feed, cancel := h.SubscribeFeed()
+		defer cancel()
 
 		go stream.Heartbeat(stream.Context(), h.heartbeat)
 
@@ -165,13 +229,27 @@ func (h *Hub) Handler(current func() []RepoRow) http.Handler {
 			select {
 			case <-stream.Context().Done():
 				return
-			case evt, ok := <-subscription:
-				if !ok || stream.Send(evt) != nil {
+			case published, ok := <-feed:
+				if !ok {
+					return
+				}
+
+				if stream.Send(sse.Event{Event: published.Name, Data: published.Data, ID: sse.NewEventID(published.ID)}) != nil {
 					return
 				}
 			}
 		}
 	})
+}
+
+// SubscribeFeed returns a live typed feed of published events plus a cancel
+// function. Callers must drain the feed or cancel promptly: Shutdown waits
+// for subscriber drain.
+func (h *Hub) SubscribeFeed() (<-chan Published, func()) {
+	feed := h.broadcaster.Subscribe()
+	cancel := sync.OnceFunc(func() { h.broadcaster.Unsubscribe(feed) })
+
+	return feed, cancel
 }
 
 // Dropped counts events lost to full subscriber buffers since Hub creation.
@@ -183,23 +261,61 @@ func (h *Hub) SubscriberCount() int { return h.broadcaster.SubscriberCount() }
 // Shutdown stops broadcasting and waits for subscriber drain or ctx.
 func (h *Hub) Shutdown(ctx context.Context) error { return h.broadcaster.Shutdown(ctx) }
 
-func (h *Hub) publish(eventName string, payload any) (string, error) {
+// CountStates tallies rows per state name (string form), for stat cards and
+// signals.
+func CountStates(rows []RepoRow) map[string]int {
+	counts := make(map[string]int)
+	for _, row := range rows {
+		counts[row.State.String()]++
+	}
+
+	return counts
+}
+
+func (h *Hub) setRows(rows []RepoRow) {
+	h.rowsMu.Lock()
+	defer h.rowsMu.Unlock()
+
+	h.rows = make([]RepoRow, len(rows))
+	for i, row := range rows {
+		row.Severities = copySeverities(row.Severities)
+		row.WorstSteps = append([]string(nil), row.WorstSteps...)
+		h.rows[i] = row
+	}
+}
+
+func (h *Hub) publish(eventName string, payload any, snapshot *Snapshot, update *Update) (string, error) {
 	data, err := json.Marshal(payload, marshalOpts)
 	if err != nil {
 		return "", err
 	}
 
 	id := h.seq.Add(1)
-	event := sse.Event{
-		Event: eventName,
-		Data:  string(data),
-		ID:    sse.NewEventID(strconv.FormatUint(id, 10)),
+	event := Published{
+		Name:     eventName,
+		ID:       strconv.FormatUint(id, 10),
+		Data:     string(data),
+		Snapshot: snapshot,
+		Update:   update,
 	}
 
-	h.store.append(event)
+	h.store.append(sse.Event{Event: eventName, Data: event.Data, ID: sse.NewEventID(event.ID)})
 	h.broadcaster.Broadcast(event)
 
-	return event.ID.Get(), nil
+	return event.ID, nil
+}
+
+func copySeverities(severities map[string]int) map[string]int {
+	if severities == nil {
+		return nil
+	}
+
+	copied := make(map[string]int, len(severities))
+	for severity, count := range severities {
+		copied[severity] = count
+	}
+
+	return copied
 }
 
 func mustMarshal(payload any) string {

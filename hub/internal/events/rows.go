@@ -55,10 +55,11 @@ func RowsFromEvidence(evidence []compliance.RepoEvidence, now time.Time, staleAf
 	return rows
 }
 
-// DiffRows compares consecutive row states: a row is changed when it is new
-// or when any displayed field moved; removed lists repos that disappeared.
-// Unchanged rows are omitted so update payloads stay small.
-func DiffRows(previous, next []RepoRow) (changed []RepoRow, removed []string) {
+// DiffRows compares consecutive row states: added rows are new keys,
+// changed rows existed but moved a displayed field, removed lists repos
+// that disappeared. Unchanged rows are omitted so update payloads stay
+// small.
+func DiffRows(previous, next []RepoRow) (added, changed []RepoRow, removed []string) {
 	previousByKey := make(map[string]RepoRow, len(previous))
 	for _, row := range previous {
 		previousByKey[row.Repo] = row
@@ -73,7 +74,11 @@ func DiffRows(previous, next []RepoRow) (changed []RepoRow, removed []string) {
 			continue
 		}
 
-		changed = append(changed, row)
+		if existed {
+			changed = append(changed, row)
+		} else {
+			added = append(added, row)
+		}
 	}
 
 	for _, row := range previous {
@@ -82,7 +87,7 @@ func DiffRows(previous, next []RepoRow) (changed []RepoRow, removed []string) {
 		}
 	}
 
-	return changed, removed
+	return added, changed, removed
 }
 
 func rowsEqual(a, b RepoRow) bool {
