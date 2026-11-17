@@ -4,9 +4,13 @@ go 1.27
 
 require (
 	charm.land/lipgloss/v2 v2.0.6
+	github.com/a-h/templ v0.3.1100
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/larsartmann/cmdguard/v5 v5.1.0
 	github.com/larsartmann/go-compliance v0.0.0
+	github.com/larsartmann/go-datastar v0.6.2
+	github.com/larsartmann/go-datastar/datastartest v0.6.2
+	github.com/larsartmann/go-datastar/static v0.6.1
 	github.com/larsartmann/go-output v0.38.7
 	github.com/larsartmann/go-output/table v0.38.7
 	github.com/larsartmann/go-sqlitestore v0.1.1
@@ -20,7 +24,6 @@ require (
 	charm.land/fang/v2 v2.0.1 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
-	github.com/a-h/templ v0.3.1100 // indirect
 	github.com/andybalholm/brotli v1.2.7 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -54,9 +57,6 @@ require (
 	github.com/knadh/koanf/v2 v2.4.1 // indirect
 	github.com/larsartmann/go-atomic-write v0.6.2 // indirect
 	github.com/larsartmann/go-branded-id v0.7.1 // indirect
-	github.com/larsartmann/go-datastar v0.6.2 // indirect
-	github.com/larsartmann/go-datastar/datastartest v0.6.2 // indirect
-	github.com/larsartmann/go-datastar/static v0.6.1 // indirect
 	github.com/larsartmann/go-error-family v0.12.0 // indirect
 	github.com/larsartmann/go-ndjson v0.0.1 // indirect
 	github.com/larsartmann/go-output/d2 v0.38.7 // indirect

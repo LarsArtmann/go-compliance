@@ -24,7 +24,7 @@ const DefaultRowsSelector = "#fleet-rows"
 const (
 	heartbeatInterval = 15 * time.Second
 
-	scriptContentType = "text/javascript; charset=utf-8"
+	scriptContentType  = "text/javascript; charset=utf-8"
 	scriptCacheControl = "public, max-age=86400"
 )
 
@@ -120,7 +120,7 @@ func (d *Dashboard) sendPublished(stream *sse.Stream, published events.Published
 
 // sendState writes the signals patch (counts) then the full rows patch.
 func (d *Dashboard) sendState(stream *sse.Stream, rows []events.RepoRow) bool {
-	if !d.sendSignals(stream, rows != nil, events.CountStates(rows), len(rows), time.Now()) {
+	if !d.sendSignals(stream, events.CountStates(rows), len(rows), time.Now()) {
 		return false
 	}
 
@@ -143,7 +143,7 @@ func (d *Dashboard) sendState(stream *sse.Stream, rows []events.RepoRow) bool {
 // patches: appends for added repos, replaces for changed rows, removes for
 // disappeared repos.
 func (d *Dashboard) sendUpdate(stream *sse.Stream, update *events.Update) bool {
-	if !d.sendSignals(stream, false, update.Counts, update.Total, update.GeneratedAt) {
+	if !d.sendSignals(stream, update.Counts, update.Total, update.GeneratedAt) {
 		return false
 	}
 
@@ -180,7 +180,7 @@ func (d *Dashboard) sendUpdate(stream *sse.Stream, update *events.Update) bool {
 	return true
 }
 
-func (d *Dashboard) sendSignals(stream *sse.Stream, includeRows bool, counts map[string]int, total int, generatedAt time.Time) bool {
+func (d *Dashboard) sendSignals(stream *sse.Stream, counts map[string]int, total int, generatedAt time.Time) bool {
 	signals := stateSignals{
 		GeneratedAt: generatedAt.UTC().Format(time.RFC3339),
 		Total:       total,
