@@ -118,9 +118,14 @@ func (d *Dashboard) sendPublished(stream *sse.Stream, published events.Published
 	}
 }
 
-// sendState writes the signals patch (counts) then the full rows patch.
+// sendState writes the signals patch (counts), the stat card strip, then
+// the full rows patch.
 func (d *Dashboard) sendState(stream *sse.Stream, rows []events.RepoRow) bool {
 	if !d.sendSignals(stream, events.CountStates(rows), len(rows), time.Now()) {
+		return false
+	}
+
+	if !d.sendStatCards(stream, rows) {
 		return false
 	}
 
@@ -144,6 +149,10 @@ func (d *Dashboard) sendState(stream *sse.Stream, rows []events.RepoRow) bool {
 // disappeared repos.
 func (d *Dashboard) sendUpdate(stream *sse.Stream, update *events.Update) bool {
 	if !d.sendSignals(stream, update.Counts, update.Total, update.GeneratedAt) {
+		return false
+	}
+
+	if !d.sendStatCards(stream, d.hub.Rows()) {
 		return false
 	}
 
@@ -178,6 +187,19 @@ func (d *Dashboard) sendUpdate(stream *sse.Stream, update *events.Update) bool {
 	}
 
 	return true
+}
+
+// sendStatCards re-renders the stat card strip from the given rows.
+func (d *Dashboard) sendStatCards(stream *sse.Stream, rows []events.RepoRow) bool {
+	patch, err := datastar.ElementsFromTempl(StatCards(events.CountStates(rows), len(rows)),
+		datastar.WithSelector("#"+StatCardsID),
+		datastar.WithMode(datastar.ElementPatchModeInner),
+	)
+	if err != nil {
+		return true
+	}
+
+	return stream.Send(patch.Event()) == nil
 }
 
 func (d *Dashboard) sendSignals(stream *sse.Stream, counts map[string]int, total int, generatedAt time.Time) bool {

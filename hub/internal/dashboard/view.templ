@@ -1,0 +1,91 @@
+package dashboard
+
+import (
+	"github.com/larsartmann/templ-components/datastar"
+	"github.com/larsartmann/templ-components/display"
+	"github.com/larsartmann/templ-components/layout"
+	"github.com/larsartmann/templ-components/utils"
+
+	"github.com/larsartmann/go-compliance/hub/internal/events"
+)
+
+// View renders the full fleet compliance page: Base shell (no HTMX —
+// DataStar owns realtime), stat cards over the state counts, and a
+// LiveRegion whose stream patches the stat strip and the fleet table.
+templ View(model ViewModel) {
+	@layout.Base(layout.PageProps{
+		Title:       model.Title,
+		CSSPath:     "",
+		HTMXVersion: "",
+		HeadContent: headContent(model),
+	}) {
+		@layout.Container(layout.DefaultContainerProps()) {
+			<div class="py-8">
+				@display.PageHeader(display.PageHeaderProps{
+					Title:    model.Title,
+					Subtitle: "Real-time gate compliance across the fleet",
+				})
+				<div id={ StatCardsID } class="mt-6">
+					@StatCards(events.CountStates(model.Rows), len(model.Rows))
+				</div>
+				<div class="mt-6">
+					@datastar.LiveRegion(datastar.LiveRegionProps{
+						BaseProps: utils.BaseProps{ID: FleetRegionID},
+						URL:       model.StreamURL,
+						AutoStart: true,
+						Live:      datastar.LivePolite,
+						// A hub restart ends the SSE stream with a clean EOF;
+						// RetryAlways reconnects across restarts (the failure
+						// counter resets on every successful connect).
+						Retry: datastar.RetryAlways,
+					}) {
+						@fleetTable(model.Rows)
+					}
+				</div>
+			</div>
+		}
+	}
+}
+
+// headContent loads the DataStar SDK (self-hosted when ScriptSrc is set)
+// and Tailwind via the Play CDN — no build step until compiled CSS lands.
+templ headContent(model ViewModel) {
+	if model.ScriptSrc != "" {
+		@datastar.SDKScript(datastar.SDKScriptProps{
+			BaseProps: utils.BaseProps{},
+			Src:       model.ScriptSrc,
+		})
+	} else {
+		@datastar.SDKScript(datastar.SDKScriptProps{BaseProps: utils.BaseProps{}})
+	}
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = { darkMode: 'class' }
+	</script>
+}
+
+// fleetTable renders the fleet table with the patchable tbody: the stream
+// targets the BodyID region (inner mode) and individual rows via their
+// data-repo selectors.
+templ fleetTable(rows []events.RepoRow) {
+	@display.Table(display.TableProps{
+		Headers:     []string{"Repo", "State", "Findings", "Last run"},
+		Striped:     true,
+		Hover:       true,
+		CellPadding: display.TableCellPaddingCompact,
+		LazyRows:    true,
+		BodyID:      DefaultRowsSelector[1:],
+		Body:        fleetRowsBody(rows),
+	})
+}
+
+templ fleetRowsBody(rows []events.RepoRow) {
+	@FleetRows(rows)
+	if len(rows) == 0 {
+		<tr>
+			<td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">
+				No compliance evidence yet — waiting for the first refresh.
+			</td>
+		</tr>
+	}
+}

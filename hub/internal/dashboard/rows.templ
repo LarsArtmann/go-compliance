@@ -3,12 +3,15 @@ package dashboard
 import (
 	"fmt"
 
+	"github.com/larsartmann/templ-components/display"
+
+	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
 
-// FleetRows renders the tbody content for a set of rows. It is patched into
-// the rows region (inner mode) on snapshots and appended to (append mode)
-// when refreshes add repos.
+// FleetRows renders the table body content for a set of rows. It is patched
+// into the rows region (inner mode) on snapshots and appended to (append
+// mode) when refreshes add repos.
 templ FleetRows(rows []events.RepoRow) {
 	for _, row := range rows {
 		@FleetRow(row)
@@ -20,9 +23,58 @@ templ FleetRows(rows []events.RepoRow) {
 // remove it.
 templ FleetRow(row events.RepoRow) {
 	<tr data-repo={ row.Repo }>
-		<td>{ row.Repo }</td>
-		<td>{ string(row.State) }</td>
-		<td>{ fmt.Sprintf("%d", row.Findings) }</td>
-		<td>{ row.LastRunAt.UTC().Format("2006-01-02 15:04") }</td>
+		<td class="font-medium">{ row.Repo }</td>
+		<td>@StateBadge(row.State)</td>
+		<td>@severityCells(row.Severities)</td>
+		<td>
+			@display.RelativeTime(display.RelativeTimeProps{
+				Time:      row.LastRunAt,
+				EmptyText: "never",
+			})
+			if len(row.WorstSteps) > 0 {
+				<details class="mt-1 text-xs">
+					<summary class="cursor-pointer select-none text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+						{ fmt.Sprintf("%d worst step(s)", len(row.WorstSteps)) }
+					</summary>
+					<ul class="mt-1 list-inside list-disc space-y-0.5 text-left">
+						for _, step := range row.WorstSteps {
+							<li>{ step }</li>
+						}
+					</ul>
+				</details>
+			}
+		</td>
 	</tr>
+}
+
+// StateBadge maps a compliance state onto its semantic badge.
+templ StateBadge(state compliance.State) {
+	{{ badgeType := display.BadgeNeutral }}
+	{{ switch state {
+	case compliance.StateFailing:
+		badgeType = display.BadgeError
+	case compliance.StateStale:
+		badgeType = display.BadgeWarning
+	case compliance.StateCompliant:
+		badgeType = display.BadgeSuccess
+	} }}
+	@display.Badge(display.BadgeProps{
+		Text: state.String(),
+		Type: badgeType,
+		Dot:  true,
+	})
+}
+
+// severityCells renders the latest run's severity counts inline: errors
+// red, warnings amber, the rest muted. Absent severities stay absent.
+templ severityCells(severities map[string]int) {
+	if len(severities) == 0 {
+		<span class="text-gray-400">—</span>
+	}
+	for severity, count := range severities {
+		{{ tone := severityTone(severity) }}
+		<span class={ fmt.Sprintf("mr-2 font-mono text-xs %s", tone) }>
+			{ fmt.Sprintf("%s %d", severityLabel(severity), count) }
+		</span>
+	}
 }
