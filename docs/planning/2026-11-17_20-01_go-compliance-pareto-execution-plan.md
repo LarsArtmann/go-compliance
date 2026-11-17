@@ -271,8 +271,8 @@ minutes. Full table also machine-harvestable into TODO_LIST.md.
 | F108 | Debounce + coalesce events                                                           | M27 | 20 | 12 |
 | F109 | E2E: evidence change → browser event                                                 | M27 | 20 | 12 |
 
-**Counts:** 109 fine tasks · Tier 1: 17 · Tier 4: 22 · Tier 20: 38 · Tier
-100: 27 · today: 5 · Σ ≈ 19 h. Medium: 27 tasks · Σ ≈ 26.5 h.
+**Counts:** 109 fine tasks · Tier 1: 17 · Tier 4: 22 · Tier 20: 35 · Tier
+100: 30 · today: 5 · Σ ≈ 21 h. Medium: 27 tasks · Σ ≈ 30.5 h.
 
 ## Execution rules
 
