@@ -44,7 +44,7 @@ var _ = Describe("rows projection", func() {
 			Failures:          1,
 			GateFindings:      map[string]int{"build": 2, "lint": 3},
 			FindingSeverities: map[string]int{"error": 2, "warning": 3},
-			WorstSteps:        []compliance.StepEvidence{{Name: "lint"}, {Name: "build"}},
+			WorstSteps:        []compliance.StepEvidence{{Step: "lint"}, {Step: "build"}},
 			LastRunVerdict:    compliance.VerdictFailed,
 		}
 
@@ -116,14 +116,14 @@ var _ = Describe("events hub endpoint", func() {
 			published <- err
 		}()
 
-		received := ssetest.CollectN(GinkgoT(), handler, 2, ssetest.WithPath("/events"))
+		received := ssetest.CollectN(GinkgoTB(), handler, 2, ssetest.WithPath("/events"))
 		Expect(<-published).NotTo(HaveOccurred())
 
-		ssetest.RequireEventCount(GinkgoT(), received, 2)
-		ssetest.RequireEventType(GinkgoT(), received[0], events.EventSnapshot)
-		ssetest.RequireDataContains(GinkgoT(), received[0], `"repo":"fleet"`)
-		ssetest.RequireEventType(GinkgoT(), received[1], events.EventSnapshot)
-		ssetest.RequireDataContains(GinkgoT(), received[1], `"state":"failing"`)
+		ssetest.RequireEventCount(GinkgoTB(), received, 2)
+		ssetest.RequireEventType(GinkgoTB(), received[0], events.EventSnapshot)
+		ssetest.RequireDataContains(GinkgoTB(), received[0], `"repo":"fleet"`)
+		ssetest.RequireEventType(GinkgoTB(), received[1], events.EventSnapshot)
+		ssetest.RequireDataContains(GinkgoTB(), received[1], `"state":"failing"`)
 	})
 
 	It("replays missed events after a Last-Event-ID before live state", func() {
@@ -135,14 +135,14 @@ var _ = Describe("events hub endpoint", func() {
 
 		handler := hub.Handler(func() []events.RepoRow { return nil })
 
-		received := ssetest.CollectN(GinkgoT(), handler, 1,
+		received := ssetest.CollectN(GinkgoTB(), handler, 1,
 			ssetest.WithPath("/events"),
 			ssetest.WithLastEventID(sse.NewEventID(first)),
 		)
 
 		Expect(received[0].ID).NotTo(Equal(first))
-		ssetest.RequireEventType(GinkgoT(), received[0], events.EventSnapshot)
-		ssetest.RequireDataContains(GinkgoT(), received[0], `"state":"failing"`)
+		ssetest.RequireEventType(GinkgoTB(), received[0], events.EventSnapshot)
+		ssetest.RequireDataContains(GinkgoTB(), received[0], `"state":"failing"`)
 	})
 
 	It("publishes diffs only when refreshes change displayed state", func() {

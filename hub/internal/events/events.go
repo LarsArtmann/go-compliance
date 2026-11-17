@@ -83,6 +83,8 @@ func WithHeartbeat(interval time.Duration) Option {
 	}
 }
 
+var marshalOpts = json.Deterministic(true)
+
 // NewHub returns a Hub with fleet-default replay, buffering, and heartbeat.
 func NewHub(opts ...Option) *Hub {
 	hub := &Hub{
@@ -96,7 +98,7 @@ func NewHub(opts ...Option) *Hub {
 
 	hub.broadcaster = sse.NewBroadcaster[sse.Event](
 		sse.WithOnDrop(func(sse.Event) { hub.dropped.Add(1) }),
-		sse.WithBufferSize(hub.subscriberBuffer),
+		sse.WithBufferSize[sse.Event](hub.subscriberBuffer),
 	)
 
 	return hub
@@ -182,7 +184,7 @@ func (h *Hub) SubscriberCount() int { return h.broadcaster.SubscriberCount() }
 func (h *Hub) Shutdown(ctx context.Context) error { return h.broadcaster.Shutdown(ctx) }
 
 func (h *Hub) publish(eventName string, payload any) (string, error) {
-	data, err := json.MarshalOptions{Deterministic: true}.Marshal(payload)
+	data, err := json.Marshal(payload, marshalOpts)
 	if err != nil {
 		return "", err
 	}
@@ -201,7 +203,7 @@ func (h *Hub) publish(eventName string, payload any) (string, error) {
 }
 
 func mustMarshal(payload any) string {
-	data, err := json.MarshalOptions{Deterministic: true}.Marshal(payload)
+	data, err := json.Marshal(payload, marshalOpts)
 	if err != nil {
 		return "{}"
 	}

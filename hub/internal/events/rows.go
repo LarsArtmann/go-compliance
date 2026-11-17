@@ -36,7 +36,7 @@ func RowsFromEvidence(evidence []compliance.RepoEvidence, now time.Time, staleAf
 
 		steps := make([]string, 0, len(repo.WorstSteps))
 		for _, step := range repo.WorstSteps {
-			steps = append(steps, step.Name)
+			steps = append(steps, step.Step)
 		}
 
 		rows = append(rows, RepoRow{
