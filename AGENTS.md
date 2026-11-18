@@ -92,6 +92,17 @@ process's writes; documented limitation), discovery `/v1/watch` with 30s
 backoff. `/v1/compliance` serves the refresher's snapshot (503 before the
 first successful refresh).
 
+Health surface: the `evidence` readiness check (cli/health.go) gates on
+`hub.Rows() == nil` — `Hub.Rows()` returning nil BEFORE the first publish
+and non-nil for an EMPTY published fleet is a load-bearing contract
+(fixed 2026-11-18 after the gate proved inert; regression-pinned in
+events_test.go + cli/health_internal_test.go). Known gap (TODO_LIST
+High): a hung `QueryEvidence` wedges the refresh loop with health green —
+needs a per-refresh timeout + non-critical freshness check. DI posture:
+samber/do is transitive only (cmdguard v5 + go-health); the hub wires
+manually by recorded decision (STACK.md) — see
+docs/architecture-understanding/2026-11-18_19-39_samber-do-health-architecture.md.
+
 Dashboard patches: rows append/replace/remove by diff
 (`events.DiffRows`); the page-level `rendered X ago` RelativeTime is the
 ONE AutoRefresh carrier (ships the 30s tick script); row cells opt into

@@ -54,6 +54,10 @@
       imports = [ inputs.go-nix-helpers.flakeModules.go-standard ];
 
       go-standard = {
+
+        enableCompletions = true;
+
+        completionStyle = "subcommand";
         pname = "compliance-hub";
         description = "Fleet compliance hub: realtime dashboard over BuildFlow evidence";
         goPkgAttr = "go_1_27";
