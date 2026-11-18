@@ -23,6 +23,16 @@ const (
 	// eventually (the write hook only sees this process's writes), and
 	// staleness itself is time-based state.
 	refreshSafetyNet = 5 * time.Minute
+	// refreshTimeout bounds one QueryEvidence: a hung source wedges a
+	// single refresh (logged, retried on the next trigger), never the
+	// loop and never the safety-net ticker.
+	refreshTimeout = 30 * time.Second
+	// refreshFreshnessWarn is the age of the last successful refresh at
+	// which the refresh-freshness health check degrades to warn. Verdict
+	// g1 (2026-11-18): warn, /readyz stays 200 — a stale view is degraded
+	// truth, not service loss. 10 min = two missed safety-net ticks, i.e.
+	// the derive loop is wedged or the source is dead.
+	refreshFreshnessWarn = 10 * time.Minute
 )
 
 // refresher keeps the served rows live: every trigger (store write,
@@ -49,6 +59,14 @@ type refresher struct {
 	// never answered); guarded atomically because the watch loop and the
 	// refresh loop touch it.
 	discovered atomic.Pointer[[]compliance.RepoName]
+
+	// lastRefreshSuccess is the unix-nano stamp of the last fully
+	// successful Refresh (query AND publish); 0 = never succeeded. The
+	// refresh-freshness health check reads it via LastRefreshSuccess.
+	lastRefreshSuccess atomic.Int64
+
+	// queryTimeout defaults to refreshTimeout; tests shrink it.
+	queryTimeout time.Duration
 }
 
 // newRefresher builds a live refresher over source. window is the
@@ -58,14 +76,15 @@ func newRefresher(
 	window, staleAfter time.Duration, worstSteps int, stepFilter string,
 ) *refresher {
 	return &refresher{
-		hub:        hub,
-		source:     source,
-		staleAfter: staleAfter,
-		worstSteps: worstSteps,
-		stepFilter: stepFilter,
-		window:     window,
-		debounce:   refreshDebounce,
-		trigger:    make(chan struct{}, 1),
+		hub:          hub,
+		source:       source,
+		staleAfter:   staleAfter,
+		worstSteps:   worstSteps,
+		stepFilter:   stepFilter,
+		window:       window,
+		debounce:     refreshDebounce,
+		trigger:      make(chan struct{}, 1),
+		queryTimeout: refreshTimeout,
 	}
 }
 
@@ -87,12 +106,25 @@ func (r *refresher) Evidence() []compliance.RepoEvidence {
 	return nil
 }
 
+// LastRefreshSuccess returns when the last fully successful Refresh ran;
+// zero before the first success.
+func (r *refresher) LastRefreshSuccess() time.Time {
+	if nanos := r.lastRefreshSuccess.Load(); nanos != 0 {
+		return time.Unix(0, nanos)
+	}
+
+	return time.Time{}
+}
+
 // Refresh derives and publishes once, synchronously; the initial publish
 // at boot uses it directly.
 func (r *refresher) Refresh(ctx context.Context) error {
 	now := time.Now()
 
-	evidence, err := r.source.QueryEvidence(ctx, now.Add(-r.window), r.worstSteps, r.stepFilter)
+	queryCtx, cancel := context.WithTimeout(ctx, r.queryTimeout)
+	defer cancel()
+
+	evidence, err := r.source.QueryEvidence(queryCtx, now.Add(-r.window), r.worstSteps, r.stepFilter)
 	if err != nil {
 		return err
 	}
@@ -108,6 +140,7 @@ func (r *refresher) Refresh(ctx context.Context) error {
 	}
 
 	r.evidence.Store(&evidence)
+	r.lastRefreshSuccess.Store(time.Now().UnixNano())
 
 	return nil
 }

@@ -62,7 +62,7 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		go refresher.Run(ctx)
 		go runDiscoveryWatch(ctx, discovery.New(discovery.ResolveSocketPath()), refresher)
 
-		probe, err := buildHealthProbe(ctx, Version, hub, cacheDirForDB(flags.DB))
+		probe, err := buildHealthProbe(ctx, Version, hub, refresher, cacheDirForDB(flags.DB))
 		if err != nil {
 			return err
 		}

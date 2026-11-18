@@ -3,7 +3,9 @@ package cli
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/larsartmann/go-health"
 	"github.com/larsartmann/go-health/checks"
@@ -17,18 +19,46 @@ import (
 // (liveness stays pass regardless).
 const evidenceCheckName = "evidence"
 
-// ErrEvidenceNotPublished is the evidence check's failure: the hub booted
-// but has not folded evidence yet (source error or first query pending).
-var ErrEvidenceNotPublished = errors.New("evidence not published yet")
+// refreshFreshnessCheckName is non-critical on purpose (verdict g1,
+// 2026-11-18): a stalled derive loop degrades the served view to stale
+// truth but the process still serves — warn (200), never fail (503).
+const refreshFreshnessCheckName = "refresh-freshness"
+
+var (
+	// ErrEvidenceNotPublished is the evidence check's failure: the hub booted
+	// but has not folded evidence yet (source error or first query pending).
+	ErrEvidenceNotPublished = errors.New("evidence not published yet")
+
+	// ErrRefreshNeverSucceeded is the freshness check's pre-first-success
+	// state; production serve exits before the probe starts when the boot
+	// refresh fails, so it mostly matters for embedders.
+	ErrRefreshNeverSucceeded = errors.New("no refresh has succeeded yet")
+)
 
 // buildHealthProbe wires the hub's health probe: liveness is always pass;
-// readiness/startup gate on published evidence; disk headroom keeps the
+// readiness/startup gate on published evidence; refresh-freshness warns
+// when the derive loop stops making progress; disk headroom keeps the
 // SQLite cache honest.
-func buildHealthProbe(ctx context.Context, version string, hub *events.Hub, cacheDir string) (*health.Probe, error) {
+func buildHealthProbe(
+	ctx context.Context, version string, hub *events.Hub, refresher *refresher, cacheDir string,
+) (*health.Probe, error) {
 	checksByName := map[string]health.CheckFunc{
 		evidenceCheckName: func(_ context.Context) error {
 			if hub.Rows() == nil {
 				return ErrEvidenceNotPublished
+			}
+
+			return nil
+		},
+		refreshFreshnessCheckName: func(_ context.Context) error {
+			last := refresher.LastRefreshSuccess()
+			if last.IsZero() {
+				return ErrRefreshNeverSucceeded
+			}
+
+			if age := time.Since(last); age > refreshFreshnessWarn {
+				return fmt.Errorf("last successful refresh %s ago (warn threshold %s)",
+					age.Round(time.Second), refreshFreshnessWarn)
 			}
 
 			return nil

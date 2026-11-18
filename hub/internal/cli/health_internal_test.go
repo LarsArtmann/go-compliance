@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -15,7 +16,9 @@ var _ = Describe("health probe evidence gate", func() {
 	It("fails readiness until evidence is published, then passes", func() {
 		hub := events.NewHub()
 
-		probe, err := buildHealthProbe(context.Background(), "test", hub, "")
+		refresher := newRefresher(hub, nil, time.Hour, 24*time.Hour, 3, "")
+
+		probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, "")
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(probe.Shutdown)
 
@@ -29,5 +32,51 @@ var _ = Describe("health probe evidence gate", func() {
 
 		after := probe.Evaluate(context.Background())
 		Expect(after.Checks[evidenceCheckName].Status).To(Equal(health.StatusPass))
+	})
+})
+
+var _ = Describe("health probe refresh-freshness check", func() {
+	// An empty published fleet satisfies the evidence gate (verdict g2);
+	// the freshness specs below then control lastRefreshSuccess directly.
+	booted := func(refresher *refresher) *health.Probe {
+		hub := events.NewHub()
+		_, err := hub.PublishSnapshot(nil)
+		Expect(err).NotTo(HaveOccurred())
+
+		probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, "")
+		Expect(err).NotTo(HaveOccurred())
+		DeferCleanup(probe.Shutdown)
+
+		return probe
+	}
+
+	It("warns — never fails — while no refresh has succeeded, then passes on a fresh success", func() {
+		refresher := newRefresher(nil, nil, time.Hour, 24*time.Hour, 3, "")
+		probe := booted(refresher)
+
+		before := probe.Evaluate(context.Background())
+		Expect(before.Checks[refreshFreshnessCheckName].Status).To(Equal(health.StatusWarn))
+		Expect(before.Checks[refreshFreshnessCheckName].Error).
+			To(ContainSubstring(ErrRefreshNeverSucceeded.Error()))
+		Expect(before.Status).To(Equal(health.StatusWarn),
+			"freshness is non-critical: it must degrade readiness to warn, not fail it")
+
+		refresher.lastRefreshSuccess.Store(time.Now().UnixNano())
+
+		after := probe.Evaluate(context.Background())
+		Expect(after.Checks[refreshFreshnessCheckName].Status).To(Equal(health.StatusPass))
+		Expect(after.Status).To(Equal(health.StatusPass))
+	})
+
+	It("warns with the stale age once the last success exceeds the threshold", func() {
+		refresher := newRefresher(nil, nil, time.Hour, 24*time.Hour, 3, "")
+		refresher.lastRefreshSuccess.Store(time.Now().Add(-refreshFreshnessWarn - time.Minute).UnixNano())
+		probe := booted(refresher)
+
+		evaluated := probe.Evaluate(context.Background())
+		Expect(evaluated.Checks[refreshFreshnessCheckName].Status).To(Equal(health.StatusWarn))
+		Expect(evaluated.Checks[refreshFreshnessCheckName].Error).
+			To(ContainSubstring("last successful refresh"))
+		Expect(evaluated.Status).To(Equal(health.StatusWarn))
 	})
 })
