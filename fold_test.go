@@ -9,16 +9,20 @@ import (
 	"github.com/larsartmann/go-compliance"
 )
 
+// Package-scope fixtures: DescribeTable entry arguments and shared Its
+// evaluate at tree construction, before any BeforeEach would run.
+var (
+	foldNow        = time.Date(2026, 11, 17, 20, 0, 0, 0, time.UTC)
+	foldQuietRepo  = compliance.NewRepoName("quiet")
+	foldActiveRepo = compliance.NewRepoName("active")
+)
+
 var _ = Describe("FoldEvidence", func() {
-	now := time.Date(2026, 11, 17, 20, 0, 0, 0, time.UTC)
-
-	quietRepo := compliance.RepoName(compliance.NewRepoName("quiet"))
-	activeRepo := compliance.NewRepoName("active")
-
 	It("keeps repositories that never dropped evidence for being quiet", func() {
+		now := foldNow
 		evidence := compliance.FoldEvidence(compliance.FoldInput{
 			LatestRuns: []compliance.LatestRun{{
-				Repo: quietRepo, LastRunAt: now.Add(-30 * 24 * time.Hour),
+				Repo: foldQuietRepo, LastRunAt: now.Add(-30 * 24 * time.Hour),
 				HasVerdict: true, Version: "v1",
 			}},
 		})
@@ -33,12 +37,13 @@ var _ = Describe("FoldEvidence", func() {
 	})
 
 	It("unions window health with all-history latest runs", func() {
+		now := foldNow
 		evidence := compliance.FoldEvidence(compliance.FoldInput{
 			WindowHealth: []compliance.WindowHealth{{
-				Repo: activeRepo, Runs: 9, StepRows: 40, Failures: 2, FailRate: 0.05,
+				Repo: foldActiveRepo, Runs: 9, StepRows: 40, Failures: 2, FailRate: 0.05,
 			}},
 			LatestRuns: []compliance.LatestRun{{
-				Repo: activeRepo, RepoHash: "abc", LastRunAt: now.Add(-time.Hour),
+				Repo: foldActiveRepo, RepoHash: "abc", LastRunAt: now.Add(-time.Hour),
 				AnyFailed: true, HasVerdict: true, Version: "v2",
 			}},
 		})
@@ -80,8 +85,8 @@ var _ = Describe("FoldEvidence", func() {
 		DescribeTable("cap and default",
 			func(limit int, expected int) {
 				evidence := compliance.FoldEvidence(compliance.FoldInput{
-					WindowHealth:   []compliance.WindowHealth{{Repo: activeRepo, Runs: 1}},
-					WorstSteps:     []compliance.RepoSteps{steps(activeRepo, 5)},
+					WindowHealth:   []compliance.WindowHealth{{Repo: foldActiveRepo, Runs: 1}},
+					WorstSteps:     []compliance.RepoSteps{steps(foldActiveRepo, 5)},
 					WorstStepLimit: limit,
 				})
 				Expect(evidence[0].WorstSteps).To(HaveLen(expected))
@@ -95,8 +100,8 @@ var _ = Describe("FoldEvidence", func() {
 
 		It("truncates from the worst end (source order preserved)", func() {
 			evidence := compliance.FoldEvidence(compliance.FoldInput{
-				WindowHealth: []compliance.WindowHealth{{Repo: activeRepo, Runs: 1}},
-				WorstSteps:   []compliance.RepoSteps{steps(activeRepo, 5)},
+				WindowHealth: []compliance.WindowHealth{{Repo: foldActiveRepo, Runs: 1}},
+				WorstSteps:   []compliance.RepoSteps{steps(foldActiveRepo, 5)},
 			})
 			Expect(evidence[0].WorstSteps[0].Step).To(Equal("a"))
 			Expect(evidence[0].WorstSteps[2].Step).To(Equal("c"))
@@ -115,8 +120,8 @@ var _ = Describe("FoldEvidence", func() {
 
 		It("attaches versions to already-materialized repositories", func() {
 			evidence := compliance.FoldEvidence(compliance.FoldInput{
-				LatestRuns: []compliance.LatestRun{{Repo: quietRepo, LastRunAt: now, HasVerdict: true}},
-				Versions:   []compliance.RepoVersions{{Repo: quietRepo, Versions: []string{"v1", "v2"}}},
+				LatestRuns: []compliance.LatestRun{{Repo: foldQuietRepo, LastRunAt: foldNow, HasVerdict: true}},
+				Versions:   []compliance.RepoVersions{{Repo: foldQuietRepo, Versions: []string{"v1", "v2"}}},
 			})
 			Expect(evidence).To(HaveLen(1))
 			Expect(evidence[0].Versions).To(Equal([]string{"v1", "v2"}))
@@ -124,9 +129,9 @@ var _ = Describe("FoldEvidence", func() {
 
 		It("skips empty findings and severity attachments", func() {
 			evidence := compliance.FoldEvidence(compliance.FoldInput{
-				WindowHealth:      []compliance.WindowHealth{{Repo: activeRepo, Runs: 1}},
-				GateFindings:      []compliance.RepoFindings{{Repo: activeRepo, Findings: map[string]int{}}},
-				FindingSeverities: []compliance.RepoSeverities{{Repo: activeRepo, Severities: map[string]int{}}},
+				WindowHealth:      []compliance.WindowHealth{{Repo: foldActiveRepo, Runs: 1}},
+				GateFindings:      []compliance.RepoFindings{{Repo: foldActiveRepo, Findings: map[string]int{}}},
+				FindingSeverities: []compliance.RepoSeverities{{Repo: foldActiveRepo, Severities: map[string]int{}}},
 			})
 			Expect(evidence[0].GateFindings).To(BeNil())
 			Expect(evidence[0].FindingSeverities).To(BeNil())
@@ -134,9 +139,9 @@ var _ = Describe("FoldEvidence", func() {
 
 		It("attaches non-empty findings and severities", func() {
 			evidence := compliance.FoldEvidence(compliance.FoldInput{
-				WindowHealth:      []compliance.WindowHealth{{Repo: activeRepo, Runs: 1}},
-				GateFindings:      []compliance.RepoFindings{{Repo: activeRepo, Findings: map[string]int{"lint": 3}}},
-				FindingSeverities: []compliance.RepoSeverities{{Repo: activeRepo, Severities: map[string]int{"error": 1}}},
+				WindowHealth:      []compliance.WindowHealth{{Repo: foldActiveRepo, Runs: 1}},
+				GateFindings:      []compliance.RepoFindings{{Repo: foldActiveRepo, Findings: map[string]int{"lint": 3}}},
+				FindingSeverities: []compliance.RepoSeverities{{Repo: foldActiveRepo, Severities: map[string]int{"error": 1}}},
 			})
 			Expect(evidence[0].GateFindings).To(Equal(map[string]int{"lint": 3}))
 			Expect(evidence[0].FindingSeverities).To(Equal(map[string]int{"error": 1}))

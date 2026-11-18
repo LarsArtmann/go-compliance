@@ -37,7 +37,9 @@ var _ = Describe("Error", func() {
 
 	DescribeTable("error families",
 		func(err error, family errorfamily.Family) {
-			Expect(err.(*compliance.Error).ErrorFamily()).To(Equal(family))
+			typed, ok := errors.AsType[*compliance.Error](err)
+			Expect(ok).To(BeTrue())
+			Expect(typed.ErrorFamily()).To(Equal(family))
 			Expect(errorfamily.Classify(err)).To(Equal(family))
 		},
 		Entry("validation is rejection", compliance.NewValidationError("x"), errorfamily.Rejection),
@@ -49,7 +51,9 @@ var _ = Describe("Error", func() {
 
 	DescribeTable("error codes",
 		func(err error, code string) {
-			Expect(err.(*compliance.Error).ErrorCode()).To(Equal(code))
+			typed, ok := errors.AsType[*compliance.Error](err)
+			Expect(ok).To(BeTrue())
+			Expect(typed.ErrorCode()).To(Equal(code))
 		},
 		Entry("validation", compliance.NewValidationError("x"), "compliance.validation"),
 		Entry("io", compliance.NewIOError(nil, "x"), "compliance.io"),

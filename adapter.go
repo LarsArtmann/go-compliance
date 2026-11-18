@@ -201,8 +201,8 @@ func (s *CommandSource) WithTimeout(timeout time.Duration) *CommandSource {
 }
 
 // WithMaxOutput overrides the bounded-read limit.
-func (s *CommandSource) WithMaxOutput(max int64) *CommandSource {
-	s.maxOutput = max
+func (s *CommandSource) WithMaxOutput(limit int64) *CommandSource {
+	s.maxOutput = limit
 
 	return s
 }
@@ -222,7 +222,11 @@ func (s *CommandSource) QueryEvidence(
 		defer cancel()
 	}
 
-	args := make([]string, len(s.args), len(s.args)+6)
+	// Headroom for the query flags appended below: --since, --worst-steps,
+	// and --step each contribute a name and a value.
+	const maxQueryFlagArgs = 6
+
+	args := make([]string, len(s.args), len(s.args)+maxQueryFlagArgs)
 	copy(args, s.args)
 
 	if !since.IsZero() {

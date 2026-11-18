@@ -9,29 +9,34 @@ import (
 	"github.com/larsartmann/go-compliance"
 )
 
-var _ = Describe("BuildV1Report", func() {
-	now := time.Date(2026, 11, 17, 20, 0, 0, 0, time.UTC)
-	since := now.Add(-7 * 24 * time.Hour)
-	staleAfter := 14 * 24 * time.Hour
+// Package-scope fixtures: DescribeTable entry arguments evaluate at tree
+// construction, before any BeforeEach would run.
+var (
+	v1Now        = time.Date(2026, 11, 17, 20, 0, 0, 0, time.UTC)
+	v1Since      = v1Now.Add(-7 * 24 * time.Hour)
+	v1StaleAfter = 14 * 24 * time.Hour
 
-	failing := compliance.RepoEvidence{
+	v1Failing = compliance.RepoEvidence{
 		Repo: compliance.NewRepoName("failing-repo"), Runs: 10, StepRows: 40, Failures: 3,
-		FailRate: 0.3, LastRunAt: now.Add(-1 * time.Hour), LastRunVerdict: compliance.VerdictFailed,
+		FailRate: 0.3, LastRunAt: v1Now.Add(-1 * time.Hour), LastRunVerdict: compliance.VerdictFailed,
 		GateFindings: map[string]int{"samber-linter": 4}, Versions: []string{"v1.2.3"},
 		WorstSteps: []compliance.StepEvidence{{Step: "go-test", Failures: 2, TotalRuns: 10, FailRate: 0.2}},
 	}
-	stale := compliance.RepoEvidence{
-		Repo: compliance.NewRepoName("stale-repo"), Runs: 2, LastRunAt: now.Add(-20 * 24 * time.Hour),
+	v1Stale = compliance.RepoEvidence{
+		Repo: compliance.NewRepoName("stale-repo"), Runs: 2, LastRunAt: v1Now.Add(-20 * 24 * time.Hour),
 		LastRunVerdict: compliance.VerdictPassed,
 	}
-	fresh := compliance.RepoEvidence{
-		Repo: compliance.NewRepoName("fresh-repo"), Runs: 5, LastRunAt: now.Add(-2 * time.Hour),
+	v1Fresh = compliance.RepoEvidence{
+		Repo: compliance.NewRepoName("fresh-repo"), Runs: 5, LastRunAt: v1Now.Add(-2 * time.Hour),
 		LastRunVerdict: compliance.VerdictPassed, GateFindings: map[string]int{}, Versions: []string{},
 	}
+)
+
+var _ = Describe("BuildV1Report", func() {
 
 	It("derives states and normalizes nil maps and slices", func() {
 		report := compliance.BuildV1Report(
-			[]compliance.RepoEvidence{fresh, failing, stale}, since, staleAfter, "v0.1.0", now)
+			[]compliance.RepoEvidence{v1Fresh, v1Failing, v1Stale}, v1Since, v1StaleAfter, "v0.1.0", v1Now)
 
 		Expect(report.SchemaVersion).To(Equal(1))
 		Expect(report.GeneratedAt).To(Equal("2026-11-17T20:00:00Z"))
@@ -50,7 +55,7 @@ var _ = Describe("BuildV1Report", func() {
 
 		By("normalizing nil maps and slices to {} and []")
 		emptyRow := compliance.BuildV1Report(
-			[]compliance.RepoEvidence{{Repo: compliance.NewRepoName("bare"), Runs: 1}}, since, staleAfter, "", now)
+			[]compliance.RepoEvidence{{Repo: compliance.NewRepoName("bare"), Runs: 1}}, v1Since, v1StaleAfter, "", v1Now)
 		encoded, err := compliance.MarshalV1(emptyRow)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(string(encoded)).To(ContainSubstring(`"gate_findings":{}`))
@@ -59,17 +64,17 @@ var _ = Describe("BuildV1Report", func() {
 	})
 
 	It("normalizes an empty fleet to an empty repos array", func() {
-		report := compliance.BuildV1Report(nil, since, staleAfter, "v", now)
+		report := compliance.BuildV1Report(nil, v1Since, v1StaleAfter, "v", v1Now)
 		Expect(report.Repos).To(Equal([]compliance.V1Repo{}))
 	})
 
 	It("pins the exact wire shape, key names, and key order", func() {
 		report := compliance.BuildV1Report(
 			[]compliance.RepoEvidence{{
-				Repo: compliance.NewRepoName("shape"), Runs: 1, LastRunAt: now,
+				Repo: compliance.NewRepoName("shape"), Runs: 1, LastRunAt: v1Now,
 				WorstSteps: []compliance.StepEvidence{{Step: "s", Failures: 1, TotalRuns: 2, FailRate: 0.5}},
 			}},
-			since, staleAfter, "1.2.3", now)
+			v1Since, v1StaleAfter, "1.2.3", v1Now)
 
 		encoded, err := compliance.MarshalV1(report)
 		Expect(err).NotTo(HaveOccurred())
@@ -101,7 +106,7 @@ var _ = Describe("BuildV1Report", func() {
 	})
 
 	It("emits keys in the frozen declaration order", func() {
-		encoded, err := compliance.MarshalV1(compliance.BuildV1Report(nil, since, staleAfter, "v", now))
+		encoded, err := compliance.MarshalV1(compliance.BuildV1Report(nil, v1Since, v1StaleAfter, "v", v1Now))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(string(encoded)).To(HavePrefix(
 			`{"schema_version":1,"generated_at":`))
@@ -109,10 +114,10 @@ var _ = Describe("BuildV1Report", func() {
 
 	It("sorts ties by failures desc then name", func() {
 		report := compliance.BuildV1Report([]compliance.RepoEvidence{
-			{Repo: compliance.NewRepoName("b"), Failures: 1, Runs: 1, LastRunAt: now},
-			{Repo: compliance.NewRepoName("a"), Failures: 5, Runs: 1, LastRunAt: now},
-			{Repo: compliance.NewRepoName("c"), Failures: 5, Runs: 1, LastRunAt: now},
-		}, since, staleAfter, "", now)
+			{Repo: compliance.NewRepoName("b"), Failures: 1, Runs: 1, LastRunAt: v1Now},
+			{Repo: compliance.NewRepoName("a"), Failures: 5, Runs: 1, LastRunAt: v1Now},
+			{Repo: compliance.NewRepoName("c"), Failures: 5, Runs: 1, LastRunAt: v1Now},
+		}, v1Since, v1StaleAfter, "", v1Now)
 
 		names := []string{report.Repos[0].Repo, report.Repos[1].Repo, report.Repos[2].Repo}
 		Expect(names).To(Equal([]string{"a", "c", "b"}))
@@ -120,16 +125,16 @@ var _ = Describe("BuildV1Report", func() {
 })
 
 var _ = Describe("MarshalV1 and DecodeV1Report", func() {
-	now := time.Date(2026, 11, 17, 20, 0, 0, 0, time.UTC)
+	v1Now := time.Date(2026, 11, 17, 20, 0, 0, 0, time.UTC)
 
 	build := func() compliance.V1Report {
 		return compliance.BuildV1Report([]compliance.RepoEvidence{{
 			Repo: compliance.NewRepoName("round-trip"), Runs: 3, Failures: 1,
-			LastRunAt: now, LastRunVerdict: compliance.VerdictFailed,
+			LastRunAt: v1Now, LastRunVerdict: compliance.VerdictFailed,
 			GateFindings: map[string]int{"z-step": 1, "a-step": 2},
 			Versions:     []string{"v9"},
 			WorstSteps:   []compliance.StepEvidence{{Step: "x", Failures: 1, TotalRuns: 1, FailRate: 1}},
-		}}, now.Add(-168*time.Hour), 336*time.Hour, "v0", now)
+		}}, v1Now.Add(-168*time.Hour), 336*time.Hour, "v0", v1Now)
 	}
 
 	It("round-trips losslessly through the wire format", func() {
@@ -152,12 +157,12 @@ var _ = Describe("MarshalV1 and DecodeV1Report", func() {
 	})
 
 	It("accepts BuildFlow-style second-precision timestamps", func() {
-		encoded, err := compliance.MarshalV1(compliance.BuildV1Report(nil, now, time.Hour, "v", now))
+		encoded, err := compliance.MarshalV1(compliance.BuildV1Report(nil, v1Now, time.Hour, "v", v1Now))
 		Expect(err).NotTo(HaveOccurred())
 
 		decoded, err := compliance.DecodeV1Report(encoded)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(compliance.ParseWireTime(decoded.GeneratedAt)).To(Equal(now))
+		Expect(compliance.ParseWireTime(decoded.GeneratedAt)).To(Equal(v1Now))
 	})
 
 	It("rejects schema_version 2 like the overview consumer", func() {

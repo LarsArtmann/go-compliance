@@ -9,45 +9,49 @@ import (
 	"github.com/larsartmann/go-compliance"
 )
 
-var _ = Describe("DeriveState", func() {
-	now := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+// Package-scope fixtures: DescribeTable entry arguments evaluate at tree
+// construction, before any BeforeEach would run.
+var (
+	stateNow        = time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+	stateFreshRun   = stateNow.Add(-24 * time.Hour)
+	stateAncientRun = stateNow.Add(-30 * 24 * time.Hour)
+)
 
-	freshRun := now.Add(-24 * time.Hour)
-	ancientRun := now.Add(-30 * 24 * time.Hour)
+var _ = Describe("DeriveState", func() {
 
 	DescribeTable("the v1 state model",
 		func(evidence compliance.RepoEvidence, staleAfter time.Duration, expected compliance.State) {
-			Expect(compliance.DeriveState(evidence, now, staleAfter)).To(Equal(expected))
+			Expect(compliance.DeriveState(evidence, stateNow, staleAfter)).To(Equal(expected))
 		},
 		Entry("no evidence at all is never-covered", compliance.RepoEvidence{}, 336*time.Hour, compliance.StateNeverCovered),
 		Entry("never-covered wins over staleness", compliance.RepoEvidence{}, time.Nanosecond, compliance.StateNeverCovered),
 		Entry("any failure in the window is failing",
-			compliance.RepoEvidence{Runs: 5, Failures: 1, LastRunAt: freshRun}, 336*time.Hour, compliance.StateFailing),
+			compliance.RepoEvidence{Runs: 5, Failures: 1, LastRunAt: stateFreshRun}, 336*time.Hour, compliance.StateFailing),
 		Entry("failure wins over staleness",
-			compliance.RepoEvidence{Runs: 5, Failures: 1, LastRunAt: ancientRun}, 336*time.Hour, compliance.StateFailing),
+			compliance.RepoEvidence{Runs: 5, Failures: 1, LastRunAt: stateAncientRun}, 336*time.Hour, compliance.StateFailing),
 		Entry("a quiet-but-once-failed step row still fails",
 			compliance.RepoEvidence{StepRows: 3, Failures: 2}, 336*time.Hour, compliance.StateFailing),
 		Entry("fresh evidence without failures is compliant",
-			compliance.RepoEvidence{Runs: 5, LastRunAt: freshRun}, 336*time.Hour, compliance.StateCompliant),
+			compliance.RepoEvidence{Runs: 5, LastRunAt: stateFreshRun}, 336*time.Hour, compliance.StateCompliant),
 		Entry("a last run older than staleAfter is stale",
-			compliance.RepoEvidence{Runs: 5, LastRunAt: ancientRun}, 14*24*time.Hour, compliance.StateStale),
+			compliance.RepoEvidence{Runs: 5, LastRunAt: stateAncientRun}, 14*24*time.Hour, compliance.StateStale),
 		Entry("a last run exactly staleAfter old stays compliant (strictly older required)",
-			compliance.RepoEvidence{Runs: 5, LastRunAt: now.Add(-336 * time.Hour)}, 336*time.Hour, compliance.StateCompliant),
+			compliance.RepoEvidence{Runs: 5, LastRunAt: stateNow.Add(-336 * time.Hour)}, 336*time.Hour, compliance.StateCompliant),
 		Entry("staleness disabled by staleAfter <= 0 keeps ancient evidence compliant",
-			compliance.RepoEvidence{Runs: 5, LastRunAt: ancientRun}, time.Duration(0), compliance.StateCompliant),
+			compliance.RepoEvidence{Runs: 5, LastRunAt: stateAncientRun}, time.Duration(0), compliance.StateCompliant),
 		Entry("negative staleness disabled keeps ancient evidence compliant",
-			compliance.RepoEvidence{Runs: 5, LastRunAt: ancientRun}, -time.Hour, compliance.StateCompliant),
+			compliance.RepoEvidence{Runs: 5, LastRunAt: stateAncientRun}, -time.Hour, compliance.StateCompliant),
 		Entry("window rows without a last-run recording are compliant",
 			compliance.RepoEvidence{Runs: 2, StepRows: 4}, 336*time.Hour, compliance.StateCompliant),
 		Entry("clock skew (last run in the future) stays compliant",
-			compliance.RepoEvidence{Runs: 1, LastRunAt: now.Add(time.Hour)}, 336*time.Hour, compliance.StateCompliant),
+			compliance.RepoEvidence{Runs: 1, LastRunAt: stateNow.Add(time.Hour)}, 336*time.Hour, compliance.StateCompliant),
 	)
 
 	Describe("precedence", Ordered, func() {
 		It("never-covered only for rows without any evidence", func() {
 			Expect(compliance.RepoEvidence{Runs: 1}.HasEvidence()).To(BeTrue())
 			Expect(compliance.RepoEvidence{StepRows: 1}.HasEvidence()).To(BeTrue())
-			Expect(compliance.RepoEvidence{LastRunAt: freshRun}.HasEvidence()).To(BeTrue())
+			Expect(compliance.RepoEvidence{LastRunAt: stateFreshRun}.HasEvidence()).To(BeTrue())
 			Expect(compliance.RepoEvidence{Failures: 1}.HasEvidence()).To(BeFalse(),
 				"failures alone cannot exist without rows; such a row is still treated as never-covered")
 		})

@@ -69,7 +69,7 @@ var _ = Describe("MemoryStore", func() {
 				compliance.RunResult{})).To(Succeed())
 		}
 
-		names := []string{}
+		names := make([]string, 0, len(store.Evidence()))
 		for _, record := range store.Evidence() {
 			names = append(names, record.Repo.Get())
 		}
@@ -80,15 +80,15 @@ var _ = Describe("MemoryStore", func() {
 		store := compliance.NewMemoryStore()
 
 		var wg sync.WaitGroup
-		for i := range 16 {
+		for range 16 {
 			wg.Add(1)
-			go func(i int) {
+			go func() {
 				defer wg.Done()
 				Expect(compliance.RecordTo(context.Background(), store,
 					compliance.NewRepoName("concurrent"), compliance.RunResult{
-						Verdict: compliance.VerdictPassed,
-					})).To(Succeed())
-			}(i)
+					Verdict: compliance.VerdictPassed,
+				})).To(Succeed())
+			}()
 		}
 		wg.Wait()
 

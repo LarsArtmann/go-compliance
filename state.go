@@ -43,6 +43,8 @@ func (s State) IsValid() bool {
 // Rank returns the triage order of the state: failing sorts first, then
 // stale, then never-covered, then compliant. Unknown states sort last,
 // after compliant. The hub table uses this as the always-primary sort key.
+//
+//nolint:mnd // rank ladder; the case labels carry the meaning
 func (s State) Rank() int {
 	switch s {
 	case StateFailing:

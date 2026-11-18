@@ -71,7 +71,7 @@ func Record(ctx context.Context, repo RepoName, result RunResult) error {
 
 // RecordTo writes one repository's run evidence to an explicit writer.
 func RecordTo(ctx context.Context, writer EvidenceWriter, repo RepoName, result RunResult) error {
-	return writer.WriteEvidence(ctx, repo, result)
+	return writer.WriteEvidence(ctx, repo, result) //nolint:wrapcheck // pure delegation; the writer owns wrapping semantics
 }
 
 // MemoryStore is an in-process EvidenceWriter: the newest result per
@@ -174,7 +174,7 @@ func (s *FileStore) WriteEvidence(ctx context.Context, repo RepoName, result Run
 		return err
 	}
 
-	if err := writeFileAtomic(s.path, encoded, 0o644); err != nil {
+	if err := writeFileAtomic(s.path, encoded, evidenceFilePerm); err != nil {
 		return NewIOError(err, "write evidence file %s", s.path)
 	}
 
@@ -182,6 +182,8 @@ func (s *FileStore) WriteEvidence(ctx context.Context, repo RepoName, result Run
 }
 
 // read loads the document; a missing file yields (nil, nil).
+//
+//nolint:nilnil // (nil, nil) is the documented missing/empty-file contract
 func (s *FileStore) read(_ context.Context) (*V1Report, error) {
 	data, err := os.ReadFile(s.path)
 	if os.IsNotExist(err) {
@@ -310,6 +312,8 @@ func (r RunResult) v1Repo(repo RepoName) V1Repo {
 }
 
 // resolvedCounters fills the zero-valued counters.
+//
+//nolint:nonamedreturns // the names document the heterogeneous 3-tuple
 func (r RunResult) resolvedCounters() (runs, stepRows int64, failRate float64) {
 	runs, stepRows, failRate = r.Runs, r.StepRows, r.FailRate
 	if runs == 0 {
@@ -343,8 +347,16 @@ func orEmptyFindings(findings map[string]int) map[string]int {
 	return findings
 }
 
+const (
+	// evidenceFilePerm: fleet evidence is world-readable data, not secrets.
+	evidenceFilePerm = 0o644
+	lockDirPerm      = 0o755
+)
+
 // writeFileAtomic writes data to a temp file next to path and renames it
 // into place, so readers never observe a torn document.
+//
+//nolint:wrapcheck // callers wrap with NewIOError at the semantic boundary
 func writeFileAtomic(path string, data []byte, perm os.FileMode) error {
 	dir := filepath.Dir(path)
 
@@ -375,12 +387,14 @@ type fileLock struct{ file *os.File }
 
 // acquireFileLock opens (creating) the lock file and takes an exclusive
 // flock, blocking until held.
+//
+//nolint:wrapcheck // callers wrap with NewIOError at the semantic boundary
 func acquireFileLock(path string) (*fileLock, error) {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), lockDirPerm); err != nil {
 		return nil, err
 	}
 
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o644)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, evidenceFilePerm)
 	if err != nil {
 		return nil, err
 	}
@@ -394,6 +408,8 @@ func acquireFileLock(path string) (*fileLock, error) {
 }
 
 // release drops the lock and closes the file.
+//
+//nolint:wrapcheck // callers wrap with NewIOError at the semantic boundary
 func (l *fileLock) release() error {
 	if err := flockRelease(l.file); err != nil {
 		_ = l.file.Close()
