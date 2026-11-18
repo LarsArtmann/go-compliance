@@ -41,6 +41,23 @@
         "type": "github"
       }
     },
+    "go-daemon": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793748425,
+        "narHash": "sha256-VmR5bWKR3YPKkHvrCc4hw8Btq4U1ADoZnBRwyOTi72k=",
+        "owner": "LarsArtmann",
+        "repo": "go-daemon",
+        "rev": "e8e1a1fff5028d1e7fc292d0eeb87f8d65e2cf36",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LarsArtmann",
+        "repo": "go-daemon",
+        "rev": "e8e1a1fff5028d1e7fc292d0eeb87f8d65e2cf36",
+        "type": "github"
+      }
+    },
     "go-nix-helpers": {
       "inputs": {
         "flake-parts": "flake-parts_2",
@@ -53,16 +70,16 @@
       "locked": {
         "lastModified": 1794981719,
         "narHash": "sha256-vgK2OLSINGsL3F/0ykqQVQlbN2s7rcAJEU4SgOj0xsU=",
-        "ref": "master",
+        "owner": "LarsArtmann",
+        "repo": "go-nix-helpers",
         "rev": "a393e23cbcff42c017e0cc769a03f197136983dc",
-        "revCount": 313,
-        "type": "git",
-        "url": "ssh://git@github.com/LarsArtmann/go-nix-helpers"
+        "type": "github"
       },
       "original": {
+        "owner": "LarsArtmann",
         "ref": "master",
-        "type": "git",
-        "url": "ssh://git@github.com/LarsArtmann/go-nix-helpers"
+        "repo": "go-nix-helpers",
+        "type": "github"
       }
     },
     "nix2container": {
@@ -105,6 +122,7 @@
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
+        "go-daemon": "go-daemon",
         "go-nix-helpers": "go-nix-helpers",
         "nixpkgs": "nixpkgs"
       }

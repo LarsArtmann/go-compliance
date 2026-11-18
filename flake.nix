@@ -10,8 +10,15 @@
     };
 
     go-nix-helpers = {
-      url = "git+ssh://git@github.com/LarsArtmann/go-nix-helpers?ref=master";
+      url = "github:LarsArtmann/go-nix-helpers/master";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Private Go dep (flake = false; pinned to the exact commit hub/go.mod
+    # pseudo-versions, so the nix build compiles what go.sum pins).
+    go-daemon = {
+      url = "github:LarsArtmann/go-daemon/e8e1a1fff5028d1e7fc292d0eeb87f8d65e2cf36";
+      flake = false;
     };
   };
 
@@ -21,6 +28,28 @@
       flake-parts,
       ...
     }:
+    let
+      # One map, two consumers (go-standard shell env + the manual package
+      # build below). Sub-modules are auto-discovered; one entry per repo.
+      privateDeps = {
+        "github.com/LarsArtmann/go-daemon" = inputs.go-daemon;
+      };
+
+      # LarsArtmann deps matching the private glob that are PUBLIC
+      # (proxy.golang.org serves them). Base paths cover sub-modules and
+      # /vN suffixes.
+      publicDeps = [
+        "github.com/larsartmann/go-compliance"
+        "github.com/larsartmann/go-branded-id"
+        "github.com/larsartmann/go-error-family"
+        "github.com/larsartmann/cmdguard"
+        "github.com/larsartmann/go-datastar"
+        "github.com/larsartmann/go-output"
+        "github.com/larsartmann/go-sqlitestore"
+        "github.com/larsartmann/go-sse"
+        "github.com/larsartmann/templ-components"
+      ];
+    in
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [ inputs.go-nix-helpers.flakeModules.go-standard ];
 
@@ -29,16 +58,15 @@
         description = "Fleet compliance hub: realtime dashboard over BuildFlow evidence";
         goPkgAttr = "go_1_27";
 
-        # Placeholder until the first `nix build` prints the real hash (F084).
-        vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-
-        # The binary lives in the hub sub-module (own go.mod at ./hub).
-        subPackages = [ "./cmd/compliance-hub" ];
-        extraBuildAttrs = {
-          modRoot = "hub";
-          # go.work spans core + hub; module-mode build of the hub module only.
-          postPatch = "rm -f go.work";
-        };
+        # deps here drives GOPRIVATE auto-injection into devShells (local
+        # `go mod tidy` fetches go-daemon over git). The PACKAGE is built
+        # manually below: go-standard's FOD glue double-cds into modRoot
+        # (hub) when private deps are set — nixpkgs' own phases already cd —
+        # which breaks for sub-module binaries (go-nix-helpers upstream fix
+        # pending). Manual buildGoModule uses the default FOD phases.
+        enableDefaultPackage = false;
+        deps = privateDeps;
+        inherit publicDeps;
 
         # Go formatting keeps a dedicated gate (dprint for md/json/yaml;
         # gofmt via the Go toolchain) — mirrors the bimi-lens decision to
@@ -88,21 +116,77 @@
       perSystem =
         {
           pkgs,
+          lib,
           ...
         }:
-        {
-          # Core module (root, library): compile + test in the sandbox so
-          # `nix flake check` covers BOTH modules, not just the hub binary.
-          checks.core-build = (pkgs.buildGoModule.override { go = pkgs.go_1_27; }) {
+        let
+          version = self.rev or self.dirtyRev or "dev";
+
+          mkPreparedSource = import "${inputs.go-nix-helpers}/mkPreparedSource.nix" {
+            inherit pkgs lib;
+            goPkg = pkgs.go_1_27;
+          };
+
+          # Private-dep injection for the sandboxed build: copies go-daemon
+          # into _local_deps/ and injects replace directives (incl. the hub
+          # sub-module, auto-discovered).
+          preparedSrc = mkPreparedSource {
+            name = "compliance-hub";
+            inherit version;
+            src = self;
+            deps = privateDeps;
+            inherit publicDeps;
+          };
+
+          compliance-hub = (pkgs.buildGoModule.override { go = pkgs.go_1_27; }) {
+            pname = "compliance-hub";
+            inherit version;
+            src = preparedSrc;
+            # go.work spans core + hub; module-mode build of the hub module
+            # (its replace => ../ resolves the core module in-tree).
+            postPatch = "rm -f go.work";
+            modRoot = "hub";
+            subPackages = [ "./cmd/compliance-hub" ];
+            vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+            ldflags = [
+              "-s"
+              "-w"
+            ];
+            meta = {
+              description = "Fleet compliance hub: realtime dashboard over BuildFlow evidence";
+              mainProgram = "compliance-hub";
+              license = lib.licenses.mit;
+              platforms = lib.platforms.unix;
+              maintainers = [
+                {
+                  name = "Lars Artmann";
+                  github = "LarsArtmann";
+                }
+              ];
+            };
+          };
+
+          # Core module (root, library — public deps only): compile + test in
+          # the sandbox so `nix flake check` covers BOTH modules.
+          core-build = (pkgs.buildGoModule.override { go = pkgs.go_1_27; }) {
             pname = "go-compliance-core";
-            version = self.rev or self.dirtyRev or "dev";
+            inherit version;
             src = self;
             postPatch = "rm -f go.work";
-            # Placeholder until the first evaluation prints the real hash.
             vendorHash = "sha256-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=";
-            # Library root package: compiles, installs nothing.
             subPackages = [ "." ];
             doCheck = true;
+          };
+        in
+        {
+          packages = {
+            default = compliance-hub;
+            inherit compliance-hub;
+          };
+
+          checks = {
+            hub-build = compliance-hub;
+            core-build = core-build;
           };
         };
     };
