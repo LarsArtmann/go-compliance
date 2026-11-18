@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "threshold": 1,
+  "recordedAt": "2026-11-18T21:24:13.431263984Z",
+  "entries": [
+    {
+      "hash": "396a5cad18e8e9eb",
+      "files": [
+        "hub/internal/cache/cache.go",
+        "hub/internal/cache/cache.go"
+      ],
+      "tokens": 6
+    },
+    {
+      "hash": "51f711ecfc76370f",
+      "files": [
+        "hub/internal/cli/refresher.go",
+        "hub/internal/cli/refresher.go"
+      ],
+      "tokens": 4
+    },
+    {
+      "hash": "b65e431b15ae0e24",
+      "files": [
+        "state.go",
+        "errors.go"
+      ],
+      "tokens": 4
+    }
+  ]
+}

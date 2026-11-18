@@ -63,6 +63,13 @@ replaces).
   it, but it must sit within 5 lines ABOVE the clone start (function-doc
   distance is too far). Every suppression should be pinned by a directive
   so future audits only ever litigate NEW clones (2026-11-18 audit).
+- CI gate (2026-11-18): `.art-dupl-baseline.json` is committed and
+  `dupl-gate` runs `art-dupl -t 1 --type-aware check --baseline-path
+  .art-dupl-baseline.json .` (tool pinned v0.9.1-0.20261017225421). The
+  baseline ratchets known hashes; only NEW clones fail CI. Accept
+  directives document WHY a clone is intentional; the baseline records
+  THAT it exists. After a deliberate refactor that grows duplication
+  knowingly, regenerating the baseline is a decision, not a fix.
 - Single homes for shared policies: SQL query + IO-error wrap =
   `cache.Store.queryRows` + `wrapIterateErr` (hub/internal/cache); the
   worst-steps defaulting rule = `worstStepLimitOrDefault` (fold.go);

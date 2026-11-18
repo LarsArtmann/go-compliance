@@ -90,4 +90,4 @@ g1 = **warn, stays 200, threshold 10 min** (recommendation adopted; `refreshFres
 
 ---
 
-*Written 2026-11-18 20:02. Auto-commit daemon owns the commit; harness forbids manual commits. Waiting for instructions.*
+_Written 2026-11-18 20:02. Auto-commit daemon owns the commit; harness forbids manual commits. Waiting for instructions._

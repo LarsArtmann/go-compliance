@@ -40,10 +40,14 @@ not yet refined into tasks:
 - templ-components upstream candidate: an attribute-only "tickable"
   RelativeTime mode so consumers stop hand-rolling
   `templ.Attributes{"data-tc-relative": true}` (2026-11-18 final pass).
-- Owner decision pending: acceptance policy for intentional clones —
-  per-site `// art-dupl:accept` directives (current) vs a committed
-  `.art-dupl-baseline.json` + `art-dupl check` gate (mechanical,
-  hash-pinned). The actionable row lives in TODO_LIST.
+- Acceptance policy DECIDED (2026-11-18 execution pass): BOTH mechanisms,
+  layered — per-site `// art-dupl:accept <why>` directives stay the
+  in-source record of intentional clones, AND a committed
+  `.art-dupl-baseline.json` + `art-dupl -t 1 --type-aware check` CI gate
+  (job `dupl-gate`, tool pinned v0.9.1-0.20261017225421-93432fd910fb)
+  ratchets out hash-known groups so only NEW clones can ever surface.
+  Regenerating the baseline is a deliberate act, never a way to silence
+  a review finding.
 
 ## Endgame question (owner, g2 — BLOCKED)
 
