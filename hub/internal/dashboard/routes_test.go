@@ -141,3 +141,68 @@ var _ = Describe("routes and content negotiation", func() {
 		Expect(page.Body.String()).To(ContainSubstring("/compliance/datastar.js"))
 	})
 })
+
+var _ = Describe("?state= filter contract", func() {
+	// One row per state: every filter has positive and negative matches.
+	newFourStateBoard := func() *dashboard.Dashboard {
+		hub := events.NewHub()
+		_, err := hub.PublishSnapshot([]events.RepoRow{
+			{Repo: "ok", State: compliance.StateCompliant, Severities: map[string]int{}},
+			{Repo: "broken", State: compliance.StateFailing, Severities: map[string]int{}},
+			{Repo: "quiet", State: compliance.StateStale, Severities: map[string]int{}},
+			{Repo: "ghost", State: compliance.StateNeverCovered, Severities: map[string]int{}},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		return dashboard.New(hub)
+	}
+
+	filterBody := func(filter string) string {
+		mux := http.NewServeMux()
+		newFourStateBoard().RegisterRoutes(mux)
+
+		recorder := httptest.NewRecorder()
+		mux.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/?state="+filter, nil))
+
+		Expect(recorder.Code).To(Equal(http.StatusOK))
+
+		return recorder.Body.String()
+	}
+
+	expectOnly := func(body, present string) {
+		Expect(body).To(ContainSubstring(`data-repo="`+present+`"`), "expected %s to be rendered", present)
+
+		for _, repo := range []string{"ok", "broken", "quiet", "ghost"} {
+			if repo == present {
+				continue
+			}
+
+			Expect(body).NotTo(ContainSubstring(`data-repo="`+repo+`"`), "%s leaked through state=%s", repo, present)
+		}
+	}
+
+	DescribeTable("accepts every core State constant",
+		func(state compliance.State, present string) {
+			expectOnly(filterBody(string(state)), present)
+		},
+		Entry("compliant", compliance.StateCompliant, "ok"),
+		Entry("failing", compliance.StateFailing, "broken"),
+		Entry("stale", compliance.StateStale, "quiet"),
+		Entry("never-covered", compliance.StateNeverCovered, "ghost"),
+	)
+
+	It("keeps every row for all and for an invalid filter", func() {
+		for _, filter := range []string{"all", "bogus"} {
+			body := filterBody(filter)
+
+			for _, repo := range []string{"ok", "broken", "quiet", "ghost"} {
+				Expect(body).To(ContainSubstring(`data-repo="`+repo+`"`), "%s must survive state=%s", repo, filter)
+			}
+		}
+	})
+
+	It("renders an empty table for the dashboard-only unknown filter", func() {
+		body := filterBody("unknown")
+		Expect(body).NotTo(ContainSubstring(`data-repo="`))
+	})
+})

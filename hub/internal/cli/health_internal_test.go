@@ -2,6 +2,9 @@ package cli
 
 import (
 	"context"
+	"encoding/json/v2"
+	"net/http"
+	"net/http/httptest"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -27,6 +30,60 @@ func booted(refresher *refresher) *health.Probe {
 
 	return probe
 }
+
+var _ = Describe("readiness HTTP contract", func() {
+	It("pins the payload shape over real HTTP: fail is 503, warn stays 200, checks carry the four names", func() {
+		hub := events.NewHub()
+		refresher := newRefresher(hub, nil, time.Hour, 24*time.Hour, 3, "")
+		refresher.lastRefreshSuccess.Store(time.Now().UnixNano())
+		refresher.markDiscoverySuccess()
+
+		probe, err := buildHealthProbe(context.Background(), "contract-test", hub, refresher, "")
+		Expect(err).NotTo(HaveOccurred())
+		DeferCleanup(probe.Shutdown)
+
+		mux := http.NewServeMux()
+		probe.RegisterRoutes(mux, health.DefaultRoutes())
+
+		before := httptest.NewRecorder()
+		mux.ServeHTTP(before, httptest.NewRequest(http.MethodGet, "/readyz", nil))
+		Expect(before.Code).To(Equal(http.StatusServiceUnavailable), "nothing published: the critical evidence gate must fail readiness")
+
+		_, err = hub.PublishSnapshot(nil)
+		Expect(err).NotTo(HaveOccurred())
+		refresher.lastRefreshSuccess.Store(time.Now().Add(-refreshFreshnessWarn - time.Minute).UnixNano())
+
+		var body []byte
+		Eventually(func() int {
+			recorder := httptest.NewRecorder()
+			mux.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/readyz", nil))
+
+			body = recorder.Body.Bytes()
+
+			return recorder.Code
+		}, "2s", "100ms").Should(Equal(http.StatusOK),
+			"warn (stale refresh) must degrade readiness, never fail it")
+
+		var payload struct {
+			Status  string `json:"status"`
+			Version string `json:"version"`
+			Checks  map[string]struct {
+				Status string `json:"status"`
+				Error  string `json:"error,omitempty"`
+			} `json:"checks"`
+		}
+
+		Expect(json.Unmarshal(body, &payload)).To(Succeed())
+		Expect(payload.Status).To(Equal("warn"))
+		Expect(payload.Version).To(Equal("contract-test"))
+		Expect(payload.Checks).To(HaveLen(4), "evidence, refresh-freshness, discovery, sse-backpressure (no cache-disk without a db dir)")
+		Expect(payload.Checks[evidenceCheckName].Status).To(Equal("pass"))
+		Expect(payload.Checks[refreshFreshnessCheckName].Status).To(Equal("warn"))
+		Expect(payload.Checks[refreshFreshnessCheckName].Error).To(ContainSubstring("last successful refresh"))
+		Expect(payload.Checks[discoveryCheckName].Status).To(Equal("pass"))
+		Expect(payload.Checks[sseBackpressureCheckName].Status).To(Equal("pass"))
+	})
+})
 
 var _ = Describe("health probe sse-backpressure check", func() {
 	It("warns on new drops since the last evaluation and clears when they stop", func() {
