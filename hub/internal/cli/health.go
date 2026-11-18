@@ -182,7 +182,15 @@ func checkTransitions() func(health.Response) {
 				log = slog.Warn
 			}
 
-			log("compliance-hub: health check status changed", "check", name, "status", check.Status, "error", check.Error)
+			log(
+				"compliance-hub: health check status changed",
+				"check",
+				name,
+				"status",
+				check.Status,
+				"error",
+				check.Error,
+			)
 		}
 	}
 }

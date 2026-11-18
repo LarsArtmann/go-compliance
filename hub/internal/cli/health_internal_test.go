@@ -42,35 +42,46 @@ var _ = Describe("health check transition logging", func() {
 		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
 		DeferCleanup(func() { slog.SetDefault(previous) })
 
-		hub := events.NewHub()
+		hook := checkTransitions()
 
-		_, unsubscribe := hub.SubscribeFeed()
-		DeferCleanup(unsubscribe)
+		evaluate := func(statuses map[string]health.Status) {
+			checks := map[string]health.Check{}
+			for name, status := range statuses {
+				checks[name] = health.Check{Status: status}
+			}
 
-		refresher := newRefresher(hub, nil, time.Hour, 24*time.Hour, 3, "")
-		refresher.lastRefreshSuccess.Store(time.Now().UnixNano())
-		refresher.markDiscoverySuccess()
-
-		probe, err := buildHealthProbe(context.Background(), "log-test", hub, refresher, "")
-		Expect(err).NotTo(HaveOccurred())
-		DeferCleanup(probe.Shutdown)
-
-		probe.Evaluate(context.Background())
-		initial := strings.Count(buf.String(), "health check status changed")
-		Expect(initial).To(Equal(4), "the boot batch logs all four checks once; got: %s", buf.String())
-
-		row := events.RepoRow{Repo: "flood", State: compliance.StateFailing}
-		for i := 0; i < 200; i++ {
-			_, _ = hub.PublishSnapshot([]events.RepoRow{row})
+			hook(health.Response{Status: health.StatusPass, Checks: checks})
 		}
 
-		probe.Evaluate(context.Background())
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(initial+1),
+		four := map[string]health.Status{
+			evidenceCheckName:         health.StatusPass,
+			refreshFreshnessCheckName: health.StatusPass,
+			discoveryCheckName:        health.StatusPass,
+			sseBackpressureCheckName:  health.StatusPass,
+		}
+
+		evaluate(four)
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(4),
+			"the first batch logs all four checks once; got: %s", buf.String())
+
+		evaluate(four)
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(4),
+			"a stable evaluation must not log")
+
+		flipped := map[string]health.Status{
+			evidenceCheckName:         health.StatusPass,
+			refreshFreshnessCheckName: health.StatusPass,
+			discoveryCheckName:        health.StatusPass,
+			sseBackpressureCheckName:  health.StatusWarn,
+		}
+
+		evaluate(flipped)
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(5),
 			"exactly the sse-backpressure flip may log; got: %s", buf.String())
 		Expect(buf.String()).To(ContainSubstring("check=sse-backpressure"))
 
-		probe.Evaluate(context.Background())
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(initial+1),
+		evaluate(flipped)
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(5),
 			"a stable evaluation must not log")
 	})
 })
@@ -91,7 +102,9 @@ var _ = Describe("readiness HTTP contract", func() {
 
 		before := httptest.NewRecorder()
 		mux.ServeHTTP(before, httptest.NewRequest(http.MethodGet, "/readyz", nil))
-		Expect(before.Code).To(Equal(http.StatusServiceUnavailable), "nothing published: the critical evidence gate must fail readiness")
+		Expect(
+			before.Code,
+		).To(Equal(http.StatusServiceUnavailable), "nothing published: the critical evidence gate must fail readiness")
 
 		_, err = hub.PublishSnapshot(nil)
 		Expect(err).NotTo(HaveOccurred())
@@ -120,7 +133,9 @@ var _ = Describe("readiness HTTP contract", func() {
 		Expect(json.Unmarshal(body, &payload)).To(Succeed())
 		Expect(payload.Status).To(Equal("warn"))
 		Expect(payload.Version).To(Equal("contract-test"))
-		Expect(payload.Checks).To(HaveLen(4), "evidence, refresh-freshness, discovery, sse-backpressure (no cache-disk without a db dir)")
+		Expect(
+			payload.Checks,
+		).To(HaveLen(4), "evidence, refresh-freshness, discovery, sse-backpressure (no cache-disk without a db dir)")
 		Expect(payload.Checks[evidenceCheckName].Status).To(Equal("pass"))
 		Expect(payload.Checks[refreshFreshnessCheckName].Status).To(Equal("warn"))
 		Expect(payload.Checks[refreshFreshnessCheckName].Error).To(ContainSubstring("last successful refresh"))
@@ -148,7 +163,7 @@ var _ = Describe("health probe sse-backpressure check", func() {
 			To(Equal(health.StatusPass))
 
 		row := events.RepoRow{Repo: "backpressure", State: compliance.StateFailing}
-		for i := 0; i < 200; i++ {
+		for range 200 {
 			_, _ = hub.PublishSnapshot([]events.RepoRow{row})
 		}
 
