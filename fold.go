@@ -94,6 +94,16 @@ type FoldInput struct {
 	WorstStepLimit int
 }
 
+// worstStepLimitOrDefault resolves a caller-provided worst-steps cap:
+// zero or negative (unset) falls back to DefaultWorstSteps.
+func worstStepLimitOrDefault(limit int) int {
+	if limit <= 0 {
+		return DefaultWorstSteps
+	}
+
+	return limit
+}
+
 // FoldEvidence folds the evidence parts into per-repo evidence.
 //
 // Repositories are never dropped for being quiet: the union of window
@@ -101,10 +111,7 @@ type FoldInput struct {
 // stale (or never-covered, via discovery) rather than unknown. The output
 // is sorted by repository name - deterministic regardless of input order.
 func FoldEvidence(input FoldInput) []RepoEvidence {
-	limit := input.WorstStepLimit
-	if limit <= 0 {
-		limit = DefaultWorstSteps
-	}
+	limit := worstStepLimitOrDefault(input.WorstStepLimit)
 
 	repos := make(map[RepoName]*RepoEvidence)
 

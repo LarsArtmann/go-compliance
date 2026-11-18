@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
 
@@ -132,14 +133,16 @@ func preferJSON(accept string) bool {
 	return jsonQuality > htmlQuality && jsonQuality >= 0
 }
 
-// validStateFilter accepts the canonical state names plus "all".
+// validStateFilter accepts the canonical state names plus the
+// dashboard-only "all" and "unknown". The four states delegate to the
+// core enum so a newly added state is filterable without touching this
+// check.
 func validStateFilter(filter string) bool {
-	switch filter {
-	case "all", "compliant", "failing", "stale", "never-covered", "unknown":
+	if filter == "all" || filter == "unknown" {
 		return true
-	default:
-		return false
 	}
+
+	return compliance.State(filter).IsValid()
 }
 
 func stateFilterOrAll(filter string) string {

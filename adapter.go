@@ -129,9 +129,7 @@ func (s *FileSource) rememberMiss(miss error) {
 // from the normalized evidence when using the document's own
 // GeneratedAt/StaleAfter (golden-tested against a real producer).
 func V1ReportToEvidence(report V1Report, worstStepLimit int) []RepoEvidence {
-	if worstStepLimit <= 0 {
-		worstStepLimit = DefaultWorstSteps
-	}
+	worstStepLimit = worstStepLimitOrDefault(worstStepLimit)
 
 	evidence := make([]RepoEvidence, 0, len(report.Repos))
 

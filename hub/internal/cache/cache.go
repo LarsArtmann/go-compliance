@@ -167,7 +167,7 @@ func (s *Store) QueryEvidence(
 
 // queryWindowHealth aggregates the window-bounded counters per repo.
 func (s *Store) queryWindowHealth(ctx context.Context, from string) ([]compliance.WindowHealth, error) {
-	rows, err := s.db.DB().QueryContext(ctx, `
+	rows, err := s.queryRows(ctx, "query window health", `
 SELECT repo,
        COALESCE(SUM(runs), 0)      AS runs,
        COALESCE(SUM(step_rows), 0) AS step_rows,
@@ -177,7 +177,7 @@ WHERE recorded_at >= ?
 GROUP BY repo
 ORDER BY repo`, from)
 	if err != nil {
-		return nil, compliance.NewIOError(err, "query window health")
+		return nil, err
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -208,7 +208,7 @@ ORDER BY repo`, from)
 func (s *Store) queryLatestRecords(
 	ctx context.Context,
 ) ([]compliance.LatestRun, []compliance.RepoFindings, []compliance.RepoSeverities, error) {
-	rows, err := s.db.DB().QueryContext(ctx, `
+	rows, err := s.queryRows(ctx, "query latest records", `
 SELECT r.repo, r.recorded_at, r.verdict, r.producer_version, r.gate_findings, r.severity_counts
 FROM evidence_runs r
 WHERE r.id = (
@@ -219,7 +219,7 @@ WHERE r.id = (
 )
 ORDER BY r.repo`)
 	if err != nil {
-		return nil, nil, nil, compliance.NewIOError(err, "query latest records")
+		return nil, nil, nil, err
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -270,14 +270,14 @@ ORDER BY r.repo`)
 // queryWindowVersions returns each repo's distinct producer versions in
 // the window.
 func (s *Store) queryWindowVersions(ctx context.Context, from string) ([]compliance.RepoVersions, error) {
-	rows, err := s.db.DB().QueryContext(ctx, `
+	rows, err := s.queryRows(ctx, "query window versions", `
 SELECT repo, producer_version
 FROM evidence_runs
 WHERE recorded_at >= ? AND producer_version != ''
 GROUP BY repo, producer_version
 ORDER BY repo, producer_version`, from)
 	if err != nil {
-		return nil, compliance.NewIOError(err, "query window versions")
+		return nil, err
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -293,8 +293,8 @@ ORDER BY repo, producer_version`, from)
 		byRepo[name] = append(byRepo[name], version)
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, compliance.NewIOError(err, "iterate window versions")
+	if err := wrapIterateErr(rows.Err(), "iterate window versions"); err != nil {
+		return nil, err
 	}
 
 	out := make([]compliance.RepoVersions, 0, len(byRepo))
@@ -339,6 +339,17 @@ func unmarshalCounts(raw string) (map[string]int, error) {
 	}
 
 	return counts, nil
+}
+
+// queryRows issues a read query and family-types failures as IO errors.
+// The caller owns scanning and closing the returned rows.
+func (s *Store) queryRows(ctx context.Context, what, query string, args ...any) (*sql.Rows, error) {
+	rows, err := s.db.DB().QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, compliance.NewIOError(err, "%s", what)
+	}
+
+	return rows, nil
 }
 
 // wrapIterateErr keeps rows.Err() propagation family-typed.
