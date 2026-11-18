@@ -31,7 +31,7 @@ const (
 	defaultHeartbeat        = 15 * time.Second
 )
 
-var marshalOpts = json.Deterministic(true)
+var marshalOpts = json.Deterministic(true) //nolint:gochecknoglobals // immutable encoding/json/v2 option set, built once
 
 // Snapshot is the full-state payload of EventSnapshot.
 type Snapshot struct {
@@ -119,7 +119,7 @@ func NewHub(opts ...Option) *Hub {
 		opt(hub)
 	}
 
-	hub.broadcaster = sse.NewBroadcaster[Published](
+	hub.broadcaster = sse.NewBroadcaster(
 		sse.WithOnDrop(func(Published) { hub.dropped.Add(1) }),
 		sse.WithBufferSize[Published](hub.subscriberBuffer),
 	)
@@ -139,11 +139,11 @@ func (h *Hub) Rows() []RepoRow {
 		return nil
 	}
 
-	rows := make([]RepoRow, len(h.rows))
-	for i, row := range h.rows {
+	rows := make([]RepoRow, 0, len(h.rows))
+	for _, row := range h.rows {
 		row.Severities = copySeverities(row.Severities)
 		row.WorstSteps = append([]string(nil), row.WorstSteps...)
-		rows[i] = row
+		rows = append(rows, row)
 	}
 
 	return rows
@@ -303,11 +303,11 @@ func (h *Hub) setRows(rows []RepoRow) {
 	h.rowsMu.Lock()
 	defer h.rowsMu.Unlock()
 
-	h.rows = make([]RepoRow, len(rows))
-	for i, row := range rows {
+	h.rows = make([]RepoRow, 0, len(rows))
+	for _, row := range rows {
 		row.Severities = copySeverities(row.Severities)
 		row.WorstSteps = append([]string(nil), row.WorstSteps...)
-		h.rows[i] = row
+		h.rows = append(h.rows, row)
 	}
 }
 

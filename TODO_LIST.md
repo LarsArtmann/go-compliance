@@ -23,7 +23,6 @@ The plan is a snapshot: this file is the living backlog.
 | Task                                                                                           | Status    | Impact | Effort | Evidence                                                                       |
 | ---------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------------------ |
 | Close the watch-stream response body on the success path (`discovery.Client.Watch`, bodyclose) | 🔴 `TODO` | High   | 15m    | `hub/internal/discovery/client.go:165`; `docs/status/2026-11-18_17-49_…md` §f5 |
-| Refresh-freshness guard: per-refresh `context.WithTimeout` around `QueryEvidence` + `lastRefreshSuccess` timestamp + non-critical `refresh-freshness` check (warn after ~2× safety net) — today a hung query wedges the loop with every health endpoint green | 🔴 `TODO` | High   | 45m    | `hub/internal/cli/refresher.go:95` (no per-refresh deadline), `:120` (ticker cannot fire mid-Refresh); design in `docs/architecture-understanding/2026-11-18_19-39_samber-do-health-architecture.md` §5.3 |
 
 ## Medium Impact
 

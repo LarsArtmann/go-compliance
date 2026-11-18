@@ -120,9 +120,9 @@ var _ = Describe("fleet table", func() {
 		// Strip ANSI escapes, then every row must agree on the byte
 		// offset of each column start: colored and plain cells align
 		// identically because the renderer measures display width.
-		plain := make([]string, len(lines))
-		for i, line := range lines {
-			plain[i] = stripANSI(line)
+		plain := make([]string, 0, len(lines))
+		for _, line := range lines {
+			plain = append(plain, stripANSI(line))
 		}
 
 		reference := columnStarts(plain[0])
@@ -152,23 +152,23 @@ func columnStarts(line string) []int {
 }
 
 // stripANSI removes ANSI escape sequences.
-func stripANSI(s string) string {
+func stripANSI(input string) string {
 	var b strings.Builder
 
-	for i := 0; i < len(s); {
-		if s[i] == 0x1b && i+1 < len(s) && s[i+1] == '[' {
+	for i := 0; i < len(input); {
+		if input[i] == 0x1b && i+1 < len(input) && input[i+1] == '[' {
 			j := i + 2
-			for j < len(s) && !isANSITerminator(s[j]) {
+			for j < len(input) && !isANSITerminator(input[j]) {
 				j++
 			}
 
-			if j < len(s) {
+			if j < len(input) {
 				j++
 			}
 
 			i = j
 		} else {
-			b.WriteByte(s[i])
+			b.WriteByte(input[i])
 			i++
 		}
 	}

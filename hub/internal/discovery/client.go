@@ -162,9 +162,7 @@ func (c *Client) Watch(ctx context.Context) (<-chan Event, error) {
 
 	req.Header.Set("Accept", "text/event-stream")
 
-	resp, err := c.http.Do(
-		req,
-	)
+	resp, err := c.http.Do(req) //nolint:bodyclose // the stream goroutine below owns resp.Body via defer; bodyclose cannot track across goroutines
 	if err != nil {
 		return nil, compliance.NewIOError(err, "watch via %s (is the daemon running?)", c.socketPath)
 	}

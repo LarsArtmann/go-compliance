@@ -96,9 +96,13 @@ Health surface: the `evidence` readiness check (cli/health.go) gates on
 `hub.Rows() == nil` — `Hub.Rows()` returning nil BEFORE the first publish
 and non-nil for an EMPTY published fleet is a load-bearing contract
 (fixed 2026-11-18 after the gate proved inert; regression-pinned in
-events_test.go + cli/health_internal_test.go). Known gap (TODO_LIST
-High): a hung `QueryEvidence` wedges the refresh loop with health green —
-needs a per-refresh timeout + non-critical freshness check. DI posture:
+events_test.go + cli/health_internal_test.go; verdict g2: an empty
+published fleet IS ready). The non-critical `refresh-freshness` check
+(refresher.LastRefreshSuccess, warn threshold 10 min = 2× safety net;
+verdict g1: warn stays 200 — stale view is degraded truth, not service
+loss) plus the per-refresh `refreshTimeout` (30s) close the former wedge
+hole: a hung `QueryEvidence` now fails ONE refresh (logged, retried) and
+degrades /readyz to warn instead of freezing green. DI posture:
 samber/do is transitive only (cmdguard v5 + go-health); the hub wires
 manually by recorded decision (STACK.md) — see
 docs/architecture-understanding/2026-11-18_19-39_samber-do-health-architecture.md.

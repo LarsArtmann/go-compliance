@@ -189,7 +189,7 @@ func (r *refresher) Run(ctx context.Context) {
 // normal (best-effort completeness): errors back off and retry, and each
 // successful (re)subscription also refreshes once so a late-starting
 // daemon still completes the never-covered set.
-func runDiscoveryWatch(ctx context.Context, client *discovery.Client, r *refresher) {
+func runDiscoveryWatch(ctx context.Context, client *discovery.Client, refresh *refresher) {
 	for {
 		if ctx.Err() != nil {
 			return
@@ -209,13 +209,13 @@ func runDiscoveryWatch(ctx context.Context, client *discovery.Client, r *refresh
 
 		slog.Info("compliance-hub: discovery watch connected", "socket", client.SocketPath())
 
-		if err := r.refreshDiscovered(ctx, client); err != nil {
+		if err := refresh.refreshDiscovered(ctx, client); err != nil {
 			slog.Warn("compliance-hub: discovery snapshot failed", "error", err)
 		}
 
 		for event := range eventCh {
 			if event.Project != nil {
-				r.Kick()
+				refresh.Kick()
 			}
 		}
 

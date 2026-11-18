@@ -47,7 +47,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- Hub: `events.Hub.Rows()` now returns nil before the first publish, honoring its documented contract — the readiness/startup `evidence` check and the stream snapshot gates worked off a comparison that could never be true (regression-pinned in events and cli suites).
+- Hub: the last "silently wrong while green" hole is closed — a hung `QueryEvidence` used to wedge the derive loop with every health endpoint green. `Refresh` now bounds the query (`refreshTimeout`, 30s), stamps `LastRefreshSuccess` only after query AND publish succeed, and a non-critical `refresh-freshness` probe check degrades `/readyz` to warn (200, not 503 — verdict g1: a stale view is degraded truth, not service loss; threshold 10 min = 2× safety-net ticks). Pinned by hanging-source and warn-threshold specs in the cli suite.
+- Hub: `events.Hub.Rows()` now returns nil before the first publish, honoring its documented contract — the readiness/startup `evidence` check and the stream snapshot gates worked off a comparison that could never be true (regression-pinned in events and cli suites). Verdict g2 recorded: an empty published fleet IS ready.
 - Hub: removed an unreachable duplicate error check in the CLI query path (gopls nilness).
 - Nix: hub `vendorHash` refreshed after the dedup-audit session's core edits (the `_core_only` isolation means Go-file edits change the vendored hash even when docs do not); `nix flake check` re-proven green with the new hash.
 

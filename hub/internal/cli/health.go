@@ -33,6 +33,10 @@ var (
 	// state; production serve exits before the probe starts when the boot
 	// refresh fails, so it mostly matters for embedders.
 	ErrRefreshNeverSucceeded = errors.New("no refresh has succeeded yet")
+
+	// ErrRefreshStale wraps every past-threshold freshness failure with the
+	// concrete age.
+	ErrRefreshStale = errors.New("last successful refresh too old")
 )
 
 // buildHealthProbe wires the hub's health probe: liveness is always pass;
@@ -57,8 +61,8 @@ func buildHealthProbe(
 			}
 
 			if age := time.Since(last); age > refreshFreshnessWarn {
-				return fmt.Errorf("last successful refresh %s ago (warn threshold %s)",
-					age.Round(time.Second), refreshFreshnessWarn)
+				return fmt.Errorf("%w: %s ago (warn threshold %s)",
+					ErrRefreshStale, age.Round(time.Second), refreshFreshnessWarn)
 			}
 
 			return nil
