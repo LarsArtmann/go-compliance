@@ -31,6 +31,8 @@ const (
 func (s State) String() string { return string(s) }
 
 // IsValid reports whether the state is one of the four known states.
+//
+// art-dupl:accept the case list IS the canonical member set; a shared membership helper would obscure it
 func (s State) IsValid() bool {
 	switch s {
 	case StateCompliant, StateFailing, StateStale, StateNeverCovered:

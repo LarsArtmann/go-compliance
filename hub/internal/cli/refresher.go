@@ -116,6 +116,8 @@ func (r *refresher) Refresh(ctx context.Context) error {
 // logged and retried on the next trigger: a transient source error must
 // not take the dashboard down (the health probe's evidence check keeps
 // reporting the last good publish).
+//
+// art-dupl:accept nested selects are the canonical trigger-loop shape; the two ctx.Done exits share no logic
 func (r *refresher) Run(ctx context.Context) {
 	safetyNet := time.NewTicker(refreshSafetyNet)
 	defer safetyNet.Stop()

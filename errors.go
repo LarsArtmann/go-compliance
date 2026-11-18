@@ -34,6 +34,8 @@ const (
 
 // IsValid reports whether the category is a known lowercase-hyphenated
 // category.
+//
+// art-dupl:accept the case list IS the canonical member set; a shared membership helper would obscure it
 func (c ErrorCategory) IsValid() bool {
 	switch c {
 	case ErrCategoryValidation, ErrCategoryIO, ErrCategoryParse, ErrCategoryUnsupported, ErrCategoryInternal:
