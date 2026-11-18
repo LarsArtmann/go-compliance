@@ -8,20 +8,20 @@
 
 **Verified this session (with command/artifact):**
 
-| Check | Command | Result |
-|---|---|---|
-| Build + vet, both modules | `GOWORK=off go build ./... && GOWORK=off go vet ./...` | OK |
-| Tests, both modules | `GOWORK=off go test -race -count=1 ./...` (sequential) | OK |
-| Lint, both modules | `golangci-lint run ./...` / `-c ../.golangci.yml` | 0 issues |
-| Lint config integrity | `golangci-lint config verify` | OK |
-| templ freshness | `go tool templ generate` from `hub/` | 0 diff |
-| Duplication gate | `art-dupl -t 1 --type-aware check --baseline-path .art-dupl-baseline.json .` | 0 new clones |
-| Nix packages + treefmt | `nix flake check` | all checks passed |
-| go.sum consistency | `GOWORK=off go mod tidy` (both modules) | zero diff |
+| Check                     | Command                                                                      | Result            |
+| ------------------------- | ---------------------------------------------------------------------------- | ----------------- |
+| Build + vet, both modules | `GOWORK=off go build ./... && GOWORK=off go vet ./...`                       | OK                |
+| Tests, both modules       | `GOWORK=off go test -race -count=1 ./...` (sequential)                       | OK                |
+| Lint, both modules        | `golangci-lint run ./...` / `-c ../.golangci.yml`                            | 0 issues          |
+| Lint config integrity     | `golangci-lint config verify`                                                | OK                |
+| templ freshness           | `go tool templ generate` from `hub/`                                         | 0 diff            |
+| Duplication gate          | `art-dupl -t 1 --type-aware check --baseline-path .art-dupl-baseline.json .` | 0 new clones      |
+| Nix packages + treefmt    | `nix flake check`                                                            | all checks passed |
+| go.sum consistency        | `GOWORK=off go mod tidy` (both modules)                                      | zero diff         |
 
 **NOT verified / out of scope (and why):**
 
-- **devShell build** — `nix flake check` only *evaluates* devShells; it does not build them. The devShell is currently **unbuildable** (stale `templ-gen` vendorHash, see §d1). Discovered only because lychee/vulnix tried to build it.
+- **devShell build** — `nix flake check` only _evaluates_ devShells; it does not build them. The devShell is currently **unbuildable** (stale `templ-gen` vendorHash, see §d1). Discovered only because lychee/vulnix tried to build it.
 - **lychee link scan & vulnix vulnerability scan** — both failed on the hash mismatch; never produced results.
 - **The 79 BuildFlow findings** — summarized from the run output; no individual finding has been source-verified or triaged yet.
 - **Root cause of the SQLITE_BUSY storm** — another process held the BuildFlow state DB for the entire run; not investigated (see question g1).
@@ -70,7 +70,7 @@
 
 ## d) TOTALLY FUCKED UP
 
-1. **The devShell is unbuildable right now.** `flake.nix:98` pins `templ-gen` (templ v0.3.1100) `vendorHash = "sha256-rmgaN…"`; the actual hash is `sha256-MMAoH…. Likely mechanism (inference, not verified): the `flake.lock` update rolled the nixpkgs/go toolchain feeding `buildGoModule.override { go = ps.go_1_27; }`, changing the vendored module set hash. Anything that builds the devShell — `nix develop`, lychee, vulnix — fails. The bootstrap ritual (AGENTS.md "Nix / FOD Lessons") must be run for this site.
+1. **The devShell is unbuildable right now.** `flake.nix:98` pins `templ-gen` (templ v0.3.1100) `vendorHash = "sha256-rmgaN…"`; the actual hash is `sha256-MMAoH…. Likely mechanism (inference, not verified): the`flake.lock`update rolled the nixpkgs/go toolchain feeding`buildGoModule.override { go = ps.go_1_27; }`, changing the vendored module set hash. Anything that builds the devShell —`nix develop`, lychee, vulnix — fails. The bootstrap ritual (AGENTS.md "Nix / FOD Lessons") must be run for this site.
 2. **This session's verification verdict was falsified.** I reported "every gate green, nothing left to file" at ~23:10; the canonical BuildFlow run at 23:18 failed 2 steps and left 6 tools with unresolved error-severity findings. The sweep verified the gates it ran — nothing more.
 3. **BuildFlow's own bookkeeping was degraded by lock contention.** Every resume checkpoint write failed (`SQLITE_BUSY`, retries exhausted repeatedly), 51 timing records were lost, result-cache purge failed, and IO metrics for the run failed to persist. Consequence: `buildflow --resume` has no usable checkpoint for this run, and timing analytics for it are blind. Root cause (concurrent process) unconfirmed — see g1.
 4. **The `./result` scan target is stale** (predates `flake.lock`), so even after the hash fix, vulnix's first attempt will scan an outdated closure unless rebuilt (`nix build .# -o result`).
@@ -88,7 +88,7 @@
 
 ## f) Up to 50 things we should get done next
 
-*P0 — unblock the broken build:*
+_P0 — unblock the broken build:_
 
 1. ~~Bootstrap the stale `templ-gen` vendorHash (flake.nix:98): set placeholder → build devShell → paste `got: sha256-MMAoH…` → rebuild to convergence.~~ DONE 2026-11-18 ~23:58 (23-43 architecture re-review): the hash was still stale in the tree; `nix build .#devShells.x86_64-linux.default` reproduced the mismatch (specified `sha256-rmgaNGkN…`, got `sha256-MMAoHofeZzGNFsjxY4nrPRyaiKOk4fLYY+kIVmdAL3g=`), the `got:` hash pasted into flake.nix:98, rebuild converged green (exit 0) on the first paste.
 2. ~~Verify `nix build .#devShells.x86_64-linux.default` succeeds.~~ DONE 2026-11-18 ~23:58: exit 0 after the f1 fix (same verification).
@@ -96,7 +96,7 @@
 4. Re-run `buildflow -s lychee` and `buildflow -s vulnix` — flip both from failed to green.
 5. Add the devShell-build step to the standing verification ritual (AGENTS.md commands block).
 
-*P0 — error-severity findings (re-appear every run until resolved):*
+_P0 — error-severity findings (re-appear every run until resolved):_
 
 6. Create `SECURITY.md` (root, `.github/`, or `docs/` per tool's lookup paths).
 7. Add `permissions:` to `.github/workflows/ci.yml` per the fleet cue-policy schema (`../cue-policy/ci_workflow.cue:40`).
@@ -107,7 +107,7 @@
 12. Split `hub/internal/cache/cache.go` (376 lines > 350).
 13. Split `hub/internal/events/events.go` (358 lines > 350).
 
-*Policy decisions (each needs an owner verdict, then fix or accept-with-reason):*
+_Policy decisions (each needs an owner verdict, then fix or accept-with-reason):_
 
 14. samber/lo: adopt as dependency (STACK.md decision-log entry required) or suppress the go-auto-upgrade pattern set; 25 findings currently withheld.
 15. go-humanize: replace manual relative-time formatting in `health.go:70`, `table.go:31`, `table.go:134` with `humanize.RelTime`, or accept-with-reason (note: the dashboard's templ `RelativeTime` is a separate surface; this is CLI-side).
@@ -121,7 +121,7 @@
 23. structure-linter layout items: `assets/` (docs/assets is fine — accept-with-reason), `internal/` on root (public library — likely accept), `scripts/refresh-fixture.sh` location (script belongs in scripts/ — accept), README installation section (add it — cheap).
 24. Decide: add a minimal `.buildflow.yml` (documented skips/rationale) or rely on auto-detection permanently.
 
-*Environment hygiene:*
+_Environment hygiene:_
 
 25. `sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB).
 26. Delete the expendable 0.51 GB cache DB (`~/.cache/buildflow/cache.db`).
@@ -133,7 +133,7 @@
 32. Determine what process held the state DB 23:18–23:23; add a single-instance guard if concurrent runs are real (see g1).
 33. Re-run a full `buildflow --build-mode=full` after fixes to confirm: 114/114 steps, error-severity findings at 0, timings recorded.
 
-*Docs / memory / process:*
+_Docs / memory / process:_
 
 34. AGENTS.md: document the `templ-gen` third-hash-site lesson + devShell-build verification step.
 35. AGENTS.md: record that BuildFlow auto-detection covers this repo (no `.buildflow.yml` needed) and that `buildflow` is the canonical gate.
@@ -144,17 +144,17 @@
 40. Run on-demand scans once the devShell builds: `buildflow -s gitleaks`, `-s codespell`, `-s markdown-lint`.
 41. Confirm lychee's 4 path-excluded unscanned files are intentionally excluded.
 
-*Upstream / filing candidates (verify at source first, then github-voice):*
+_Upstream / filing candidates (verify at source first, then github-voice):_
 
 42. Root-module go-auto-upgrade scan including `hub/` files — likely config gap or upstream bug; verify, then file.
 43. Resume-checkpoint SQLITE_BUSY resilience (51 lost timings, unusable `--resume`) — candidate BuildFlow issue after reproducing.
 44. structure-linter false-positive candidates (fixture script in `scripts/`, `docs/assets` as `assets/`) — accept locally; file upstream only if the tool supports suppression feedback.
 
-*Post-toolchain-roll follow-through:*
+_Post-toolchain-roll follow-through:_
 
 45. Any future `flake.lock` update that rolls the Go toolchain: re-bootstrap ALL vendorHash sites (hub ×2, templ-gen ×1) in one sitting — one ritual, not three discoveries.
 
-*Roadmap fuel (not commitments):*
+_Roadmap fuel (not commitments):_
 
 46. Consider `follows`-consolidation of the whole flake input tree to shrink lock duplication.
 
@@ -166,4 +166,4 @@
 
 ---
 
-*Section (f) is HARVEST input for `TODO_LIST.md` / `ROADMAP.md` (docs-health). This report is a point-in-time snapshot; annotate, never rewrite.*
+_Section (f) is HARVEST input for `TODO_LIST.md` / `ROADMAP.md` (docs-health). This report is a point-in-time snapshot; annotate, never rewrite._

@@ -57,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Hub: `events.Hub.Rows()` now returns nil before the first publish, honoring its documented contract — the readiness/startup `evidence` check and the stream snapshot gates worked off a comparison that could never be true (regression-pinned in events and cli suites). Verdict g2 recorded: an empty published fleet IS ready.
 - Hub: removed an unreachable duplicate error check in the CLI query path (gopls nilness).
 - Nix: hub `vendorHash` refreshed after the dedup-audit session's core edits (the `_core_only` isolation means Go-file edits change the vendored hash even when docs do not); `nix flake check` re-proven green with the new hash.
+- Nix: templ-gen devShell `vendorHash` bootstrapped to the module proxy's current hash (`nix build .#devShells.x86_64-linux.default` had failed on a hash mismatch; the documented paste-`got:`-and-rebuild ritual converged green on the first paste).
 
 ### Security
 
