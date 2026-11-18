@@ -46,6 +46,9 @@ workflow-audit-log.*
 reports/
 
 ## Go
+# Generated templ output (*_templ.go) IS committed: the flake build and
+# CI consume it without a templ generate step, matching the fleet
+# precedent (go-health-dashboard). Do not add it to this ignore file.
 *.exe
 *.dll
 *.so

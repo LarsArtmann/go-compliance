@@ -38,7 +38,7 @@ templ View(model ViewModel) {
 					// own text going stale is the dead-stream signal.
 					<span class="text-xs text-gray-400 dark:text-gray-500">
 						rendered
-						@display.RelativeTime(display.RelativeTimeProps{Time: model.RenderedAt})
+						@display.RelativeTime(display.RelativeTimeProps{Time: model.RenderedAt, AutoRefresh: true})
 					</span>
 				</div>
 				<div class="mt-4">

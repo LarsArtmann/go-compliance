@@ -3,6 +3,7 @@ package dashboard_test
 import (
 	"bytes"
 	"context"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -47,6 +48,36 @@ var _ = Describe("fleet page render", func() {
 		Expect(html).To(ContainSubstring(`src="/datastar.js"`))
 		Expect(html).To(ContainSubstring("/compliance/events"))
 		Expect(html).To(ContainSubstring(`datetime="2026-11-17T20:00:00Z"`))
+	})
+
+	It("ships the relative-time tick script exactly once and ticks rows by attribute", func() {
+		model := dashboard.ViewModel{
+			Title:     "Fleet compliance",
+			StreamURL: "/events",
+			Rows: []events.RepoRow{
+				{Repo: "one", State: compliance.StateCompliant, LastRunAt: time.Now()},
+				{Repo: "two", State: compliance.StateFailing, LastRunAt: time.Now()},
+			},
+			RenderedAt: time.Now(),
+		}
+
+		var rendered bytes.Buffer
+		Expect(dashboard.View(model).Render(context.Background(), &rendered)).To(Succeed())
+
+		// The page-level carrier is the ONLY AutoRefresh instance: one
+		// script, guarded by the library's window flag. Rows opt into
+		// the 30s tick via the bare attribute (patches stay script-free).
+		html := rendered.String()
+		Expect(strings.Count(html, "if(!window.tcRelativeTimeAttached)")).To(Equal(1),
+			"exactly one relative-time script (the carrier); html: %s", html)
+		// 3 time elements (carrier + two rows) plus the script's own
+		// querySelector literal.
+		Expect(strings.Count(html, "data-tc-relative")).To(Equal(4),
+			"two row cells plus the carrier; html: %s", html)
+		// Row cells carry the bare attribute with no trailing script
+		// (patches must stay script-free).
+		Expect(strings.Count(html, "data-tc-relative>")).To(Equal(2),
+			"row time cells; html: %s", html)
 	})
 
 	It("renders the empty state while no evidence exists", func() {

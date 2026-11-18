@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
@@ -82,6 +83,7 @@ func (d *Dashboard) pageHandler(routes Routes) http.Handler {
 			ScriptSrc:   routes.Script,
 			Rows:        filterRowsByState(rows, stateFilter),
 			StateFilter: stateFilterOrAll(stateFilter),
+			RenderedAt:  time.Now(),
 		}
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
