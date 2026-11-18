@@ -53,11 +53,11 @@ Verified this session, with commands/artifacts: every hub wiring/liveness file r
 1. ✎ Refresh-freshness guard (per-refresh timeout + warn check) — P1, design ready.
 2. ✎ Lint posture decision for the 16 standing findings.
 3. Run core suite + `nix flake check` to close the post-edit battery.
-4. Verify FEATURES.md + prior status reports for claims about the (previously inert) readiness gate; correct where they oversold.
-5. ✎ bodyclose fix in `discovery.Client.Watch`.
-6. ✎ Non-critical `discovery` health check (daemon-down = standing warn).
-7. ✎ Surface `Hub.Dropped()`/`SubscriberCount()` in readiness payload or a check.
-8. Decide tolerant-boot mode: should serve start (and report not-ready) when the initial refresh fails, instead of exiting? Makes the readiness window real over HTTP.
+4. ~~Verify FEATURES.md + prior status reports for claims about the (previously inert) readiness gate; correct where they oversold.~~ done 2026-11-18 ~22:15 — FEATURES.md health row rewritten (all five checks + g1/g2 semantics); no other doc oversold the gate (M10-M20's smoke claim was accurate); 20-02 §g annotated with verdicts.
+5. ~~✎ bodyclose fix in `discovery.Client.Watch`.~~ done 2026-11-18 ~22:10 — verified false positive (the stream goroutine owns resp.Body via defer; bodyclose cannot track across goroutines); `//nolint:bodyclose` with that reason at the call site, lint back to 0.
+6. ~~✎ Non-critical `discovery` health check (daemon-down = standing warn).~~ done 2026-11-18 ~22:20 — `discoveryCheckName` (stamp = watch connect or snapshot, warn threshold 10 min), pinned in health_internal_test.go.
+7. ~~✎ Surface `Hub.Dropped()`/`SubscriberCount()` in readiness payload or a check.~~ done 2026-11-18 ~22:22 — chosen shape: non-critical delta-based `sse-backpressure` check (self-clearing, counts in the error text); go-health `/readyz` wire shape untouched for federation consumers.
+8. ~~Decide tolerant-boot mode: should serve start (and report not-ready) when the initial refresh fails, instead of exiting? Makes the readiness window real over HTTP.~~ done 2026-11-18 ~22:30 — DECIDED: keep exit-on-boot-refresh-failure (systemd `Restart=on-failure` owns the retry; recorded as the boot contract in AGENTS.md).
 9. Empty-fleet readiness semantics: confirm or overturn "0 repos = ready" (g2).
 10. ✎ `?state=` filter table test over all four states.
 11. ✎ art-dupl baseline commit + CI gate.
@@ -74,7 +74,7 @@ Verified this session, with commands/artifacts: every hub wiring/liveness file r
 22. ✎ Drop hub `replace` when core tags v0.1.0.
 23. ✎ M26 overview endgame; FLAKE_PAT secrets; Forgejo visibility; master push (all owner-blocked).
 24. Consider a `Store.OnWrite` fan-out if a second consumer ever appears (documented single-slot today).
-25. Re-run `stack-drift-check.sh` after any of the above dependency-adjacent changes.
+25. ~~Re-run `stack-drift-check.sh` after any of the above dependency-adjacent changes.~~ done 2026-11-18 ~22:40 — initially FAILed (10 wiring drifts: the Wiring order section lacked `**root**`/`**hub**` labels); STACK.md rewritten to the checker's matrix format → PASS.
 26. Next full-code-review pass should visit the files this session only read (table.go, view.go, rows.templ internals) — reviewed as call sites, not line-by-line.
 27. Pin the `evidence` check name as a typed constant shared with tests (it is one already — `evidenceCheckName`; keep it that way when adding checks).
 28. If tolerant-boot lands (item 8), add an E2E: source fails at boot → `/readyz` 503 → source recovers → 200.

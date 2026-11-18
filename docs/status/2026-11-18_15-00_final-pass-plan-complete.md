@@ -42,7 +42,11 @@ this one closes the standing finish-the-plan directive.
    M26 → TODO_LIST blocked row, adoption meta → ROADMAP); rule-F spacing
    fix in federation-interop.md. **docs-gates battery: 5/5 PASS**
    (freshness, audit-all, annotate, routing, cadence), verified
-   formatter-stable (annotate → dprint fmt → re-gate).
+   formatter-stable (annotate → dprint fmt → re-gate). [annotate count
+   reconciliation 2026-11-18 ~22:45: 42 was true at write time; the
+   same-day execution pass struck more (13-31 §f2–f6, 20-02 §f4-f8/§g,
+   20-02 §25) → docs-gates annotate now reports the live struck count;
+   the claim above stays frozen as history]
 10. **Plan-vs-tree audit F001–F109** (independent subagent, spot-checked
     artifacts): **106 verified / 3 owner-blocked / 0 missing** —
     F075 (Forgejo visibility), F105/F106 (M26 endgame pair). No gaps,
