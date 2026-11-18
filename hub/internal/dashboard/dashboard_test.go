@@ -12,6 +12,7 @@ import (
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/dashboard"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
+	"github.com/larsartmann/go-compliance/hub/internal/testsupport"
 	"github.com/larsartmann/go-datastar"
 	datastartest "github.com/larsartmann/go-datastar/datastartest"
 	dstarstatic "github.com/larsartmann/go-datastar/static"
@@ -78,7 +79,7 @@ var _ = Describe("datastar patch stream", func() {
 
 		published := make(chan error, 1)
 		go func() {
-			waitForSubscriber(hub)
+			testsupport.WaitForSubscriber(hub)
 			_, err := hub.PublishRefresh([]events.RepoRow{
 				rowFor("stable", compliance.StateStale),
 				rowFor("flipped", compliance.StateFailing),
@@ -131,10 +132,3 @@ var _ = Describe("datastar patch stream", func() {
 		Expect(recorder.Body.Bytes()).To(Equal(dstarstatic.Bytes()))
 	})
 })
-
-func waitForSubscriber(hub *events.Hub) {
-	deadline := time.Now().Add(5 * time.Second)
-	for hub.SubscriberCount() == 0 && time.Now().Before(deadline) {
-		time.Sleep(time.Millisecond)
-	}
-}

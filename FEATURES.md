@@ -38,8 +38,8 @@ not?
 | Feature                               | Status                    | Evidence                                    | Notes                                                  |
 | ------------------------------------- | ------------------------- | ------------------------------------------- | ------------------------------------------------------ |
 | CLI (`serve` / `report` / `table`)    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/app.go:65`; `app_test.go` | cmdguard v5; flag parity with BuildFlow muscle memory  |
-| SQLite evidence cache + migrations    | 🟡 `PARTIALLY_FUNCTIONAL` | `hub/internal/cache/cache.go:55`            | works; `queryLatestRunCounts` is N+1 (TODO_LIST)       |
-| Discovery client (`/v1/discover`)     | 🟡 `PARTIALLY_FUNCTIONAL` | `hub/internal/discovery/client.go:72`       | never-covered derivation in; `/v1/watch` missing (M27) |
+| SQLite evidence cache + migrations    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cache/cache.go:55`            | single correlated-subquery latest-records query (no N+1) |
+| Discovery client (`/v1/discover`)     | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/discovery/client.go:72`       | never-covered derivation + `/v1/watch` stream (M27)    |
 | SSE events hub (`/events`, replay)    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/events/events.go:109`         | Last-Event-ID replay, heartbeat, ring store            |
 | Dashboard page (templ-components)     | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/dashboard/view.templ`         | stat cards, badges, severity cells, empty state        |
 | DataStar patch stream + SDK bundle    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/dashboard/dashboard.go:72`    | three-way diff → append/replace/remove patches         |
@@ -48,7 +48,7 @@ not?
 | sd_notify + watchdog                  | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/bind.go:81`               | go-daemon; listener-first ordering                     |
 | Unix-socket bind + non-localhost warn | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/bind.go:24`; bind tests   | socket 0o660, stale-remove, cleanup on shutdown        |
 | systemd unit (hardened)               | 🟡 `PARTIALLY_FUNCTIONAL` | `deploy/compliance-hub.service`             | reviewed vs nixos-module precedent; not yet deployed   |
-| Watch mode (live re-derive)           | ⚪ `PLANNED`              | M27 in TODO_LIST                            | store-write hook + discovery watch + debounce          |
+| Watch mode (live re-derive)           | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/refresher.go`; E2E test  | store write-hook + discovery watch + debounce (M27)    |
 
 ## Project infrastructure
 
@@ -62,4 +62,4 @@ not?
 | Benchmarks + baseline                | 🟢 `FULLY_FUNCTIONAL` | `bench_test.go`; `benchmarks/baseline.txt`                       | fold @341 ≈ 150µs; derive zero-alloc                           |
 | v2 wire design                       | 🟢 `DOCUMENTED`       | `docs/decisions/v2-wire-design.md`                               | design sketch; v1 stays emittable forever                      |
 | Federation (go-health-dashboard)     | 🟢 `DOCUMENTED`       | `docs/notes/federation-interop.md`                               | passive scrape is the default; build on demand signal          |
-| Live re-derive (watch mode)          | 🟡 `IN_PROGRESS`      | M27 in TODO_LIST                                                 | store write-hook + discovery watch + debounce                   |
+| Live re-derive (watch mode)          | 🟢 `FULLY_FUNCTIONAL`  | `hub/internal/cli/refresher_internal_test.go`                   | store write-hook + discovery watch + debounce (E2E-verified)    |

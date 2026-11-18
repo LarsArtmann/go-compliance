@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"time"
 
+	datastartest "github.com/larsartmann/go-datastar/datastartest"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -41,12 +43,19 @@ var _ = Describe("routes and content negotiation", func() {
 		mux.ServeHTTP(script, httptest.NewRequest(http.MethodGet, "/datastar.js", nil))
 		Expect(script.Code).To(Equal(http.StatusOK))
 
-		stream := httptest.NewRecorder()
-		streamRequest := httptest.NewRequest(http.MethodGet, "/events", nil)
-		streamRequest.Header.Set("Accept", "text/event-stream")
-		go func() { mux.ServeHTTP(stream, streamRequest) }()
-		Eventually(func() string { return stream.Body.String() }).
-			Should(ContainSubstring("datastar-patch-signals"))
+		// A real request lifecycle, not a shared recorder: the handler
+		// goroutine writing while the test polls the same recorder is a
+		// data race (httptest.ResponseRecorder is unsynchronized).
+		events := datastartest.CollectWithTimeout(GinkgoTB(), mux, 2*time.Second,
+			datastartest.WithPath("/events"))
+
+		signals := false
+
+		for _, evt := range events {
+			signals = signals || evt.IsSignals()
+		}
+
+		Expect(signals).To(BeTrue(), "stream route produced no signals patch; events: %v", events)
 	})
 
 	It("serves JSON to clients whose Accept prefers it", func() {

@@ -20,9 +20,7 @@ The plan is a snapshot: this file is the living backlog.
 
 ## High Impact
 
-| Task                                                      | Status    | Impact | Effort | Evidence                                                    |
-| --------------------------------------------------------- | --------- | ------ | ------ | ----------------------------------------------------------- |
-| (none — M27 watch mode + N+1 landed 2026-11-18, see CHANGELOG) | | | | |
+(none open — M27 watch mode + N+1 landed 2026-11-18, see CHANGELOG)
 
 ## Medium Impact
 
