@@ -141,6 +141,19 @@
             # relative to the go.mod they live in, hence ../_local_deps.
             postPatchExtra = ''
               echo 'replace github.com/LarsArtmann/go-daemon => ../_local_deps/go-daemon' >> hub/go.mod
+
+              # `go mod vendor` copies a directory-replaced module verbatim
+              # (flake.nix included) into the FOD output. flake.nix carries
+              # this derivation's own vendorHash, so the FOD hashed its own
+              # placeholder — an unfixable flip-flop (2026-11-18: two builds
+              # at different dirtyRevs diffed exactly by that one line, via
+              # the two stored go-modules outputs). Repoint the core replace
+              # at a Go-files-only copy: no self-reference, and vendorHash
+              # no longer churns on doc-only edits.
+              mkdir -p _core_only
+              cp ../go.mod ../go.sum _core_only/
+              cp ../*.go _core_only/
+              sed -i 's|=> \.\./$|=> ../_core_only|' hub/go.mod
             '';
           };
 
@@ -153,7 +166,7 @@
             postPatch = "rm -f go.work";
             modRoot = "hub";
             subPackages = [ "./cmd/compliance-hub" ];
-            vendorHash = "sha256-PuP4eGGMV2gZ7d/LongfqVCMWDnCb++837qmCRwaVYs=";
+            vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
             ldflags = [
               "-s"
               "-w"

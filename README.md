@@ -49,6 +49,20 @@ application/json` clients.
 Or run the packaged service: `compliance-hub serve --source file --file
 compliance.json` (also `--source buildflow`, `--source cache --db path`).
 
+## CI
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs per-module
+build+test and lint (golangci-lint pinned to the devShell version), dprint,
+actionlint, stack-drift-check, docs-gates, and `nix flake check`.
+
+The hub module and the flake build need one private dependency
+(`github.com/LarsArtmann/go-daemon`). CI reads it via a repository secret:
+
+- **`FLAKE_PAT`** — fine-grained PAT with read-only **Contents** on
+  `LarsArtmann/go-daemon`. Without it, the hub/flake jobs skip (not fail);
+  an owner must create the secret on each runner host (GitHub **and**
+  Forgejo) to activate them.
+
 ## Documentation
 
 - [STACK.md](STACK.md) — foundation decision record (enforced by
