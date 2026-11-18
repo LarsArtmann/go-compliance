@@ -47,17 +47,17 @@ Three shapes:
 
 ```jsonc
 {
-  "schemaVersion": 2,          // camelCase: hub JSON is JS-facing (STACK.md)
-  "snapshotId": "…",           // content hash; delta requests key on this
+  "schemaVersion": 2, // camelCase: hub JSON is JS-facing (STACK.md)
+  "snapshotId": "…", // content hash; delta requests key on this
   "generatedAt": "…",
-  "v1": { /* the exact frozen v1 document */ },
+  "v1": {/* the exact frozen v1 document */},
   "repos": {
-    "my-repo": {               // map, not array: O(1) patch targets
-      "severities": {"error": 1},
-      "importance": "high",    // project-meta join (hub cache)
-      "lastStateChange": "…",  // from the cache's state history
-      "steps": {               // per-step history (bounded window)
-        "lint": {"failRateTrend": [0.5, 0.4]}
+    "my-repo": { // map, not array: O(1) patch targets
+      "severities": { "error": 1 },
+      "importance": "high", // project-meta join (hub cache)
+      "lastStateChange": "…", // from the cache's state history
+      "steps": { // per-step history (bounded window)
+        "lint": { "failRateTrend": [0.5, 0.4] }
       }
     }
   }

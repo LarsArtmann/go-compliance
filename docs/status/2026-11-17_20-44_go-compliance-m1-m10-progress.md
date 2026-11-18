@@ -211,16 +211,16 @@ before moving on, honest reporting of everything that broke along the way.
 ## f) NEXT UP TO 50 TASKS (ranked; parent IDs from the plan)
 
 1. Fix discovery compile: io.ReadAll + json.Unmarshal in Discover (d1)
-2. Delete bogus jsonNewDecoder helper in client_test.go (d2)
+2. ~~Delete bogus jsonNewDecoder helper in client_test.go (d2)~~ done — helper deleted from hub/internal/discovery/client_test.go
 3. Run discovery suite green (unix-socket httptest server is already written)
 4. M11/F050: broadcaster wiring + heartbeat (go-sse NewBroadcaster + Stream)
 5. M11/F051: evidence refresh → state-diff events
 6. M11/F052: /events endpoint with Last-Event-ID replay (EventStore ring)
 7. M11/F053: endpoint tests (ssetest or hand-rolled SSE client)
 8. M12/F054: patch types for fleet table rows (go-datastar ElementsPatch)
-9. M12/F055: signal patches for counts/badges (SignalsPatch)
-10. M12/F056: ScriptHandler serving DataStar JS
-11. M12/F057: datastartest E2E assertions
+9. ~~M12/F055: signal patches for counts/badges (SignalsPatch)~~ done — dashboard sendSignals SignalsPatch
+10. ~~M12/F056: ScriptHandler serving DataStar JS~~ done — dashboard ScriptHandler serves the pinned bundle
+11. ~~M12/F057: datastartest E2E assertions~~ done — datastartest assertions live in dashboard + cli E2E tests
 12. M13/F058: templ setup + layout via templ-components (go:generate, tool
     directive, commit generated files)
 13. M13/F059: fleet table component (repo/state/severity columns)
@@ -228,10 +228,10 @@ before moving on, honest reporting of everything that broke along the way.
 15. M13/F061: detail row expansion (worst steps)
 16. M13/F062: page render test
 17. M14/F063: filter chips (state filter)
-18. M14/F064: grouping by severity/state
+18. ~~M14/F064: grouping by severity/state~~ done — state-ranked sort hub/internal/cli/table.go + ?state= filter hub/internal/dashboard/routes.go
 19. M14/F065: RegisterRoutes(mux) public surface
 20. M14/F066: content negotiation HTML/JSON
-21. M14/F067: embedding quickstart in README
+21. ~~M14/F067: embedding quickstart in README~~ done — README links docs/guides/integrate.md
 22. M14: `--source cache --db path` CLI wiring for M9
 23. M15/F068: go-health probe registration
 24. M15/F069: sd_notify wiring via go-daemon
@@ -247,8 +247,8 @@ before moving on, honest reporting of everything that broke along the way.
 34. M20/F093: test non-localhost bind requires explicit flag
 35. M17/F077: dprint.json + format check
 36. M17/F078: TODO_LIST.md seeded from the plan (HARVEST target)
-37. M17/F079: FEATURES.md initial inventory
-38. M17/F080: DOMAIN_LANGUAGE.md core terms
+37. ~~M17/F079: FEATURES.md initial inventory~~ done — FEATURES.md
+38. ~~M17/F080: DOMAIN_LANGUAGE.md core terms~~ done — docs/DOMAIN_LANGUAGE.md
 39. M17/F081: CHANGELOG.md Unreleased section
 40. M18/F082–F085: flake.nix skeleton + devShell + packages + `nix flake
     check` green
@@ -260,7 +260,7 @@ before moving on, honest reporting of everything that broke along the way.
 45. M24/F101–F102: v2 API design doc + compat policy note
 46. M25/F103–F104: go-health-dashboard federation research + interop note
 47. M26/F105–F106: overview endgame note + migration sketch (blocked: g2)
-48. Fix queryLatestRunCounts N+1 before M27 (e1)
+48. ~~Fix queryLatestRunCounts N+1 before M27 (e1)~~ done — queryLatestRecords single correlated-subquery query hub/internal/cache/cache.go
 49. Relax the 341-repo fixture pin before the next fixture refresh (e7)
 50. Final: whole-repo build+test+lint+docs audit vs plan, then release
     procedure (drop hub's replace directive, tag core v0.1.0 first)

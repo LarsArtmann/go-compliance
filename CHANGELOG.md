@@ -36,6 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Hub tests: dashboard stream tests use the datastartest request lifecycle instead of polling an `httptest.ResponseRecorder` across goroutines (`-race` flags the unsynchronized recorder; the full hub suite is race-clean now); the `waitForSubscriber` helper is deduplicated into `hub/internal/testsupport`.
 - Dashboard relative times: row cells opt into the 30s client-side tick via the bare `data-tc-relative` attribute (no per-row `<script>` — patches stay lean), and the page carries exactly one AutoRefresh carrier, a "rendered X ago" freshness line whose freezing also makes a dead SSE stream visible. Pinned by a view_test.go regression test.
 - Hub `go mod tidy`: go-daemon and go-health sit in the direct require block they belong in (the vendored module set is unchanged — the FOD hash proved identical).
+- Docs health: AGENTS.md (hub conventions, FOD self-reference lesson, wrapcheck v2 key gotcha, testing canon) and ROADMAP.md (adoption triggers, federation build-on-demand options, the blocked M26 endgame question) created; all six status reports annotated inline (41 historical open items resolved with evidence or routed); docs-gates battery fully green (freshness, audit-all, annotate, routing, cadence).
+- Repo hygiene: `.gitignore` documents that generated `*_templ.go` files are committed deliberately; `scripts/refresh-fixture.sh` header documents the 341-repo fixture refresh ritual; lint config excludes `examples/` demo programs from forbidigo/gosec/mnd (demo printing and illustrative payload are the point).
 
 ### Deprecated
 

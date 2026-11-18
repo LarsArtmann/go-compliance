@@ -8,12 +8,12 @@ projects) to the one-line SDK call (everything else).
 
 A repository lands in exactly one state:
 
-| State          | Meaning                                                    |
-| -------------- | ---------------------------------------------------------- |
-| `compliant`    | Evidence in the window, no failures, last run fresh        |
-| `failing`      | Any failed step row in the window (honest accounting)      |
-| `stale`        | Evidence exists but the last run is older than `staleAfter` |
-| `never-covered`| Discovered by the fleet but no evidence at all             |
+| State           | Meaning                                                     |
+| --------------- | ----------------------------------------------------------- |
+| `compliant`     | Evidence in the window, no failures, last run fresh         |
+| `failing`       | Any failed step row in the window (honest accounting)       |
+| `stale`         | Evidence exists but the last run is older than `staleAfter` |
+| `never-covered` | Discovered by the fleet but no evidence at all              |
 
 The honesty rule matters: one failing step anywhere in the evidence window
 keeps the repo `failing`, even when the latest run's verdict is `passed`.

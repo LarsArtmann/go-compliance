@@ -167,20 +167,20 @@ error, see §d3) and one nix nondeterminism is unresolved (§d4).
 
 **Unbreak + finish M19 (do these first):**
 
-1. Update the 3 `bindAddress` call sites in `bind_internal_test.go`
-   (ctx-threaded signature).
-2. Run hub tests; fix any fallout from the session's hub edits.
+1. ~~Update the 3 `bindAddress` call sites in `bind_internal_test.go`~~ done — bind_internal_test.go call sites ctx-threaded
+   ~~(ctx-threaded signature).~~
+2. ~~Run hub tests; fix any fallout from the session's hub edits.~~ done — hub suites green
 3. Re-run hub lint; fix remaining findings: discovery client bodyclose
    (:155), err113 ×2 (sentinel errors), mnd 1024 (read buffer const).
-4. routes.go SplitSeq ×2 (modernize stringsseq).
-5. table_test.go:73 gocritic offBy1 (Index()+1).
-6. table_internal_test.go: colors var → package-scope fixture pattern;
-   sloglint → `slog.DiscardHandler`.
+4. ~~routes.go SplitSeq ×2 (modernize stringsseq).~~ done — routes.go SplitSeq
+5. ~~table_test.go:73 gocritic offBy1 (Index()+1).~~ done — table_test.go offBy1 guard
+6. ~~table_internal_test.go: colors var → package-scope fixture pattern;~~ done — table_internal_test.go package-scope fixture + slog.DiscardHandler
+   ~~sloglint → `slog.DiscardHandler`.~~
 7. routes_test.go:47 remove stale `//nolint:bodyclose`.
-8. app_test.go:229 noctx → `net.ListenConfig`.
+8. ~~app_test.go:229 noctx → `net.ListenConfig`.~~ done — app_test.go net.ListenConfig
 9. flags.go: tagalign ×8 + embedded-field-before-regular order
    (`golangci-lint fmt` likely fixes alignment).
-10. events.go:228 contextcheck (r.Context or documented nolint).
+10. ~~events.go:228 contextcheck (r.Context or documented nolint).~~ done — events.go contextcheck nolint with reason
 11. Hub lint → 0, hub tests green, `-count=1` both modules.
 12. Write `.github/workflows/ci.yml`: per-module build+test (GOWORK=off),
     lint job pinned golangci-lint v2.15.0, dprint job, stack-drift-check job,
@@ -202,7 +202,7 @@ error, see §d3) and one nix nondeterminism is unresolved (§d4).
 
 **Then the remaining plan (M21–M27, quality debts, final pass):**
 
-20. M21/F094: `examples/reporter/main.go` using `compliance.Record`.
+20. ~~M21/F094: `examples/reporter/main.go` using `compliance.Record`.~~ done — examples/reporter/main.go
 21. M21/F095: `docs/guides/integrate.md` — one line per project.
 22. M21/F096: README screenshots (terminal table + WebUI from fixture).
 23. M22/F097: benchmark fold+derive at 300 repos.
@@ -212,7 +212,7 @@ error, see §d3) and one nix nondeterminism is unresolved (§d4).
 27. M24/F101: `docs/decisions/` v2 wire design doc (diff vs v1).
 28. M24/F102: compat policy — v1 emittable forever.
 29. M25/F103: federation research (hub ↔ go-health-dashboard).
-30. M25/F104: `docs/notes/federation-interop.md`.
+30. ~~M25/F104: `docs/notes/federation-interop.md`.~~ done — docs/notes/federation-interop.md
 31. M27/F107: fix `queryLatestRunCounts` N+1 (cache.go:221, single window
     query).
 32. M27/F108: store write-hook → `hub.PublishRefresh`; discovery
@@ -224,10 +224,10 @@ error, see §d3) and one nix nondeterminism is unresolved (§d4).
 37. Quality: AGENTS.md for this repo (hub conventions, lint policy incl.
     §e5 trim rationale, verified API facts, ginkgo fixture pattern).
 38. Quality: .gitignore templ generated-file note.
-39. Quality: fixture-refresh ritual doc (scripts/refresh-fixture.sh usage).
+39. ~~Quality: fixture-refresh ritual doc (scripts/refresh-fixture.sh usage).~~ done — scripts/refresh-fixture.sh ritual header
 40. Final pass: per-module `GOWORK=off` build+test both modules.
-41. Final pass: plan-vs-tree audit (every F001–F109 accounted).
-42. Final pass: docs-health HARVEST of THIS report's §f into TODO_LIST.md.
+41. ~~Final pass: plan-vs-tree audit (every F001–F109 accounted).~~ done — audited 2026-11-18 — 106 verified / 3 owner-blocked (F075 Forgejo visibility, F105/F106 M26) / 0 missing
+42. ~~Final pass: docs-health HARVEST of THIS report's §f into TODO_LIST.md.~~ done — this harvest (2026-11-18 final pass)
 43. Final pass: CHANGELOG Unreleased section complete for the whole train.
 
 **Longer/conditional:**

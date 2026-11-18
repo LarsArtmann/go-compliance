@@ -166,7 +166,7 @@ choices were not validated against the tag vocabulary.
 10. Decide + document the reporter write path (HTTP ingest vs file drop) (S/M)
 
 **Hub**
-11. Init `go-compliance/hub` module (S)
+11. ~~Init `go-compliance/hub` module (S)~~ done — hub/go.mod — hub module exists (M2)
 12. cmdguard CLI shell: `serve` / `report` / `table` (M)
 13. go-output terminal fleet table (S)
 14. go-sqlitestore evidence cache + versioned migrations (M)
@@ -174,32 +174,32 @@ choices were not validated against the tag vocabulary.
 16. BuildFlow adapter: CLI-spawn mode (overview "auto" precedent) (S)
 17. Discovery daemon HTTP client (`/v1/discover`) (M)
 18. never-covered derivation: discovery fleet ∪ evidence repos (S)
-19. SSE broadcaster wiring (go-sse) (S)
+19. ~~SSE broadcaster wiring (go-sse) (S)~~ done — hub/internal/events/events.go — go-sse broadcaster + heartbeat
 20. go-datastar patch stream for state changes (M)
 21. templ-components fleet table page (M)
 22. Filter chips + severity grouping (mirror go-health-dashboard UX) (M)
 23. `RegisterRoutes(mux)` embed surface (S)
 24. Auth/bind posture decision + implementation (S) [owner Q1]
-25. go-health self-probe (S)
+25. ~~go-health self-probe (S)~~ done — hub/internal/cli/health.go — go-health probe surface
 26. go-daemon sd_notify + systemd unit (S)
 27. JSON API endpoint emitting v1-compat contract (S)
-28. Hub v2 API sketch (deferred by design — only when v1 is solid) (M)
+28. ~~Hub v2 API sketch (deferred by design — only when v1 is solid) (M)~~ done — docs/decisions/v2-wire-design.md
 29. Watch-mode: hub re-derives on evidence writes + discovery `/v1/watch` (M)
-30. Staleness/`never-covered` in the WebUI with distinct badges (S)
+30. ~~Staleness/`never-covered` in the WebUI with distinct badges (S)~~ done — hub/internal/dashboard/rows.templ StateBadge — stale amber, never-covered gray
 
 **Repo hygiene**
-31. flake.nix via go-nix-helpers (M)
-32. LICENSE (MIT) + AUTHORS (S)
-33. dprint.json + `nix fmt` wiring (S)
-34. ginkgo/gomega suite bootstrap (S)
+31. ~~flake.nix via go-nix-helpers (M)~~ done — flake.nix — go-nix-helpers prepared source
+32. ~~LICENSE (MIT) + AUTHORS (S)~~ done — LICENSE + AUTHORS in-tree
+33. ~~dprint.json + `nix fmt` wiring (S)~~ done — dprint.json + nix fmt gate
+34. ~~ginkgo/gomega suite bootstrap (S)~~ done — ginkgo suite bootstraps (events, dashboard, cli)
 35. CI workflows (build/test/lint per module) (M)
 36. Drift-check pre-commit or flake check hook (S)
-37. TODO_LIST.md + FEATURES.md + DOMAIN_LANGUAGE.md (S)
+37. ~~TODO_LIST.md + FEATURES.md + DOMAIN_LANGUAGE.md (S)~~ done — TODO_LIST.md + FEATURES.md + docs/DOMAIN_LANGUAGE.md
 38. CHANGELOG.md initial Unreleased section (S)
 39. `examples/` with a runnable reporter (S)
 40. Benchmark: evidence fold over 300+ repos (S)
 41. Docs guide: "integrate a project in one line" (S)
-42. meta: revisit importance + tag consumers when adopted (S)
+42. meta: revisit importance + tag consumers when adopted (S) **→ ROADMAP.md adoption triggers**
 
 **Cross-repo**
 43. BuildFlow TODO_LIST pointer: extraction verdict → go-compliance (S)

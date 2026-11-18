@@ -214,8 +214,8 @@ templ-components v1.27.0 (skill loaded before authoring):
 **M17 docs (5)**
 2. dprint.json + format check.
 3. TODO_LIST.md seeded from the plan (annotate plan, never rewrite).
-4. FEATURES.md honest inventory (core + hub).
-5. DOMAIN_LANGUAGE.md core terms.
+4. ~~FEATURES.md honest inventory (core + hub).~~ done — FEATURES.md
+5. ~~DOMAIN_LANGUAGE.md core terms.~~ done — docs/DOMAIN_LANGUAGE.md
 6. CHANGELOG.md Unreleased section.
 
 **M18 nix (4)**
@@ -231,7 +231,7 @@ templ-components v1.27.0 (skill loaded before authoring):
 14. workflow files validated on both runner flavors.
 
 **M21 examples (3)**
-15. examples/reporter/main.go.
+15. ~~examples/reporter/main.go.~~ done — examples/reporter/main.go
 16. One-line integration guide.
 17. README screenshots (terminal table + WebUI).
 
@@ -267,8 +267,8 @@ templ-components v1.27.0 (skill loaded before authoring):
 34. Shared `waitForSubscriber`/AwaitSubscriber test helper.
 35. Dynamic port in serve smoke test.
 36. Patch purity check for RelativeTime (align with dashboard pattern).
-37. .gitignore templ-commit note.
-38. AGENTS.md: hub conventions learned this session.
+37. ~~.gitignore templ-commit note.~~ done — .gitignore templ-commit note
+38. ~~AGENTS.md: hub conventions learned this session.~~ done — AGENTS.md
 39. gofmt/format gate for .templ sources in CI (templ fmt check).
 
 **Release hygiene (6)**

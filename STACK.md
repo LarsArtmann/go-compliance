@@ -12,13 +12,13 @@
 
 ## Profile
 
-| Axis         | Answer                                                                                                                                                                                            |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shape        | Two modules: dep-light core library + hub (HTTP service with realtime WebUI + cmdguard CLI)                                                                                                       |
-| Domain       | Fleet compliance evidence: per-project gate/health states over time windows (compliant / failing / stale / never-covered)                                                                         |
-| Persistence  | SQLite (hub evidence cache; BuildFlow state DB stays source of truth, consumed via adapter)                                                                                                       |
-| Interfaces   | terminal tables, HTTP + SSE WebUI (Datastar), JSON API (frozen v1 overview-compat + hub v2), unix-socket HTTP (discovery)                                                                         |
-| Scale target | Single operator, fleet of ~280 local repos, one single-binary hub service                                                                                                                         |
+| Axis         | Answer                                                                                                                                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Shape        | Two modules: dep-light core library + hub (HTTP service with realtime WebUI + cmdguard CLI)                                                                                                                                    |
+| Domain       | Fleet compliance evidence: per-project gate/health states over time windows (compliant / failing / stale / never-covered)                                                                                                      |
+| Persistence  | SQLite (hub evidence cache; BuildFlow state DB stays source of truth, consumed via adapter)                                                                                                                                    |
+| Interfaces   | terminal tables, HTTP + SSE WebUI (Datastar), JSON API (frozen v1 overview-compat + hub v2), unix-socket HTTP (discovery)                                                                                                      |
+| Scale target | Single operator, fleet of ~280 local repos, one single-binary hub service                                                                                                                                                      |
 | Constraints  | nix flake build, Go 1.27 floor, systemd via sd_notify; hosting: Forgejo (evo-x2) primary + GitHub mirror, both public. Core module is public-clean; the hub builds against one PRIVATE dep (go-daemon) — see errata 2026-11-18 |
 
 ## Module layout (mirrors the go-health / go-health-dashboard split rationale)

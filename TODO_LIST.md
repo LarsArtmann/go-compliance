@@ -29,14 +29,14 @@ see CHANGELOG)
 
 ## Low Impact
 
-| Task                                                        | Status    | Impact | Effort | Evidence                                                           |
-| ----------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------ |
-| Drop hub `replace` directive when core tags v0.1.0          | 🔴 `TODO` | Low    | 10m    | `hub/go.mod` replace block                                         |
+| Task                                               | Status    | Impact | Effort | Evidence                   |
+| -------------------------------------------------- | --------- | ------ | ------ | -------------------------- |
+| Drop hub `replace` directive when core tags v0.1.0 | 🔴 `TODO` | Low    | 10m    | `hub/go.mod` replace block |
 
 ## Blocked (owner decisions)
 
-| Task                                                        | Status       | Impact | Effort | Evidence                     |
-| ------------------------------------------------------------ | ------------ | ------ | ------ | ---------------------------- |
-| M26: overview endgame (replace vs coexist) + migration note | 🔵 `BLOCKED` | Med    | 30m    | owner question g2 unanswered |
-| Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs | 🔵 `BLOCKED` | High | 10m | owner-only; README CI section documents the requirement |
-| Forgejo repo visibility (lars/go-compliance → public?)      | 🔵 `BLOCKED` | Low    | 5m     | manual UI action, owner-only |
+| Task                                                                | Status       | Impact | Effort | Evidence                                                |
+| ------------------------------------------------------------------- | ------------ | ------ | ------ | ------------------------------------------------------- |
+| M26: overview endgame (replace vs coexist) + migration note         | 🔵 `BLOCKED` | Med    | 30m    | owner question g2 unanswered                            |
+| Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs | 🔵 `BLOCKED` | High   | 10m    | owner-only; README CI section documents the requirement |
+| Forgejo repo visibility (lars/go-compliance → public?)              | 🔵 `BLOCKED` | Low    | 5m     | manual UI action, owner-only                            |

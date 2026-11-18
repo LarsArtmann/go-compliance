@@ -69,7 +69,7 @@
 
 ## f) Top #25 things to get done next!
 
-1. Apply the postPatchExtra hub-replace injection to flake.nix (edit tool, not heredoc).
+1. ~~Apply the postPatchExtra hub-replace injection to flake.nix (edit tool, not heredoc).~~ done — flake.nix postPatchExtra hub-replace injection live
 2. Bootstrap the hub vendorHash (`nix build .#compliance-hub` → paste `got:` hash → repeat until build).
 3. Bootstrap the core vendorHash (`checks.core-build`).
 4. `nix flake check` green (F085) — M18 complete.
@@ -78,7 +78,7 @@
 7. M19: lint job pinned to the devShell golangci version (write `.golangci.yml` first — overlaps the lint debt).
 8. M19: dprint + docs-gates (freshness battery) jobs; actionlint the workflow itself (actionlint already in devShell).
 9. M21: `examples/reporter/main.go` (uses `compliance.Record`, compiles standalone, go build -o /dev/null test).
-10. M21: docs/guides/integrate.md — the one-line-per-project promise.
+10. ~~M21: docs/guides/integrate.md — the one-line-per-project promise.~~ done — docs/guides/integrate.md
 11. M21: README screenshots (terminal table + WebUI) — render from fixture.
 12. M22: benchmark fold+derive at 300 repos (synthetic + fixture), commit baseline under `benchmarks/`.
 13. M23: BuildFlow repo TODO_LIST pointer row + link (cross-repo edit).
@@ -92,7 +92,7 @@
 21. Quality: `go test -race ./internal/...` hub-wide.
 22. Quality: shared `waitForSubscriber` helper; RelativeTime patch-purity check.
 23. Quality: AGENTS.md with hub conventions + the verified API facts.
-24. Quality: .gitignore note (generated `*_templ.go` committed), fixture-refresh ritual doc.
+24. ~~Quality: .gitignore note (generated `*_templ.go` committed), fixture-refresh ritual doc.~~ done — .gitignore note + scripts/refresh-fixture.sh ritual header
 25. Upstream (owner-gated): fix + push go-nix-helpers FOD double-cd; then simplify this flake back onto the module path.
 
 ## g) Top #1 question I can NOT figure out myself!
