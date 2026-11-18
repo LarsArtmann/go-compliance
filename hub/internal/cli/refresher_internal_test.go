@@ -14,6 +14,7 @@ import (
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/cache"
 	"github.com/larsartmann/go-compliance/hub/internal/dashboard"
+	"github.com/larsartmann/go-compliance/hub/internal/discovery"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
 
@@ -125,6 +126,23 @@ var _ = Describe("refresh freshness guard", func() {
 
 		Expect(refresher.Refresh(context.Background())).NotTo(Succeed())
 		Expect(refresher.LastRefreshSuccess()).To(BeZero())
+	})
+})
+
+var _ = Describe("discovery contact stamping", func() {
+	It("keeps the last contact stamp on a failed snapshot and never regresses it", func() {
+		refresher := newRefresher(events.NewHub(), nil, time.Hour, 24*time.Hour, 3, "")
+		dead := discovery.New(filepath.Join(GinkgoTB().TempDir(), "missing.sock"))
+
+		Expect(refresher.LastDiscoverySuccess()).To(BeZero())
+		Expect(refresher.refreshDiscovered(context.Background(), dead)).NotTo(Succeed())
+		Expect(refresher.LastDiscoverySuccess()).To(BeZero())
+
+		refresher.markDiscoverySuccess()
+		first := refresher.LastDiscoverySuccess()
+
+		Expect(refresher.refreshDiscovered(context.Background(), dead)).NotTo(Succeed())
+		Expect(refresher.LastDiscoverySuccess()).To(Equal(first))
 	})
 })
 

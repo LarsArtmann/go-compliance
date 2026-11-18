@@ -41,6 +41,12 @@ replaces).
   SILENTLY DROPPED by `run` — only `golangci-lint config verify` catches
   the loss. Policy: first-party LarsArtmann globs are already-wrapped
   boundaries; stdlib boundaries get real wraps or nolint-with-reason.
+  Both modules sit at 0 findings (verdict g3, 2026-11-18): real fixes +
+  nolint-with-reason for intentional globals/ports, NO baseline file —
+  the 0-finding gate stays honest. `golangci-lint fmt` applies the
+  configured goimports/gofumpt/golines; golines wraps directives ON a
+  code line, breaking suppression — always put `//nolint` block-form on
+  its own line ABOVE the statement.
 - **templ**: the generator is pinned (v0.3.1100, tool directive);
   generated `*_templ.go` files ARE committed (flake + CI consume them
   without a generate step — see .gitignore note). After editing any

@@ -24,6 +24,10 @@ const evidenceCheckName = "evidence"
 // truth but the process still serves — warn (200), never fail (503).
 const refreshFreshnessCheckName = "refresh-freshness"
 
+// discoveryCheckName is non-critical for the same verdict: discovery is
+// best-effort completeness of the never-covered set, not serving.
+const discoveryCheckName = "discovery"
+
 var (
 	// ErrEvidenceNotPublished is the evidence check's failure: the hub booted
 	// but has not folded evidence yet (source error or first query pending).
@@ -37,12 +41,20 @@ var (
 	// ErrRefreshStale wraps every past-threshold freshness failure with the
 	// concrete age.
 	ErrRefreshStale = errors.New("last successful refresh too old")
+
+	// ErrDiscoveryNeverContacted is the discovery check's never-answered
+	// state (daemon down since boot, or discovery not wired).
+	ErrDiscoveryNeverContacted = errors.New("discovery daemon never contacted")
+
+	// ErrDiscoverySilent wraps every past-threshold discovery silence with
+	// the concrete age.
+	ErrDiscoverySilent = errors.New("discovery daemon silent too long")
 )
 
 // buildHealthProbe wires the hub's health probe: liveness is always pass;
-// readiness/startup gate on published evidence; refresh-freshness warns
-// when the derive loop stops making progress; disk headroom keeps the
-// SQLite cache honest.
+// readiness/startup gate on published evidence; refresh-freshness and
+// discovery warn when their loops stop making progress; disk headroom
+// keeps the SQLite cache honest.
 func buildHealthProbe(
 	ctx context.Context, version string, hub *events.Hub, refresher *refresher, cacheDir string,
 ) (*health.Probe, error) {
@@ -63,6 +75,19 @@ func buildHealthProbe(
 			if age := time.Since(last); age > refreshFreshnessWarn {
 				return fmt.Errorf("%w: %s ago (warn threshold %s)",
 					ErrRefreshStale, age.Round(time.Second), refreshFreshnessWarn)
+			}
+
+			return nil
+		},
+		discoveryCheckName: func(_ context.Context) error {
+			last := refresher.LastDiscoverySuccess()
+			if last.IsZero() {
+				return ErrDiscoveryNeverContacted
+			}
+
+			if age := time.Since(last); age > discoveryStaleWarn {
+				return fmt.Errorf("%w: %s ago (warn threshold %s)",
+					ErrDiscoverySilent, age.Round(time.Second), discoveryStaleWarn)
 			}
 
 			return nil

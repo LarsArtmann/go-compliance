@@ -33,6 +33,12 @@ const (
 	// truth, not service loss. 10 min = two missed safety-net ticks, i.e.
 	// the derive loop is wedged or the source is dead.
 	refreshFreshnessWarn = 10 * time.Minute
+	// discoveryStaleWarn is the age of the last successful discovery
+	// contact (watch connect or snapshot) at which the non-critical
+	// discovery check degrades to warn — same warn-not-fail verdict as
+	// refreshFreshnessWarn: discovery is best-effort completeness, the
+	// hub stays useful without it.
+	discoveryStaleWarn = 10 * time.Minute
 )
 
 // refresher keeps the served rows live: every trigger (store write,
@@ -64,6 +70,11 @@ type refresher struct {
 	// successful Refresh (query AND publish); 0 = never succeeded. The
 	// refresh-freshness health check reads it via LastRefreshSuccess.
 	lastRefreshSuccess atomic.Int64
+
+	// lastDiscoverySuccess is the unix-nano stamp of the last successful
+	// discovery contact (watch connect or snapshot); 0 = never contacted.
+	// The discovery health check reads it via LastDiscoverySuccess.
+	lastDiscoverySuccess atomic.Int64
 
 	// queryTimeout defaults to refreshTimeout; tests shrink it.
 	queryTimeout time.Duration
@@ -110,6 +121,21 @@ func (r *refresher) Evidence() []compliance.RepoEvidence {
 // zero before the first success.
 func (r *refresher) LastRefreshSuccess() time.Time {
 	if nanos := r.lastRefreshSuccess.Load(); nanos != 0 {
+		return time.Unix(0, nanos)
+	}
+
+	return time.Time{}
+}
+
+// markDiscoverySuccess stamps a successful discovery contact.
+func (r *refresher) markDiscoverySuccess() {
+	r.lastDiscoverySuccess.Store(time.Now().UnixNano())
+}
+
+// LastDiscoverySuccess returns when the daemon last answered (watch
+// connect or snapshot); zero before the first contact.
+func (r *refresher) LastDiscoverySuccess() time.Time {
+	if nanos := r.lastDiscoverySuccess.Load(); nanos != 0 {
 		return time.Unix(0, nanos)
 	}
 
@@ -207,10 +233,14 @@ func runDiscoveryWatch(ctx context.Context, client *discovery.Client, refresh *r
 			continue
 		}
 
+		refresh.markDiscoverySuccess()
+
 		slog.Info("compliance-hub: discovery watch connected", "socket", client.SocketPath())
 
 		if err := refresh.refreshDiscovered(ctx, client); err != nil {
 			slog.Warn("compliance-hub: discovery snapshot failed", "error", err)
+		} else {
+			refresh.markDiscoverySuccess()
 		}
 
 		for event := range eventCh {

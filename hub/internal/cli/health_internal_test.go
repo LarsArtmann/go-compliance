@@ -12,6 +12,34 @@ import (
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
 
+var _ = Describe("health probe discovery check", func() {
+	It("warns — never fails — while the daemon has never been contacted, then passes on contact", func() {
+		refresher := newRefresher(nil, nil, time.Hour, 24*time.Hour, 3, "")
+		probe := booted(refresher)
+
+		before := probe.Evaluate(context.Background())
+		Expect(before.Checks[discoveryCheckName].Status).To(Equal(health.StatusWarn))
+		Expect(before.Checks[discoveryCheckName].Error).
+			To(ContainSubstring(ErrDiscoveryNeverContacted.Error()))
+		Expect(before.Status).To(Equal(health.StatusWarn))
+
+		refresher.markDiscoverySuccess()
+
+		after := probe.Evaluate(context.Background())
+		Expect(after.Checks[discoveryCheckName].Status).To(Equal(health.StatusPass))
+	})
+
+	It("warns with the silent age once the last contact exceeds the threshold", func() {
+		refresher := newRefresher(nil, nil, time.Hour, 24*time.Hour, 3, "")
+		refresher.lastDiscoverySuccess.Store(time.Now().Add(-discoveryStaleWarn - time.Minute).UnixNano())
+		probe := booted(refresher)
+
+		evaluated := probe.Evaluate(context.Background())
+		Expect(evaluated.Checks[discoveryCheckName].Status).To(Equal(health.StatusWarn))
+		Expect(evaluated.Checks[discoveryCheckName].Error).To(ContainSubstring(ErrDiscoverySilent.Error()))
+	})
+})
+
 var _ = Describe("health probe evidence gate", func() {
 	It("fails readiness until evidence is published, then passes", func() {
 		hub := events.NewHub()
