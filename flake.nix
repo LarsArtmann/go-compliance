@@ -136,6 +136,12 @@
             src = self;
             deps = privateDeps;
             inherit publicDeps;
+            # mkPreparedSource injects replace directives into the ROOT go.mod
+            # only; the hub sub-module needs its own. Replace paths resolve
+            # relative to the go.mod they live in, hence ../_local_deps.
+            postPatchExtra = ''
+              echo 'replace github.com/LarsArtmann/go-daemon => ../_local_deps/go-daemon' >> hub/go.mod
+            '';
           };
 
           compliance-hub = (pkgs.buildGoModule.override { go = pkgs.go_1_27; }) {
