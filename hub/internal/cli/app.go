@@ -96,10 +96,6 @@ func queryEvidence(
 		defer func() { _ = closer.Close() }()
 	}
 
-	if err != nil {
-		return nil, time.Time{}, 0, err
-	}
-
 	evidence, err := source.QueryEvidence(ctx, since, flags.WorstSteps, flags.Step)
 	if err != nil {
 		return nil, time.Time{}, 0, fmt.Errorf("source %s: %w", source.Name().Get(), err)

@@ -128,10 +128,16 @@ func NewHub(opts ...Option) *Hub {
 }
 
 // Rows returns a copy of the latest published rows; nil before the first
-// snapshot.
+// snapshot. The nil/non-nil split is load-bearing: health checks and stream
+// handlers gate "nothing published yet" on nil, while an empty published
+// fleet is a valid, ready state.
 func (h *Hub) Rows() []RepoRow {
 	h.rowsMu.RLock()
 	defer h.rowsMu.RUnlock()
+
+	if h.rows == nil {
+		return nil
+	}
 
 	rows := make([]RepoRow, len(h.rows))
 	for i, row := range h.rows {

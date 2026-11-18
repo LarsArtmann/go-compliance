@@ -184,6 +184,17 @@ var _ = Describe("events hub endpoint", func() {
 		Expect(current[0].Severities).To(Equal(map[string]int{"error": 1}))
 	})
 
+	It("returns nil rows only until the first publish; an empty fleet is published", func() {
+		hub := events.NewHub()
+		Expect(hub.Rows()).To(BeNil())
+
+		_, err := hub.PublishSnapshot(nil)
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(hub.Rows()).NotTo(BeNil())
+		Expect(hub.Rows()).To(BeEmpty())
+	})
+
 	It("carries state counts and totals on snapshots and updates", func() {
 		hub := events.NewHub()
 		_, err := hub.PublishSnapshot([]events.RepoRow{
