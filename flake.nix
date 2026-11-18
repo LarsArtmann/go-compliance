@@ -151,8 +151,8 @@
               # at a Go-files-only copy: no self-reference, and vendorHash
               # no longer churns on doc-only edits.
               mkdir -p _core_only
-              cp ../go.mod ../go.sum _core_only/
-              cp ../*.go _core_only/
+              cp go.mod go.sum _core_only/
+              cp *.go _core_only/
               sed -i 's|=> \.\./$|=> ../_core_only|' hub/go.mod
             '';
           };

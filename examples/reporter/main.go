@@ -24,13 +24,13 @@ func main() {
 	ctx := context.Background()
 	store := compliance.NewFileStore(path)
 
-	// The integration: your runner's last step records the run.
+	// The integration: your runner's last step records the run. A clean
+	// window (no failures) derives compliant.
 	err := compliance.RecordTo(ctx, store, compliance.NewRepoName("my-repo"),
 		compliance.RunResult{
 			Verdict:      compliance.VerdictPassed,
 			Runs:         3,
 			StepRows:     42,
-			Failures:     1,
 			GateFindings: map[string]int{"lint": 2},
 		})
 	if err != nil {
@@ -40,7 +40,8 @@ func main() {
 	fmt.Printf("recorded my-repo (passed) -> %s\n", path)
 
 	// A failing repo lands in the same document; the hub derives the
-	// failing state from it.
+	// failing state from it. Note the honesty rule: ANY failure in the
+	// window keeps a repo failing, even when the latest verdict passed.
 	err = compliance.RecordTo(ctx, store, compliance.NewRepoName("flaky-repo"),
 		compliance.RunResult{
 			Verdict:  compliance.VerdictFailed,
