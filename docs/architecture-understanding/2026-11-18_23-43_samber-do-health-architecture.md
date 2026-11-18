@@ -220,6 +220,8 @@ time; DI-lifecycle observability (samber-do-auditlog) becomes a compliance requi
 | Hub lint                  | `cd hub && golangci-lint run -c ../.golangci.yml ./...`                                                                                           | 0 issues, exit 0                                                                           |
 | art-dupl CI gate          | `art-dupl -t 1 --type-aware check --baseline-path .art-dupl-baseline.json .`                                                                      | exit 0, no new clones (3 baseline groups)                                                  |
 | README formatting         | `dprint check README.md`                                                                                                                          | exit 0                                                                                     |
+| docs-gates                | `nix run github:Artmann-Technologies/docs-gates -- run .`                                                                                         | re-run after harvest fixes, see below                                                      |
+| Flake fix (on sight)      | `nix build .#devShells.x86_64-linux.default`                                                                                                      | failed (stale templ-gen vendorHash, exact 23-40 §f1 scenario) → pasted `got:` hash → exit 0 |
 | go-health semantics cited | read from `/home/lars/projects/go-health` (v0.10.0 sibling checkout; the 20:02 session proved `git diff v0.10.0..HEAD` empty on every cited file) | probe.go:45,173 (1s cache); lifecycle.go:32-43,206-212; options.go:63-75; checks.go:37-44  |
 | Health check pins         | read `hub/internal/cli/health_internal_test.go`, `refresher_internal_test.go`, `events_test.go` structure                                         | all six checks + HTTP payload contract pinned                                              |
 
@@ -234,7 +236,17 @@ review of the command, re-run with output redirection for the numbers above.
 | File                                                                                | Change                                                                                                                    |
 | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `README.md`                                                                         | + "Health surface (packaged service)" subsection under Embedding (routes, checks, drain semantics; closes 20-02 item f21) |
+| `flake.nix`                                                                         | templ-gen `vendorHash` bootstrapped to the `got:` hash (unblocks every flake build; 23-40 §f1/f2 struck with evidence)     |
+| `TODO_LIST.md`                                                                      | + 2 Low Impact rows (io-history-ratchet anomaly 23-40 §f30, lychee exclusions §f41), + 2 Blocked rows (buildflow DB VACUUM §f25, expendable cache-DB deletion §f26, owner-only machine hygiene) |
+| `docs/status/2026-11-18_23-40_buildflow-full-run-vs-manual-gate-sweep.md`           | §f items 1, 2, 17 annotated with verdicts (vendorHash bootstrap DONE + devShell build green; `context.Background()` in `serveListener` verified intentional, not a bug) |
 | `docs/architecture-understanding/2026-11-18_23-43_samber-do-health-architecture.md` | this report                                                                                                               |
 
 No Go code changed in this pass; every health/DI behavior claim above is pinned by tests
 that were already committed by the same-day execution pass and re-run green here.
+
+On-sight fixes beyond the review's core scope, all caught while verifying the gates this
+report depends on: the stale templ-gen vendorHash (broke `nix flake check` for everyone,
+fixed by the documented bootstrap ritual), and the 23-40 report's unharvested items (the
+docs-gates freshness gate was red on arrival; harvested per the gate's own instruction:
+TODO rows for bounded work, blocked rows for owner-only machine hygiene, inline verdicts
+for the two verifiable items).

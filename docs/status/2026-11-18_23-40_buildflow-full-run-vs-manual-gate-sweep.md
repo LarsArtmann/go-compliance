@@ -90,8 +90,8 @@
 
 *P0 — unblock the broken build:*
 
-1. Bootstrap the stale `templ-gen` vendorHash (flake.nix:98): set placeholder → build devShell → paste `got: sha256-MMAoH…` → rebuild to convergence.
-2. Verify `nix build .#devShells.x86_64-linux.default` succeeds.
+1. ~~Bootstrap the stale `templ-gen` vendorHash (flake.nix:98): set placeholder → build devShell → paste `got: sha256-MMAoH…` → rebuild to convergence.~~ DONE 2026-11-18 ~23:58 (23-43 architecture re-review): the hash was still stale in the tree; `nix build .#devShells.x86_64-linux.default` reproduced the mismatch (specified `sha256-rmgaNGkN…`, got `sha256-MMAoHofeZzGNFsjxY4nrPRyaiKOk4fLYY+kIVmdAL3g=`), the `got:` hash pasted into flake.nix:98, rebuild converged green (exit 0) on the first paste.
+2. ~~Verify `nix build .#devShells.x86_64-linux.default` succeeds.~~ DONE 2026-11-18 ~23:58: exit 0 after the f1 fix (same verification).
 3. Refresh the stale `./result` symlink (`nix build .# -o result`) so vulnix scans the current closure.
 4. Re-run `buildflow -s lychee` and `buildflow -s vulnix` — flip both from failed to green.
 5. Add the devShell-build step to the standing verification ritual (AGENTS.md commands block).
@@ -112,7 +112,7 @@
 14. samber/lo: adopt as dependency (STACK.md decision-log entry required) or suppress the go-auto-upgrade pattern set; 25 findings currently withheld.
 15. go-humanize: replace manual relative-time formatting in `health.go:70`, `table.go:31`, `table.go:134` with `humanize.RelTime`, or accept-with-reason (note: the dashboard's templ `RelativeTime` is a separate surface; this is CLI-side).
 16. discovery client `http.Client` has no `Timeout` (io-surface, `client.go:84`) — add a timeout or document the unix-socket + watch-backoff rationale as deliberate.
-17. branching-flow: `serveListener` uses `context.Background()` while accepting a `context.Context` (`bind.go:118`) — likely a real fix; verify and wire the passed context.
+17. ~~branching-flow: `serveListener` uses `context.Background()` while accepting a `context.Context` (`bind.go:118`) — likely a real fix; verify and wire the passed context.~~ RESOLVED 2026-11-18 ~23:55 (23-43 architecture re-review): NOT a bug, verified intentional. bind.go:112-127 selects `context.Background()` precisely because the code runs in the `ctx.Done()` branch, i.e. the parent is ALREADY cancelled; the 5s graceful-drain window must not inherit that cancellation (inline comment + `//nolint:contextcheck // drain window must not inherit parent cancellation` at bind.go:121). Wiring the passed ctx would zero the drain window and sever in-flight requests at shutdown. Same rationale at serve.go:126 for the hub drain.
 18. branching-flow: brand `gateJSON`/`severityJSON` slots feeding `unmarshalCounts` raw params (`cache.go:245→340`) — decide type-branding vs accept.
 19. branching-flow mixin suggestions (Snapshot/Update, RepoEvidence/V1Repo, StepEvidence/V1Step, WindowHealth/V1Repo) — expected verdict: accept-with-reason (wire-contract mirroring is intentional); record once.
 20. nix-checker: extract vendorHashes to `vendorHash.nix` or accept the inline style as fleet convention (3+ findings).

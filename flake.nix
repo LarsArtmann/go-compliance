@@ -95,7 +95,7 @@
                 rev = "v0.3.1100";
                 hash = "sha256-QViQAMtCqaXS4GodlSCW/nE4Sox+EF49sbb7h9RBIS0=";
               };
-              vendorHash = "sha256-rmgaNGkN5nEiM0Nm5u6bIkrpCpgwQz+0cbi8ghZ9AvY=";
+              vendorHash = "sha256-MMAoHofeZzGNFsjxY4nrPRyaiKOk4fLYY+kIVmdAL3g=";
               postPatch = "rm -rf vendor";
               subPackages = [ "cmd/templ" ];
             };
