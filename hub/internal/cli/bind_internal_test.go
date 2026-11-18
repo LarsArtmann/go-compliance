@@ -53,7 +53,7 @@ var _ = Describe("bind address handling", func() {
 		})
 
 		It("creates the directory, serves requests, and restricts permissions", func() {
-			listener, err := bindAddress("unix:" + socketPath)
+			listener, err := bindAddress(context.Background(), "unix:"+socketPath)
 			Expect(err).NotTo(HaveOccurred())
 			DeferCleanup(func() { _ = listener.Close() })
 
@@ -80,7 +80,7 @@ var _ = Describe("bind address handling", func() {
 			Expect(os.MkdirAll(filepath.Dir(socketPath), 0o755)).To(Succeed())
 			Expect(os.WriteFile(socketPath, []byte("stale"), 0o644)).To(Succeed())
 
-			listener, err := bindAddress("unix:" + socketPath)
+			listener, err := bindAddress(context.Background(), "unix:"+socketPath)
 			Expect(err).NotTo(HaveOccurred())
 			DeferCleanup(func() { _ = listener.Close() })
 		})
@@ -89,7 +89,7 @@ var _ = Describe("bind address handling", func() {
 			filePath := filepath.Join(GinkgoTB().TempDir(), "occupied")
 			Expect(os.WriteFile(filePath, []byte("file"), 0o644)).To(Succeed())
 
-			_, err := bindAddress("unix:" + filepath.Join(filePath, "hub.sock"))
+			_, err := bindAddress(context.Background(), "unix:"+filepath.Join(filePath, "hub.sock"))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("create socket directory"))
 		})
