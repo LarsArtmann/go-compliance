@@ -8,6 +8,7 @@ import (
 
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
+	"github.com/larsartmann/go-compliance/hub/internal/testsupport"
 	"github.com/larsartmann/go-sse"
 	ssetest "github.com/larsartmann/go-sse/ssetest"
 )
@@ -116,7 +117,7 @@ var _ = Describe("events hub endpoint", func() {
 
 		published := make(chan error, 1)
 		go func() {
-			waitForSubscriber(hub)
+			testsupport.WaitForSubscriber(hub)
 			_, err := hub.PublishRefresh(rowsFor("fleet", compliance.StateFailing))
 			published <- err
 		}()
@@ -206,10 +207,3 @@ var _ = Describe("events hub endpoint", func() {
 		Expect(second).To(Equal("2"))
 	})
 })
-
-func waitForSubscriber(hub *events.Hub) {
-	deadline := time.Now().Add(5 * time.Second)
-	for hub.SubscriberCount() == 0 && time.Now().Before(deadline) {
-		time.Sleep(time.Millisecond)
-	}
-}

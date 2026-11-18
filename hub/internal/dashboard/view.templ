@@ -30,8 +30,16 @@ templ View(model ViewModel) {
 				<div id={ StatCardsID } class="mt-6">
 					@StatCards(events.CountStates(model.Rows), len(model.Rows))
 				</div>
-				<div class="mt-6" data-signals={ fmt.Sprintf("{\"stateFilter\":\"%s\"}", model.StateFilter) }>
+				<div class="mt-6 flex flex-wrap items-center justify-between gap-2" data-signals={ fmt.Sprintf("{\"stateFilter\":\"%s\"}", model.StateFilter) }>
 					@StateFilterChips(model.StateFilter)
+					// The one AutoRefresh=true RelativeTime on the page: it
+					// ships the singleton 30s tick script that keeps every
+					// data-tc-relative cell (rows included) honest, and its
+					// own text going stale is the dead-stream signal.
+					<span class="text-xs text-gray-400 dark:text-gray-500">
+						rendered
+						@display.RelativeTime(display.RelativeTimeProps{Time: model.RenderedAt})
+					</span>
 				</div>
 				<div class="mt-4">
 					@datastar.LiveRegion(datastar.LiveRegionProps{

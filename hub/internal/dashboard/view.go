@@ -1,6 +1,10 @@
 package dashboard
 
-import "github.com/larsartmann/go-compliance/hub/internal/events"
+import (
+	"time"
+
+	"github.com/larsartmann/go-compliance/hub/internal/events"
+)
 
 // ViewModel carries everything the page render needs; the templ components
 // stay dumb projections of it.
@@ -16,6 +20,13 @@ type ViewModel struct {
 	// StateFilter is the initially-selected filter chip ("all" when
 	// empty); it seeds the stateFilter signal and filters the rows.
 	StateFilter string
+	// RenderedAt is the page render instant, shown as a relative
+	// "rendered X ago" freshness line. Its RelativeTime is the ONE
+	// AutoRefresh carrier on the page: the singleton script it ships
+	// ticks every row's data-tc-relative cell (rows opt into the
+	// attribute without the script). A frozen "rendered 2 hours ago"
+	// next to fresh rows also makes a dead SSE stream visible.
+	RenderedAt time.Time
 }
 
 // Element identifiers the patch stream targets. The rows selector doubles

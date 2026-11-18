@@ -3,6 +3,7 @@ package dashboard
 import (
 	"fmt"
 
+	"github.com/a-h/templ"
 	"github.com/larsartmann/templ-components/display"
 
 	"github.com/larsartmann/go-compliance"
@@ -27,9 +28,19 @@ templ FleetRow(row events.RepoRow) {
 		<td>@StateBadge(row.State)</td>
 		<td>@severityCells(row.Severities)</td>
 		<td>
+			// RelativeTime defaults to AutoRefresh false here ON PURPOSE: the
+			// component couples that flag to emitting a per-instance <script>,
+			// and rows re-render inside every DataStar patch. The
+			// data-tc-relative attribute alone opts these cells into the
+			// page-level script's 30s tick (see View), so the server-rendered
+			// "3m ago" text stays honest without shipping N scripts per patch.
+			// The text itself is computed at render time — patches with
+			// identical row data can differ in this cell — but row diffing is
+			// data-driven, so clock drift never triggers spurious patches.
 			@display.RelativeTime(display.RelativeTimeProps{
 				Time:      row.LastRunAt,
 				EmptyText: "never",
+				Attrs:     templ.Attributes{"data-tc-relative": true},
 			})
 			if len(row.WorstSteps) > 0 {
 				<details class="mt-1 text-xs">
