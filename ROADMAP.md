@@ -26,6 +26,25 @@ only on a demand signal:
 - **D** — library convergence (go-compliance core as the shared
   evidence model inside go-health).
 
+## Deduplication and tooling ideas (2026-11-18 art-dupl audit)
+
+Raw ideas harvested from `docs/status/2026-11-18_17-49_art-dupl-dedup-audit-status.md` §f —
+not yet refined into tasks:
+
+- art-dupl calibration: a `--show-suppressed` pass to judge what the
+  actionability filter hides, hash-based detection (`-m hash`) as an audit
+  complement, and trend-tracking total clone tokens per audit.
+- Data-model candidate: a `WorstStepLimit` branded type with a defaulting
+  constructor (making invalid caps unrepresentable) — weigh public-API churn
+  before touching the v1-adjacent surface.
+- templ-components upstream candidate: an attribute-only "tickable"
+  RelativeTime mode so consumers stop hand-rolling
+  `templ.Attributes{"data-tc-relative": true}` (2026-11-18 final pass).
+- Owner decision pending: acceptance policy for intentional clones —
+  per-site `// art-dupl:accept` directives (current) vs a committed
+  `.art-dupl-baseline.json` + `art-dupl check` gate (mechanical,
+  hash-pinned). The actionable row lives in TODO_LIST.
+
 ## Endgame question (owner, g2 — BLOCKED)
 
 M26: does go-compliance replace the overview system or coexist?

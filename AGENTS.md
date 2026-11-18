@@ -62,6 +62,9 @@ replaces).
   worst-steps defaulting rule = `worstStepLimitOrDefault` (fold.go);
   dashboard filter validation delegates to `State.IsValid` so new core
   states are filterable without touching routes.go.
+- Re-open triggers: a 4th cache query site (extract the scan-callback
+  collector then); accept directives are line-proximity fragile (5-line
+  window) — expect drift after refactors near them, re-audit on sight.
 
 ## Testing Conventions
 

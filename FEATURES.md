@@ -23,12 +23,12 @@ not?
 
 | Feature                               | Status                | Evidence                             | Notes                                                       |
 | ------------------------------------- | --------------------- | ------------------------------------ | ----------------------------------------------------------- |
-| State model + derivation              | 🟢 `FULLY_FUNCTIONAL` | `state.go:108`; `state_test.go`      | compliant / failing / stale / never-covered, staleAfter arm |
-| v1 wire contract (marshal + decode)   | 🟢 `FULLY_FUNCTIONAL` | `v1.go:114`; `v1_golden_test.go`     | byte-exact vs real BuildFlow fixture; v2 rejected           |
-| Evidence fold + aggregation           | 🟢 `FULLY_FUNCTIONAL` | `fold.go:103`; `fold_test.go`        | source-agnostic, no SQL; worstStepLimit cap                 |
+| State model + derivation              | 🟢 `FULLY_FUNCTIONAL` | `state.go:112`; `state_test.go`      | compliant / failing / stale / never-covered, staleAfter arm |
+| v1 wire contract (marshal + decode)   | 🟢 `FULLY_FUNCTIONAL` | `v1.go:113`; `v1_golden_test.go`     | byte-exact vs real BuildFlow fixture; v2 rejected           |
+| Evidence fold + aggregation           | 🟢 `FULLY_FUNCTIONAL` | `fold.go:113`; `fold_test.go`        | source-agnostic, no SQL; worstStepLimit cap                 |
 | Source adapter interface              | 🟢 `FULLY_FUNCTIONAL` | `source.go:12`                       | ctx + window + step filter                                  |
 | FileSource (piped v1 document)        | 🟢 `FULLY_FUNCTIONAL` | `adapter.go`; `adapter_test.go`      | missing-file TTL backoff (overview precedent)               |
-| CommandSource (`buildflow` CLI spawn) | 🟢 `FULLY_FUNCTIONAL` | `adapter.go:197`                     | timeout + max-output knobs                                  |
+| CommandSource (`buildflow` CLI spawn) | 🟢 `FULLY_FUNCTIONAL` | `adapter.go:190`                     | timeout + max-output knobs                                  |
 | Reporter SDK one-liner (`Record`)     | 🟢 `FULLY_FUNCTIONAL` | `reporter.go:63`; `reporter_test.go` | memory + file writers                                       |
 | Branded types (RepoName, SourceName)  | 🟢 `FULLY_FUNCTIONAL` | `branded.go`; `branded_test.go`      | via go-branded-id                                           |
 | Error family                          | 🟢 `FULLY_FUNCTIONAL` | `errors.go`; `errors_test.go`        | sentinels + go-error-family classification                  |
@@ -38,15 +38,15 @@ not?
 | Feature                               | Status                    | Evidence                                    | Notes                                                    |
 | ------------------------------------- | ------------------------- | ------------------------------------------- | -------------------------------------------------------- |
 | CLI (`serve` / `report` / `table`)    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/app.go:65`; `app_test.go` | cmdguard v5; flag parity with BuildFlow muscle memory    |
-| SQLite evidence cache + migrations    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cache/cache.go:55`            | single correlated-subquery latest-records query (no N+1) |
-| Discovery client (`/v1/discover`)     | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/discovery/client.go:72`       | never-covered derivation + `/v1/watch` stream (M27)      |
-| SSE events hub (`/events`, replay)    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/events/events.go:109`         | Last-Event-ID replay, heartbeat, ring store              |
+| SQLite evidence cache + migrations    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cache/cache.go:56`            | single correlated-subquery latest-records query (no N+1) |
+| Discovery client (`/v1/discover`)     | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/discovery/client.go:75`       | never-covered derivation + `/v1/watch` stream (M27)      |
+| SSE events hub (`/events`, replay)    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/events/events.go:112`         | Last-Event-ID replay, heartbeat, ring store              |
 | Dashboard page (templ-components)     | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/dashboard/view.templ`         | stat cards, badges, severity cells, empty state          |
 | DataStar patch stream + SDK bundle    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/dashboard/dashboard.go:72`    | three-way diff → append/replace/remove patches           |
 | Filter chips + JSON negotiation       | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/dashboard/routes.go`          | `?state=` filter; browsers get HTML, clients get JSON    |
 | Health probe (`/healthz` etc.)        | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/health.go`; `app_test.go` | go-health; evidence + cache-disk checks                  |
-| sd_notify + watchdog                  | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/bind.go:81`               | go-daemon; listener-first ordering                       |
-| Unix-socket bind + non-localhost warn | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/bind.go:24`; bind tests   | socket 0o660, stale-remove, cleanup on shutdown          |
+| sd_notify + watchdog                  | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/bind.go:95`               | go-daemon; listener-first ordering                       |
+| Unix-socket bind + non-localhost warn | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/bind.go:23`; bind tests   | socket 0o660, stale-remove, cleanup on shutdown          |
 | systemd unit (hardened)               | 🟡 `PARTIALLY_FUNCTIONAL` | `deploy/compliance-hub.service`             | reviewed vs nixos-module precedent; not yet deployed     |
 | Watch mode (live re-derive)           | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/refresher.go`; E2E test   | store write-hook + discovery watch + debounce (M27)      |
 
@@ -62,4 +62,3 @@ not?
 | Benchmarks + baseline                | 🟢 `FULLY_FUNCTIONAL` | `bench_test.go`; `benchmarks/baseline.txt`              | fold @341 ≈ 150µs; derive zero-alloc                            |
 | v2 wire design                       | 🟢 `DOCUMENTED`       | `docs/decisions/v2-wire-design.md`                      | design sketch; v1 stays emittable forever                       |
 | Federation (go-health-dashboard)     | 🟢 `DOCUMENTED`       | `docs/notes/federation-interop.md`                      | passive scrape is the default; build on demand signal           |
-| Live re-derive (watch mode)          | 🟢 `FULLY_FUNCTIONAL` | `hub/internal/cli/refresher_internal_test.go`           | store write-hook + discovery watch + debounce (E2E-verified)    |

@@ -39,13 +39,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Docs health: AGENTS.md (hub conventions, FOD self-reference lesson, wrapcheck v2 key gotcha, testing canon) and ROADMAP.md (adoption triggers, federation build-on-demand options, the blocked M26 endgame question) created; all six status reports annotated inline (41 historical open items resolved with evidence or routed); docs-gates battery fully green (freshness, audit-all, annotate, routing, cadence).
 - Repo hygiene: `.gitignore` documents that generated `*_templ.go` files are committed deliberately; `scripts/refresh-fixture.sh` header documents the 341-repo fixture refresh ritual; lint config excludes `examples/` demo programs from forbidigo/gosec/mnd (demo printing and illustrative payload are the point).
 - Final pass: plan-vs-tree audit of all 109 plan features (F001–F109) — 106 verified against artifacts, 3 owner-blocked (Forgejo repo visibility, M26 endgame pair), zero missing; full battery green (build+vet+test -race+lint both modules, `nix flake check`, docs-gates 5/5).
-- Final pass: plan-vs-tree audit of all 109 plan features (F001–F109) — 106 verified against artifacts, 3 owner-blocked (Forgejo repo visibility, M26 endgame pair), zero missing; full battery green (build+vet+test -race+lint both modules, `nix flake check`, docs-gates 5/5).
+- Docs health (2026-11-18, second pass): the art-dupl audit report's open items harvested into TODO_LIST (verified against code first: watch-stream bodyclose, dashboard state-filter contract test, art-dupl baseline gate, refresher varnamelen, `queryLatestRecords` result struct, dead nilness check, two cross-repo rows) and ROADMAP (dedup/tooling ideas section); FEATURES.md evidence cites re-verified line-by-line against the tree (six stale line numbers corrected after the dedup edits; duplicated watch-mode row consolidated); README "Planned shape" heading corrected — both modules are built.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- Nix: hub `vendorHash` refreshed after the dedup-audit session's core edits (the `_core_only` isolation means Go-file edits change the vendored hash even when docs do not); `nix flake check` re-proven green with the new hash.
 
 ### Security
 

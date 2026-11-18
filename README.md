@@ -4,7 +4,7 @@ Fleet compliance evidence for every LarsArtmann project: one state model
 (`compliant` / `failing` / `stale` / `never-covered`), one frozen wire
 contract, a realtime WebUI, and adapters instead of per-project plumbing.
 
-> **Status: inception.** Core module and hub are built and tested: state
+> **Status: built, pre-release.** Core module and hub are built and tested: state
 > model, evidence fold, frozen v1 contract, reporter SDK, the hub service
 > with realtime WebUI, SQLite cache, and discovery adapter. See
 > [FEATURES.md](FEATURES.md) and [STACK.md](STACK.md).
@@ -13,7 +13,7 @@ contract, a realtime WebUI, and adapters instead of per-project plumbing.
 
 ![Realtime fleet dashboard](docs/assets/dashboard.png)
 
-## Planned shape
+## Architecture
 
 - **Core module** (`github.com/larsartmann/go-compliance`) — domain types,
   state derivation over evidence windows, the frozen v1 contract, a `Source`
