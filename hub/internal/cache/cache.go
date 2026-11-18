@@ -147,7 +147,7 @@ func (s *Store) QueryEvidence(
 		return nil, err
 	}
 
-	latest, findings, severities, err := s.queryLatestRecords(ctx)
+	records, err := s.queryLatestRecords(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -159,9 +159,9 @@ func (s *Store) QueryEvidence(
 
 	return compliance.FoldEvidence(compliance.FoldInput{
 		WindowHealth:      health,
-		LatestRuns:        latest,
-		GateFindings:      findings,
-		FindingSeverities: severities,
+		LatestRuns:        records.runs,
+		GateFindings:      records.findings,
+		FindingSeverities: records.severities,
 		Versions:          versions,
 		WorstStepLimit:    worstStepLimit,
 	}), nil
@@ -204,13 +204,22 @@ ORDER BY repo`, from)
 	return health, wrapIterateErr(rows.Err(), "iterate window health")
 }
 
+// latestRecords is the triple queryLatestRecords scans out of one row
+// set: each repo's newest run plus that record's gate findings and
+// severity counts.
+type latestRecords struct {
+	runs       []compliance.LatestRun
+	findings   []compliance.RepoFindings
+	severities []compliance.RepoSeverities
+}
+
 // queryLatestRecords returns each repo's all-history newest record in ONE
 // query: the latest-run fields plus that record's gate findings and
 // severity counts (the per-repo follow-up loop was an N+1; a correlated
 // id-subquery selects the same rows the latest-runs query picked).
 func (s *Store) queryLatestRecords(
 	ctx context.Context,
-) ([]compliance.LatestRun, []compliance.RepoFindings, []compliance.RepoSeverities, error) {
+) (latestRecords, error) {
 	rows, err := s.queryRows(ctx, "query latest records", `
 SELECT r.repo, r.recorded_at, r.verdict, r.producer_version, r.gate_findings, r.severity_counts
 FROM evidence_runs r
@@ -222,26 +231,26 @@ WHERE r.id = (
 )
 ORDER BY r.repo`)
 	if err != nil {
-		return nil, nil, nil, err
+		return latestRecords{}, err
 	}
 	defer func() { _ = rows.Close() }()
 
-	var (
-		runs       = make([]compliance.LatestRun, 0, latestRecordsCapacity)
-		findings   = make([]compliance.RepoFindings, 0, latestRecordsCapacity)
-		severities = make([]compliance.RepoSeverities, 0, latestRecordsCapacity)
-	)
+	records := latestRecords{
+		runs:       make([]compliance.LatestRun, 0, latestRecordsCapacity),
+		findings:   make([]compliance.RepoFindings, 0, latestRecordsCapacity),
+		severities: make([]compliance.RepoSeverities, 0, latestRecordsCapacity),
+	}
 
 	for rows.Next() {
 		var repo, recordedAt, verdict, version, gateJSON, severityJSON string
 
 		if err := rows.Scan(&repo, &recordedAt, &verdict, &version, &gateJSON, &severityJSON); err != nil {
-			return nil, nil, nil, compliance.NewIOError(err, "scan latest record")
+			return latestRecords{}, compliance.NewIOError(err, "scan latest record")
 		}
 
 		name := compliance.NewRepoName(repo)
 
-		runs = append(runs, compliance.LatestRun{
+		records.runs = append(records.runs, compliance.LatestRun{
 			Repo:       name,
 			LastRunAt:  compliance.ParseWireTime(recordedAt),
 			HasVerdict: true,
@@ -251,23 +260,23 @@ ORDER BY r.repo`)
 
 		gate, err := unmarshalCounts(gateJSON)
 		if err != nil {
-			return nil, nil, nil, compliance.NewParseError(err, "decode gate findings for %s", repo)
+			return latestRecords{}, compliance.NewParseError(err, "decode gate findings for %s", repo)
 		}
 
 		sev, err := unmarshalCounts(severityJSON)
 		if err != nil {
-			return nil, nil, nil, compliance.NewParseError(err, "decode severity counts for %s", repo)
+			return latestRecords{}, compliance.NewParseError(err, "decode severity counts for %s", repo)
 		}
 
-		findings = append(findings, compliance.RepoFindings{Repo: name, Findings: gate})
-		severities = append(severities, compliance.RepoSeverities{Repo: name, Severities: sev})
+		records.findings = append(records.findings, compliance.RepoFindings{Repo: name, Findings: gate})
+		records.severities = append(records.severities, compliance.RepoSeverities{Repo: name, Severities: sev})
 	}
 
 	if err := wrapIterateErr(rows.Err(), "iterate latest records"); err != nil {
-		return nil, nil, nil, err
+		return latestRecords{}, err
 	}
 
-	return runs, findings, severities, nil
+	return records, nil
 }
 
 // art-dupl:accept the rows lifecycle is database/sql idiom; a collector taking scan callbacks costs more ceremony than the shared lines
