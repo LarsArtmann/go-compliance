@@ -67,6 +67,8 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 			return err
 		}
 
+		slog.Info("compliance-hub: health probe started (startup latch set)", "version", Version)
+
 		board := dashboard.New(hub)
 
 		mux := http.NewServeMux()

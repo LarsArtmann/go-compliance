@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"path/filepath"
+	"sort"
 	"sync"
 	"time"
 
@@ -134,6 +136,7 @@ func buildHealthProbe(
 	probe := health.NewChecks(checksByName,
 		health.WithVersion(version),
 		health.WithCriticalServices(evidenceCheckName),
+		health.WithEvaluationHook(checkTransitions()),
 	)
 
 	if err := probe.Start(ctx); err != nil {
@@ -141,6 +144,47 @@ func buildHealthProbe(
 	}
 
 	return probe, nil
+}
+
+// checkTransitions returns a WithEvaluationHook callback that slogs every
+// check whose status flipped since the previous evaluation (fails log at
+// warn, everything else at info; the first batch logs each check's boot
+// baseline). warn↔pass flapping becomes visible without scraping /readyz.
+func checkTransitions() func(health.Response) {
+	var (
+		mu   sync.Mutex
+		last = map[string]health.Status{}
+	)
+
+	return func(resp health.Response) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		names := make([]string, 0, len(resp.Checks))
+		for name := range resp.Checks {
+			names = append(names, name)
+		}
+
+		sort.Strings(names)
+
+		for _, name := range names {
+			check := resp.Checks[name]
+
+			previous, seen := last[name]
+			last[name] = check.Status
+
+			if seen && previous == check.Status {
+				continue
+			}
+
+			log := slog.Info
+			if check.Status == health.StatusFail {
+				log = slog.Warn
+			}
+
+			log("compliance-hub: health check status changed", "check", name, "status", check.Status, "error", check.Error)
+		}
+	}
 }
 
 // cacheDirForDB returns the directory to watch disk headroom on, or ""

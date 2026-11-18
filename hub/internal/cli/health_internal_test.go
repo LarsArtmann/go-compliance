@@ -1,10 +1,13 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"encoding/json/v2"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -30,6 +33,47 @@ func booted(refresher *refresher) *health.Probe {
 
 	return probe
 }
+
+var _ = Describe("health check transition logging", func() {
+	It("logs each check's boot baseline once, then exactly one line per flip", func() {
+		var buf bytes.Buffer
+
+		previous := slog.Default()
+		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+		DeferCleanup(func() { slog.SetDefault(previous) })
+
+		hub := events.NewHub()
+
+		_, unsubscribe := hub.SubscribeFeed()
+		DeferCleanup(unsubscribe)
+
+		refresher := newRefresher(hub, nil, time.Hour, 24*time.Hour, 3, "")
+		refresher.lastRefreshSuccess.Store(time.Now().UnixNano())
+		refresher.markDiscoverySuccess()
+
+		probe, err := buildHealthProbe(context.Background(), "log-test", hub, refresher, "")
+		Expect(err).NotTo(HaveOccurred())
+		DeferCleanup(probe.Shutdown)
+
+		probe.Evaluate(context.Background())
+		initial := strings.Count(buf.String(), "health check status changed")
+		Expect(initial).To(Equal(4), "the boot batch logs all four checks once; got: %s", buf.String())
+
+		row := events.RepoRow{Repo: "flood", State: compliance.StateFailing}
+		for i := 0; i < 200; i++ {
+			_, _ = hub.PublishSnapshot([]events.RepoRow{row})
+		}
+
+		probe.Evaluate(context.Background())
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(initial+1),
+			"exactly the sse-backpressure flip may log; got: %s", buf.String())
+		Expect(buf.String()).To(ContainSubstring("check=sse-backpressure"))
+
+		probe.Evaluate(context.Background())
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(initial+1),
+			"a stable evaluation must not log")
+	})
+})
 
 var _ = Describe("readiness HTTP contract", func() {
 	It("pins the payload shape over real HTTP: fail is 503, warn stays 200, checks carry the four names", func() {
