@@ -11,7 +11,9 @@ import (
 	"github.com/larsartmann/go-health"
 
 	"github.com/larsartmann/go-compliance"
+	"github.com/larsartmann/go-compliance/hub/internal/cache"
 	"github.com/larsartmann/go-compliance/hub/internal/dashboard"
+	"github.com/larsartmann/go-compliance/hub/internal/discovery"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
 
@@ -25,15 +27,40 @@ const (
 // surface (/healthz /readyz /startupz /version).
 func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) error {
 	return func(ctx context.Context, _ *Config, flags ServeFlags) error {
-		evidence, since, staleAfter, err := queryEvidence(ctx, flags.QueryFlags)
+		window, err := parseSinceWindow(flags.Since)
 		if err != nil {
 			return err
 		}
 
-		hub := events.NewHub()
-		if _, err := hub.PublishSnapshot(events.RowsFromEvidence(evidence, time.Now(), staleAfter)); err != nil {
+		staleAfter, err := parseStaleAfter(flags.StaleAfter)
+		if err != nil {
 			return err
 		}
+
+		source, closer, err := resolveSource(ctx, flags.QueryFlags)
+		if err != nil {
+			return err
+		}
+
+		if closer != nil {
+			defer func() { _ = closer.Close() }()
+		}
+
+		hub := events.NewHub()
+
+		// Live rows: the source stays open and every trigger (cache write,
+		// discovery change, safety-net tick) re-derives and publishes.
+		refresher := newRefresher(hub, source, window, staleAfter, flags.WorstSteps, flags.Step)
+		if err := refresher.Refresh(ctx); err != nil {
+			return err
+		}
+
+		if store, ok := source.(*cache.Store); ok {
+			store.OnWrite(func(compliance.RepoName) { refresher.Kick() })
+		}
+
+		go refresher.Run(ctx)
+		go runDiscoveryWatch(ctx, discovery.New(discovery.ResolveSocketPath()), refresher)
 
 		probe, err := buildHealthProbe(ctx, Version, hub, cacheDirForDB(flags.DB))
 		if err != nil {
@@ -52,7 +79,14 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		probe.RegisterRoutes(mux, health.DefaultRoutes())
 
 		mux.HandleFunc("GET /v1/compliance", func(w http.ResponseWriter, _ *http.Request) {
-			report := compliance.BuildV1Report(evidence, since, staleAfter, Version, time.Now())
+			evidence := refresher.Evidence()
+			if evidence == nil {
+				http.Error(w, "evidence not published yet", http.StatusServiceUnavailable)
+
+				return
+			}
+
+			report := compliance.BuildV1Report(evidence, time.Now().Add(-window), staleAfter, Version, time.Now())
 
 			encoded, err := compliance.MarshalV1(report)
 			if err != nil {

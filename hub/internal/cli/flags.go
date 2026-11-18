@@ -67,17 +67,28 @@ func resolveSource(ctx context.Context, flags QueryFlags) (compliance.Source, io
 // "30d" and returns the cutoff time (now - duration). Port of BuildFlow's
 // timings_cmd flag helper, kept flag-compatible.
 func parseSinceDuration(raw string) (time.Time, error) {
+	window, err := parseSinceWindow(raw)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return time.Now().Add(-window), nil
+}
+
+// parseSinceWindow parses the same shorthand into the window LENGTH: the
+// live serve loop re-derives with since = now - window on every refresh.
+func parseSinceWindow(raw string) (time.Duration, error) {
 	if raw == "" {
-		return time.Time{}, nil
+		return 0, nil
 	}
 
 	d, err := parseDurationSupportingDays(raw)
 	if err != nil {
-		return time.Time{}, compliance.NewValidationError(
+		return 0, compliance.NewValidationError(
 			"invalid --since value: %s (supported: 24h, 7d, 30d, 2h45m)", raw)
 	}
 
-	return time.Now().Add(-d), nil
+	return d, nil
 }
 
 // parseStaleAfter accepts Go duration syntax (336h) plus the d-suffix the
