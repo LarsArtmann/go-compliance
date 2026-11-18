@@ -26,7 +26,7 @@ func unixDialClient(socketPath string) *http.Client {
 
 // discardLogger keeps serveListener's sd_notify logging out of test output.
 func discardLogger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(io.Discard, nil))
+	return slog.New(slog.DiscardHandler)
 }
 
 var _ = Describe("bind address handling", func() {

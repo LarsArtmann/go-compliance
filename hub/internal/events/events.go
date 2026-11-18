@@ -228,6 +228,7 @@ func (h *Hub) Handler() http.Handler {
 		feed, cancel := h.SubscribeFeed()
 		defer cancel()
 
+		//nolint:contextcheck // stream.Context() IS the request context, hidden behind the sse stream API
 		go stream.Heartbeat(stream.Context(), h.heartbeat)
 
 		for {

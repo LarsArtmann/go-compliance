@@ -30,7 +30,12 @@ const (
 // socket file before binding, and restrict permissions to owner+group.
 func bindAddress(ctx context.Context, address string) (net.Listener, error) {
 	if !strings.HasPrefix(address, unixAddrPrefix) {
-		return (&net.ListenConfig{}).Listen(ctx, "tcp", address)
+		listener, err := (&net.ListenConfig{}).Listen(ctx, "tcp", address)
+		if err != nil {
+			return nil, fmt.Errorf("listen on tcp %s: %w", address, err)
+		}
+
+		return listener, nil
 	}
 
 	socketPath := strings.TrimPrefix(address, unixAddrPrefix)
@@ -108,10 +113,10 @@ func serveListener(
 
 		// Background, not ctx: the parent is already cancelled, and the
 		// graceful-drain window must not inherit that cancellation.
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownGracePeriod) //nolint:contextcheck
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownGracePeriod)
 		defer cancel()
 
-		_ = server.Shutdown(shutdownCtx)
+		_ = server.Shutdown(shutdownCtx) //nolint:contextcheck // drain window must not inherit parent cancellation
 
 		if unixListener, ok := listener.(*net.UnixListener); ok {
 			_ = os.Remove(unixListener.Addr().String())

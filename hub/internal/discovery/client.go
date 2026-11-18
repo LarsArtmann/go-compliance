@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json/v2"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -27,7 +28,15 @@ const (
 	envDaemonAddr     = "PROJECT_DISCOVERY_DAEMON_ADDR"
 
 	discoverTimeout = 60 * time.Second
+
+	// SSE frame scan budget: 64 KiB initial buffer, 1 MiB max line length.
+	scanBufSize  = 64 * 1024
+	maxScanLine  = 1024 * 1024
 )
+
+// errDaemonStatus marks a non-200 daemon response; the concrete status
+// rides in the wrap.
+var errDaemonStatus = errors.New("daemon returned unexpected status")
 
 // ResolveSocketPath returns the configured daemon socket path.
 func ResolveSocketPath() string {
@@ -113,7 +122,7 @@ func (c *Client) Discover(ctx context.Context, searchPaths []string) ([]Project,
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, compliance.NewIOError(fmt.Errorf("daemon returned %s", resp.Status),
+		return nil, compliance.NewIOError(fmt.Errorf("%w: %s", errDaemonStatus, resp.Status),
 			"discover via %s", c.socketPath)
 	}
 
@@ -152,7 +161,7 @@ func (c *Client) Watch(ctx context.Context) (<-chan Event, error) {
 
 	req.Header.Set("Accept", "text/event-stream")
 
-	resp, err := c.http.Do(req)
+	resp, err := c.http.Do(req) //nolint:bodyclose // body ownership transfers to the watch goroutine, which closes it on all paths
 	if err != nil {
 		return nil, compliance.NewIOError(err, "watch via %s (is the daemon running?)", c.socketPath)
 	}
@@ -160,7 +169,7 @@ func (c *Client) Watch(ctx context.Context) (<-chan Event, error) {
 	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
 
-		return nil, compliance.NewIOError(fmt.Errorf("daemon returned %s", resp.Status),
+		return nil, compliance.NewIOError(fmt.Errorf("%w: %s", errDaemonStatus, resp.Status),
 			"watch via %s", c.socketPath)
 	}
 
@@ -171,7 +180,7 @@ func (c *Client) Watch(ctx context.Context) (<-chan Event, error) {
 		defer func() { _ = resp.Body.Close() }()
 
 		scanner := bufio.NewScanner(resp.Body)
-		scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+		scanner.Buffer(make([]byte, 0, scanBufSize), maxScanLine)
 
 		for scanner.Scan() {
 			line := scanner.Text()

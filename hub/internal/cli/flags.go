@@ -15,21 +15,22 @@ import (
 // QueryFlags are the evidence-query flags shared by report and table,
 // matching BuildFlow compliance muscle memory.
 type QueryFlags struct {
-	Since      string `flag:"since" default:"7d" help:"Evidence window (e.g. 24h, 7d, 30d)"`
-	StaleAfter string `flag:"stale-after" default:"336h" help:"Time since a repo's last run after which it counts as stale (e.g. 168h, 336h, 14d)"`
-	WorstSteps int    `flag:"worst-steps" default:"3" help:"Worst steps listed per repository"`
-	Step       string `flag:"step" default:"" help:"Scope the view to ONE step (EXACT name; fan-out keys count)"`
-	Source     string `flag:"source" default:"file" help:"Evidence source" values:"file,buildflow,cache"`
-	File       string `flag:"file" default:"/var/lib/overview/compliance.json" help:"Piped v1 evidence document (source=file)"`
-	DB         string `flag:"db" default:"" help:"SQLite evidence cache path (source=cache)"`
+	Since      string `default:"7d"                                flag:"since"       help:"Evidence window (e.g. 24h, 7d, 30d)"`
+	StaleAfter string `default:"336h"                              flag:"stale-after" help:"Time since a repo's last run after which it counts as stale (e.g. 168h, 336h, 14d)"`
+	WorstSteps int    `default:"3"                                 flag:"worst-steps" help:"Worst steps listed per repository"`
+	Step       string `default:""                                  flag:"step"        help:"Scope the view to ONE step (EXACT name; fan-out keys count)"`
+	Source     string `default:"file"                              flag:"source"      help:"Evidence source"                                                                    values:"file,buildflow,cache"`
+	File       string `default:"/var/lib/overview/compliance.json" flag:"file"        help:"Piped v1 evidence document (source=file)"`
+	DB         string `default:""                                  flag:"db"          help:"SQLite evidence cache path (source=cache)"`
 }
 
 // ServeFlags are the hub server flags. The bind default is localhost
 // only: fleet evidence stays local until the auth posture is decided
 // (docs/decisions/bind-posture.md).
 type ServeFlags struct {
-	Addr string `flag:"addr" default:"127.0.0.1:8477" help:"Listen address (localhost-only default by policy)"`
 	QueryFlags
+
+	Addr string `default:"127.0.0.1:8477" flag:"addr" help:"Listen address (localhost-only default by policy)"`
 }
 
 // resolveSource builds the Source the flags select. The cache store is
