@@ -39,6 +39,7 @@ var _ = Describe("health check transition logging", func() {
 		var buf bytes.Buffer
 
 		previous := slog.Default()
+
 		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
 		DeferCleanup(func() { slog.SetDefault(previous) })
 
@@ -111,6 +112,7 @@ var _ = Describe("readiness HTTP contract", func() {
 		refresher.lastRefreshSuccess.Store(time.Now().Add(-refreshFreshnessWarn - time.Minute).UnixNano())
 
 		var body []byte
+
 		Eventually(func() int {
 			recorder := httptest.NewRecorder()
 			mux.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/readyz", nil))

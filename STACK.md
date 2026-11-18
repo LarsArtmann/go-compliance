@@ -85,24 +85,24 @@ decision.
 
 ## Wiring order
 
-1. `go mod init github.com/larsartmann/go-compliance`; `go get
+1. **root**: `go mod init github.com/larsartmann/go-compliance`; `go get
    github.com/larsartmann/go-branded-id@latest
-   github.com/larsartmann/go-error-family@latest` (core module only).
-2. Port from BuildFlow: `DeriveComplianceState` → generalized state model
-   (add `never-covered`), evidence fold, v1 wire types. Golden tests must pin
-   byte-compat against real `buildflow compliance --json` output AND
-   overview's decoder expectations (schema_version == 1).
-3. `Source` adapter interface + one-liner reporter SDK +
-   BuildFlow adapter (consume the v1 JSON the daemon recipe already pipes).
-4. Hub module: cmdguard CLI (`compliance serve|report|table`) → go-output
-   tables; go-sqlitestore evidence cache; discovery daemon HTTP client
-   (fleet list → never-covered).
-5. Realtime: go-sse `Broadcaster` + go-datastar patches; templ-components
-   WebUI mirroring go-health-dashboard (one `RegisterRoutes(mux)`,
-   severity-grouped repo tables, filter chips, live badges).
-6. go-health self-probe; go-daemon sd_notify; systemd unit.
-7. flake.nix via go-nix-helpers; `buildflow` quality gate once covered.
-8. Re-run `stack-drift-check.sh` after every new larsartmann/* require.
+   github.com/larsartmann/go-error-family@latest`. Port from BuildFlow:
+   `DeriveComplianceState` → generalized state model (add `never-covered`),
+   evidence fold, v1 wire types. Golden tests must pin byte-compat against
+   real `buildflow compliance --json` output AND overview's decoder
+   expectations (schema_version == 1). `Source` adapter interface +
+   one-liner reporter SDK + BuildFlow adapter.
+2. **hub**: requires the sibling github.com/larsartmann/go-compliance
+   (replace → ../); cmdguard CLI (`compliance serve|report|table`) →
+   go-output tables; go-sqlitestore evidence cache; discovery daemon HTTP
+   client (fleet list → never-covered); realtime go-sse `Broadcaster` +
+   go-datastar patches; templ-components WebUI mirroring
+   go-health-dashboard (one `RegisterRoutes(mux)`, severity-grouped repo
+   tables, filter chips, live badges); go-health self-probe; go-daemon
+   sd_notify; systemd unit.
+3. flake.nix via go-nix-helpers; `buildflow` quality gate once covered.
+4. Re-run `stack-drift-check.sh` after every new larsartmann/* require.
 
 ## Decision log
 

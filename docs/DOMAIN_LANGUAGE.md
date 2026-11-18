@@ -15,7 +15,7 @@
 | Stale            | A repo whose newest evidence is older than `staleAfter`                            | `state.go` DeriveState                                       |
 | Never-covered    | A repo the discovery daemon knows but which has no evidence in the window          | `hub/internal/discovery`                                     |
 | Source           | An adapter producing evidence for a window (file, buildflow, cache)                | `source.go`, `Source`                                        |
-| EvidenceWriter   | The port reporters write evidence through                                          | `source.go`, `EvidenceWriter`                                |
+| EvidenceWriter   | The port reporters write evidence through                                          | `reporter.go`, `EvidenceWriter`                              |
 | Record           | The reporter one-liner appending one run's evidence                                | `reporter.go`, `Record`                                      |
 | Wire contract v1 | The frozen JSON shape (`schema_version: 1`) byte-faithful to BuildFlow output      | `v1.go`, `MarshalV1` / `DecodeV1Report`                      |
 | Hub              | The in-memory owner of current rows; fans out snapshot/update events               | `hub/internal/events`, `Hub`                                 |
