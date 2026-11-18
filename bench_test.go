@@ -50,6 +50,7 @@ func benchFoldInput(n int) compliance.FoldInput {
 
 func itoa4(i int) string {
 	digits := []byte{'0' + byte(i/1000%10), '0' + byte(i/100%10), '0' + byte(i/10%10), '0' + byte(i%10)}
+
 	return string(digits)
 }
 

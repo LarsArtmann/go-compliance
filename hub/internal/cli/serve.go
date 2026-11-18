@@ -106,7 +106,11 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		}
 
 		if !isLoopbackBind(flags.Addr) {
-			fmt.Fprintf(errW, "warning: binding non-localhost %s exposes fleet evidence; see docs/decisions/bind-posture.md\n", flags.Addr)
+			fmt.Fprintf(
+				errW,
+				"warning: binding non-localhost %s exposes fleet evidence; see docs/decisions/bind-posture.md\n",
+				flags.Addr,
+			)
 		}
 
 		fmt.Fprintf(out, "compliance-hub listening on %s\n", flags.Addr)

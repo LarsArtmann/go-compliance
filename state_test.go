@@ -18,33 +18,73 @@ var (
 )
 
 var _ = Describe("DeriveState", func() {
-
-	DescribeTable("the v1 state model",
+	DescribeTable(
+		"the v1 state model",
 		func(evidence compliance.RepoEvidence, staleAfter time.Duration, expected compliance.State) {
 			Expect(compliance.DeriveState(evidence, stateNow, staleAfter)).To(Equal(expected))
 		},
-		Entry("no evidence at all is never-covered", compliance.RepoEvidence{}, 336*time.Hour, compliance.StateNeverCovered),
-		Entry("never-covered wins over staleness", compliance.RepoEvidence{}, time.Nanosecond, compliance.StateNeverCovered),
-		Entry("any failure in the window is failing",
-			compliance.RepoEvidence{Runs: 5, Failures: 1, LastRunAt: stateFreshRun}, 336*time.Hour, compliance.StateFailing),
-		Entry("failure wins over staleness",
-			compliance.RepoEvidence{Runs: 5, Failures: 1, LastRunAt: stateAncientRun}, 336*time.Hour, compliance.StateFailing),
+		Entry(
+			"no evidence at all is never-covered",
+			compliance.RepoEvidence{},
+			336*time.Hour,
+			compliance.StateNeverCovered,
+		),
+		Entry(
+			"never-covered wins over staleness",
+			compliance.RepoEvidence{},
+			time.Nanosecond,
+			compliance.StateNeverCovered,
+		),
+		Entry(
+			"any failure in the window is failing",
+			compliance.RepoEvidence{
+				Runs:      5,
+				Failures:  1,
+				LastRunAt: stateFreshRun,
+			},
+			336*time.Hour,
+			compliance.StateFailing,
+		),
+		Entry(
+			"failure wins over staleness",
+			compliance.RepoEvidence{
+				Runs:      5,
+				Failures:  1,
+				LastRunAt: stateAncientRun,
+			},
+			336*time.Hour,
+			compliance.StateFailing,
+		),
 		Entry("a quiet-but-once-failed step row still fails",
 			compliance.RepoEvidence{StepRows: 3, Failures: 2}, 336*time.Hour, compliance.StateFailing),
 		Entry("fresh evidence without failures is compliant",
 			compliance.RepoEvidence{Runs: 5, LastRunAt: stateFreshRun}, 336*time.Hour, compliance.StateCompliant),
 		Entry("a last run older than staleAfter is stale",
 			compliance.RepoEvidence{Runs: 5, LastRunAt: stateAncientRun}, 14*24*time.Hour, compliance.StateStale),
-		Entry("a last run exactly staleAfter old stays compliant (strictly older required)",
-			compliance.RepoEvidence{Runs: 5, LastRunAt: stateNow.Add(-336 * time.Hour)}, 336*time.Hour, compliance.StateCompliant),
+		Entry(
+			"a last run exactly staleAfter old stays compliant (strictly older required)",
+			compliance.RepoEvidence{
+				Runs:      5,
+				LastRunAt: stateNow.Add(-336 * time.Hour),
+			},
+			336*time.Hour,
+			compliance.StateCompliant,
+		),
 		Entry("staleness disabled by staleAfter <= 0 keeps ancient evidence compliant",
 			compliance.RepoEvidence{Runs: 5, LastRunAt: stateAncientRun}, time.Duration(0), compliance.StateCompliant),
 		Entry("negative staleness disabled keeps ancient evidence compliant",
 			compliance.RepoEvidence{Runs: 5, LastRunAt: stateAncientRun}, -time.Hour, compliance.StateCompliant),
 		Entry("window rows without a last-run recording are compliant",
 			compliance.RepoEvidence{Runs: 2, StepRows: 4}, 336*time.Hour, compliance.StateCompliant),
-		Entry("clock skew (last run in the future) stays compliant",
-			compliance.RepoEvidence{Runs: 1, LastRunAt: stateNow.Add(time.Hour)}, 336*time.Hour, compliance.StateCompliant),
+		Entry(
+			"clock skew (last run in the future) stays compliant",
+			compliance.RepoEvidence{
+				Runs:      1,
+				LastRunAt: stateNow.Add(time.Hour),
+			},
+			336*time.Hour,
+			compliance.StateCompliant,
+		),
 	)
 
 	Describe("precedence", Ordered, func() {

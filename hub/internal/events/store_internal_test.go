@@ -71,6 +71,7 @@ var _ = Describe("hub drop accounting", func() {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
+
 		Expect(hub.Shutdown(ctx)).NotTo(HaveOccurred())
 	})
 })

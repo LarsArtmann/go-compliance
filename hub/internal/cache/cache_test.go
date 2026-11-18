@@ -18,9 +18,11 @@ var _ = Describe("evidence cache", func() {
 
 	BeforeEach(func() {
 		dbDir := mustTempDir()
+
 		DeferCleanup(func() { _ = os.RemoveAll(dbDir) })
 
 		var err error
+
 		store, err = cache.Open(context.Background(), filepath.Join(dbDir, "cache.db"))
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(func() { _ = store.Close() })
@@ -110,6 +112,7 @@ var _ = Describe("evidence cache", func() {
 	It("survives reopen with migrations applied exactly once", func() {
 		ctx := context.Background()
 		reopenDir := mustTempDir()
+
 		DeferCleanup(func() { _ = os.RemoveAll(reopenDir) })
 
 		path := filepath.Join(reopenDir, "reopen.db")

@@ -33,7 +33,6 @@ var (
 )
 
 var _ = Describe("BuildV1Report", func() {
-
 	It("derives states and normalizes nil maps and slices", func() {
 		report := compliance.BuildV1Report(
 			[]compliance.RepoEvidence{v1Fresh, v1Failing, v1Stale}, v1Since, v1StaleAfter, "v0.1.0", v1Now)
@@ -54,8 +53,16 @@ var _ = Describe("BuildV1Report", func() {
 		Expect(report.Repos[2].State).To(Equal("compliant"))
 
 		By("normalizing nil maps and slices to {} and []")
+
 		emptyRow := compliance.BuildV1Report(
-			[]compliance.RepoEvidence{{Repo: compliance.NewRepoName("bare"), Runs: 1}}, v1Since, v1StaleAfter, "", v1Now)
+			[]compliance.RepoEvidence{
+				{Repo: compliance.NewRepoName("bare"), Runs: 1},
+			},
+			v1Since,
+			v1StaleAfter,
+			"",
+			v1Now,
+		)
 		encoded, err := compliance.MarshalV1(emptyRow)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(string(encoded)).To(ContainSubstring(`"gate_findings":{}`))

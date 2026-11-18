@@ -32,6 +32,7 @@ var _ = Describe("FoldEvidence", func() {
 		Expect(evidence[0].HasEvidence()).To(BeTrue())
 
 		By("deriving stale through the report")
+
 		report := compliance.BuildV1Report(evidence, now.Add(-7*24*time.Hour), 14*24*time.Hour, "v", now)
 		Expect(report.Repos[0].State).To(Equal("stale"))
 	})
@@ -79,6 +80,7 @@ var _ = Describe("FoldEvidence", func() {
 					Step: string(rune('a' + i)), Failures: int64(n - i), TotalRuns: 10,
 				})
 			}
+
 			return out
 		}
 
@@ -139,9 +141,13 @@ var _ = Describe("FoldEvidence", func() {
 
 		It("attaches non-empty findings and severities", func() {
 			evidence := compliance.FoldEvidence(compliance.FoldInput{
-				WindowHealth:      []compliance.WindowHealth{{Repo: foldActiveRepo, Runs: 1}},
-				GateFindings:      []compliance.RepoFindings{{Repo: foldActiveRepo, Findings: map[string]int{"lint": 3}}},
-				FindingSeverities: []compliance.RepoSeverities{{Repo: foldActiveRepo, Severities: map[string]int{"error": 1}}},
+				WindowHealth: []compliance.WindowHealth{{Repo: foldActiveRepo, Runs: 1}},
+				GateFindings: []compliance.RepoFindings{
+					{Repo: foldActiveRepo, Findings: map[string]int{"lint": 3}},
+				},
+				FindingSeverities: []compliance.RepoSeverities{
+					{Repo: foldActiveRepo, Severities: map[string]int{"error": 1}},
+				},
 			})
 			Expect(evidence[0].GateFindings).To(Equal(map[string]int{"lint": 3}))
 			Expect(evidence[0].FindingSeverities).To(Equal(map[string]int{"error": 1}))

@@ -56,6 +56,12 @@ vendor/
 go.work
 go.work.sum
 /go-compliance
+
+## Nix
+result
+result-*
+.envrc
+.direnv/
 # <<< buildflow-managed (.gitignore) <<<
 
 # Generated templ output (*_templ.go) IS committed, deliberately: the

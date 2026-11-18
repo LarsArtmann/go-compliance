@@ -19,15 +19,18 @@ import (
 )
 
 var _ = Describe("compliance-hub CLI", func() {
-	var out, errW bytes.Buffer
-	var dir string
-	var fixturePath string
+	var (
+		out, errW   bytes.Buffer
+		dir         string
+		fixturePath string
+	)
 
 	BeforeEach(func() {
 		out.Reset()
 		errW.Reset()
 
 		var err error
+
 		dir, err = os.MkdirTemp("", "compliance-hub-cli-*")
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(func() { _ = os.RemoveAll(dir) })
@@ -99,7 +102,13 @@ var _ = Describe("compliance-hub CLI", func() {
 
 		go func() {
 			defer GinkgoRecover()
-			err := cli.Run(ctx, []string{"serve", "--addr", fmt.Sprintf("127.0.0.1:%d", port), "--file", fixturePath}, &out, &errW)
+
+			err := cli.Run(
+				ctx,
+				[]string{"serve", "--addr", fmt.Sprintf("127.0.0.1:%d", port), "--file", fixturePath},
+				&out,
+				&errW,
+			)
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
@@ -145,7 +154,13 @@ var _ = Describe("compliance-hub CLI", func() {
 
 		go func() {
 			defer GinkgoRecover()
-			err := cli.Run(ctx, []string{"serve", "--addr", fmt.Sprintf("0.0.0.0:%d", port), "--file", fixturePath}, &out, &errW)
+
+			err := cli.Run(
+				ctx,
+				[]string{"serve", "--addr", fmt.Sprintf("0.0.0.0:%d", port), "--file", fixturePath},
+				&out,
+				&errW,
+			)
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
@@ -171,6 +186,7 @@ var _ = Describe("compliance-hub CLI", func() {
 
 		go func() {
 			defer GinkgoRecover()
+
 			err := cli.Run(ctx, []string{"serve", "--addr", "127.0.0.1:8477", "--file", fixturePath}, &out, &errW)
 			Expect(err).NotTo(HaveOccurred())
 		}()
@@ -198,11 +214,13 @@ var _ = Describe("compliance-hub CLI", func() {
 
 		go func() {
 			defer GinkgoRecover()
+
 			err := cli.Run(ctx, []string{"serve", "--addr", "unix:" + socketPath, "--file", fixturePath}, &out, &errW)
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
 		client := unixClient(socketPath)
+
 		Eventually(func() int {
 			resp, err := client.Get("http://unix/healthz")
 			if err != nil {
@@ -219,6 +237,7 @@ var _ = Describe("compliance-hub CLI", func() {
 
 		Eventually(func() bool {
 			_, err := os.Stat(socketPath)
+
 			return os.IsNotExist(err)
 		}, "5s", "50ms").Should(BeTrue())
 	})
@@ -228,8 +247,10 @@ var _ = Describe("compliance-hub CLI", func() {
 func freePort() int {
 	listener, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
 	port := listener.Addr().(*net.TCPAddr).Port
 	ExpectWithOffset(1, listener.Close()).To(Succeed())
+
 	return port
 }
 
@@ -238,6 +259,7 @@ func unixClient(socketPath string) *http.Client {
 	return &http.Client{Transport: &http.Transport{
 		DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
 			var dialer net.Dialer
+
 			return dialer.DialContext(ctx, "unix", socketPath)
 		},
 	}}

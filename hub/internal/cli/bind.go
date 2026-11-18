@@ -54,6 +54,7 @@ func bindAddress(ctx context.Context, address string) (net.Listener, error) {
 
 	if err := os.Chmod(socketPath, socketFilePerm); err != nil {
 		_ = listener.Close()
+
 		return nil, fmt.Errorf("restrict socket %s permissions: %w", socketPath, err)
 	}
 
@@ -83,6 +84,7 @@ func isLoopbackBind(address string) bool {
 	}
 
 	ip := net.ParseIP(host)
+
 	return ip != nil && ip.IsLoopback()
 }
 

@@ -218,6 +218,7 @@ func (s *CommandSource) QueryEvidence(
 ) ([]RepoEvidence, error) {
 	if s.timeout > 0 {
 		var cancel context.CancelFunc
+
 		ctx, cancel = context.WithTimeout(ctx, s.timeout)
 		defer cancel()
 	}
@@ -245,6 +246,7 @@ func (s *CommandSource) QueryEvidence(
 	cmd := exec.CommandContext(ctx, s.command, args...)
 
 	var stdout, stderr bytes.Buffer
+
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 

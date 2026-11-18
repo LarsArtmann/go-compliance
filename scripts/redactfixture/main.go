@@ -51,6 +51,7 @@ func main() {
 	for name := range aliases {
 		names = append(names, name)
 	}
+
 	sort.Sort(sort.Reverse(sort.StringSlice(names)))
 	sort.SliceStable(names, func(i, j int) bool { return len(names[i]) > len(names[j]) })
 
@@ -58,6 +59,7 @@ func main() {
 		for _, name := range names {
 			s = strings.ReplaceAll(s, name, aliases[name])
 		}
+
 		return s
 	}
 
@@ -68,6 +70,7 @@ func main() {
 		for step, count := range repo.GateFindings {
 			redactedFindings[redactString(step)] = count
 		}
+
 		repo.GateFindings = redactedFindings
 
 		for j := range repo.WorstSteps {

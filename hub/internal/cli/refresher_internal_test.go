@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	datastar "github.com/larsartmann/go-datastar"
 	datastartest "github.com/larsartmann/go-datastar/datastartest"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/cache"
@@ -35,6 +35,7 @@ var _ = Describe("live re-derive", func() {
 		refresher := newRefresher(hub, store, 24*time.Hour, 336*time.Hour, 3, "")
 		Expect(refresher.Refresh(ctx)).To(Succeed())
 		store.OnWrite(func(compliance.RepoName) { refresher.Kick() })
+
 		go refresher.Run(ctx)
 
 		board := dashboard.New(hub)
@@ -66,10 +67,12 @@ var _ = Describe("live re-derive", func() {
 			case string(datastar.ElementPatchModeInner):
 				datastartest.RequireElementsContains(GinkgoTB(), evt,
 					dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeInner), "boot-repo")
+
 				bootRendered = true
 			case string(datastar.ElementPatchModeAppend):
 				datastartest.RequireElementsContains(GinkgoTB(), evt,
 					dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeAppend), "late-repo")
+
 				lateAppended = true
 			}
 		}

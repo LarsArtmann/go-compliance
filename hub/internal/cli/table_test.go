@@ -15,14 +15,17 @@ import (
 )
 
 var _ = Describe("fleet table", func() {
-	var out, errW strings.Builder
-	var dir string
+	var (
+		out, errW strings.Builder
+		dir       string
+	)
 
 	BeforeEach(func() {
 		out.Reset()
 		errW.Reset()
 
 		var err error
+
 		dir, err = os.MkdirTemp("", "compliance-table-*")
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(func() { _ = os.RemoveAll(dir) })
@@ -31,9 +34,14 @@ var _ = Describe("fleet table", func() {
 	writeFixture := func(severities map[string]int) string {
 		report := compliance.BuildV1Report([]compliance.RepoEvidence{
 			{
-				Repo: compliance.NewRepoName("failing-repo"), Runs: 8, Failures: 3, FailRate: 0.375,
-				LastRunAt: time.Now().Add(-2 * time.Hour), LastRunVerdict: compliance.VerdictFailed,
-				FindingSeverities: severities, GateFindings: map[string]int{"lint": severities["error"] + severities["warning"]},
+				Repo:              compliance.NewRepoName("failing-repo"),
+				Runs:              8,
+				Failures:          3,
+				FailRate:          0.375,
+				LastRunAt:         time.Now().Add(-2 * time.Hour),
+				LastRunVerdict:    compliance.VerdictFailed,
+				FindingSeverities: severities,
+				GateFindings:      map[string]int{"lint": severities["error"] + severities["warning"]},
 			},
 			{
 				Repo: compliance.NewRepoName("a-very-long-repository-name-exceeding-the-cell"), Runs: 2,
@@ -76,6 +84,7 @@ var _ = Describe("fleet table", func() {
 		failing := strings.Index(body, "failing")
 		stale := strings.Index(body, "stale")
 		compliant := strings.Index(body, "compliant")
+
 		Expect(failing).To(BeNumerically("<", stale))
 		Expect(stale).To(BeNumerically("<", compliant))
 
@@ -99,11 +108,13 @@ var _ = Describe("fleet table", func() {
 		rendered := render(path)
 
 		lines := []string{}
+
 		for line := range strings.SplitSeq(rendered, "\n") {
 			if strings.HasPrefix(line, "│") {
 				lines = append(lines, line)
 			}
 		}
+
 		Expect(lines).To(HaveLen(4), "header + three repo rows: %s", rendered)
 
 		// Strip ANSI escapes, then every row must agree on the byte
@@ -116,6 +127,7 @@ var _ = Describe("fleet table", func() {
 
 		reference := columnStarts(plain[0])
 		Expect(reference).ToNot(BeEmpty(), "header must have multiple columns")
+
 		for i := 1; i < len(plain); i++ {
 			Expect(columnStarts(plain[i])).To(Equal(reference),
 				"row %d misaligned against header:\n%s\n%s", i, plain[0], plain[i])
@@ -128,6 +140,7 @@ var _ = Describe("fleet table", func() {
 // or not.
 func columnStarts(line string) []int {
 	starts := []int{}
+
 	runes := []rune(line)
 	for i, r := range runes {
 		if r == '│' {
@@ -148,9 +161,11 @@ func stripANSI(s string) string {
 			for j < len(s) && !isANSITerminator(s[j]) {
 				j++
 			}
+
 			if j < len(s) {
 				j++
 			}
+
 			i = j
 		} else {
 			b.WriteByte(s[i])

@@ -127,6 +127,7 @@ func (c *Client) Discover(ctx context.Context, searchPaths []string) ([]Project,
 	}
 
 	var decoded discoverResponse
+
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, compliance.NewIOError(err, "read discover response")
@@ -161,7 +162,9 @@ func (c *Client) Watch(ctx context.Context) (<-chan Event, error) {
 
 	req.Header.Set("Accept", "text/event-stream")
 
-	resp, err := c.http.Do(req) //nolint:bodyclose // body ownership transfers to the watch goroutine, which closes it on all paths
+	resp, err := c.http.Do(
+		req,
+	)
 	if err != nil {
 		return nil, compliance.NewIOError(err, "watch via %s (is the daemon running?)", c.socketPath)
 	}

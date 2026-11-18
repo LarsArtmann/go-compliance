@@ -26,8 +26,10 @@ func loadGoldenFixture() ([]byte, compliance.V1Report) {
 }
 
 var _ = Describe("Golden: BuildFlow producer compatibility", Ordered, func() {
-	var data []byte
-	var report compliance.V1Report
+	var (
+		data   []byte
+		report compliance.V1Report
+	)
 
 	BeforeAll(func() {
 		data, report = loadGoldenFixture()
@@ -40,9 +42,11 @@ var _ = Describe("Golden: BuildFlow producer compatibility", Ordered, func() {
 
 	It("carries only the three v1 producer states", func() {
 		states := map[compliance.State]int{}
+
 		for _, repo := range report.Repos {
 			state, err := compliance.ParseState(repo.State)
 			Expect(err).NotTo(HaveOccurred(), "repo %s: state %q", repo.Repo, repo.State)
+
 			states[state]++
 		}
 
@@ -82,6 +86,7 @@ var _ = Describe("Golden: BuildFlow producer compatibility", Ordered, func() {
 	It("parses every timestamp", func() {
 		Expect(compliance.ParseWireTime(report.GeneratedAt)).NotTo(BeZero())
 		Expect(compliance.ParseWireTime(report.Since)).NotTo(BeZero())
+
 		for _, repo := range report.Repos {
 			if repo.LastRunAt != "" {
 				Expect(compliance.ParseWireTime(repo.LastRunAt)).NotTo(BeZero(),

@@ -69,6 +69,7 @@ func (d *Dashboard) pageHandler(routes Routes) http.Handler {
 		if preferJSON(r.Header.Get("Accept")) {
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(eventsSnapshotJSON(rows)))
+
 			return
 		}
 
@@ -108,6 +109,7 @@ func preferJSON(accept string) bool {
 		}
 
 		quality := 1.0
+
 		for parameter := range strings.SplitSeq(part, ";") {
 			parameter = strings.TrimSpace(parameter)
 			if !strings.HasPrefix(parameter, "q=") {

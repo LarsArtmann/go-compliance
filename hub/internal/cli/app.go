@@ -95,6 +95,7 @@ func queryEvidence(
 	if closer != nil {
 		defer func() { _ = closer.Close() }()
 	}
+
 	if err != nil {
 		return nil, time.Time{}, 0, err
 	}

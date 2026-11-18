@@ -73,6 +73,7 @@ var _ = Describe("MemoryStore", func() {
 		for _, record := range store.Evidence() {
 			names = append(names, record.Repo.Get())
 		}
+
 		Expect(names).To(Equal([]string{"c", "a", "b"}))
 	})
 
@@ -88,6 +89,7 @@ var _ = Describe("MemoryStore", func() {
 					})).To(Succeed())
 			})
 		}
+
 		wg.Wait()
 
 		Expect(store.Evidence()).To(HaveLen(1))
@@ -95,14 +97,19 @@ var _ = Describe("MemoryStore", func() {
 })
 
 var _ = Describe("FileStore", func() {
-	var dir string
-	var path string
+	var (
+		dir  string
+		path string
+	)
 
 	BeforeEach(func() {
 		var err error
+
 		dir, err = os.MkdirTemp("", "compliance-evidence-*")
 		Expect(err).NotTo(HaveOccurred())
+
 		path = filepath.Join(dir, "compliance.json")
+
 		DeferCleanup(func() { _ = os.RemoveAll(dir) })
 	})
 
@@ -138,6 +145,7 @@ var _ = Describe("FileStore", func() {
 		Expect(report.Repos[1].State).To(Equal("compliant"))
 
 		By("ignoring an older result")
+
 		stale := time.Now().Add(-time.Hour)
 		Expect(store.WriteEvidence(ctx, compliance.NewRepoName("bad-repo"), compliance.RunResult{
 			At: stale, Verdict: compliance.VerdictPassed,
@@ -153,9 +161,11 @@ var _ = Describe("FileStore", func() {
 		ctx := context.Background()
 
 		var wg sync.WaitGroup
+
 		wg.Add(2)
 		go func() {
 			defer wg.Done()
+
 			for range 25 {
 				Expect(store.WriteEvidence(ctx, compliance.NewRepoName("writer"), compliance.RunResult{
 					Verdict: compliance.VerdictPassed, ProducerVersion: "v",
@@ -164,12 +174,14 @@ var _ = Describe("FileStore", func() {
 		}()
 		go func() {
 			defer wg.Done()
+
 			for range 25 {
 				report, err := store.Load(ctx)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(report.SchemaVersion).To(Equal(1))
 			}
 		}()
+
 		wg.Wait()
 	})
 

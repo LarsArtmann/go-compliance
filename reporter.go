@@ -223,9 +223,11 @@ func mergeRecord(document *V1Report, repo RepoName, result RunResult) bool {
 	at := result.resolvedAt()
 
 	index := -1
+
 	for i := range document.Repos {
 		if document.Repos[i].Repo == repo.Get() {
 			index = i
+
 			break
 		}
 	}
@@ -368,6 +370,7 @@ func writeFileAtomic(path string, data []byte, perm os.FileMode) error {
 
 	if _, err := temp.Write(data); err != nil {
 		_ = temp.Close()
+
 		return err
 	}
 
@@ -401,6 +404,7 @@ func acquireFileLock(path string) (*fileLock, error) {
 
 	if err := flockExclusive(file); err != nil {
 		_ = file.Close()
+
 		return nil, err
 	}
 
@@ -413,6 +417,7 @@ func acquireFileLock(path string) (*fileLock, error) {
 func (l *fileLock) release() error {
 	if err := flockRelease(l.file); err != nil {
 		_ = l.file.Close()
+
 		return err
 	}
 

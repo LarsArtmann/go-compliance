@@ -2,9 +2,16 @@ version: "2"
 run:
   timeout: 5m
   go: "1.27"
+  build-tags:
+    - goexperiment.arenas
+    - goexperiment.goroutineleakprofile
+    - goexperiment.runtimesecret
+    - goexperiment.simd
   allow-parallel-runners: true
   allow-serial-runners: true
   issues-exit-code: 1
+output:
+  formats: {}
 linters:
   enable:
     - asasalint
@@ -18,6 +25,7 @@ linters:
     - cyclop
     - decorder
     - dogsled
+    - dupl
     - dupword
     - durationcheck
     - embeddedstructfieldcheck
@@ -34,6 +42,8 @@ linters:
     - funlen
     - ginkgolinter
     - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
     - gochecksumtype
     - gocognit
     - goconst
@@ -41,16 +51,27 @@ linters:
     - gocyclo
     - godoclint
     - godot
+    - godox
+    - goheader
+    - gomoddirectives
+    - gomodguard_v2
     - goprintffuncname
     - gosec
+    - gosmopolitan
     - govet
+    - grouper
+    - iface
+    - importas
+    - inamedparam
     - ineffassign
     - interfacebloat
     - intrange
     - iotamixing
+    - ireturn
     - loggercheck
     - maintidx
     - makezero
+    - mirror
     - misspell
     - mnd
     - modernize
@@ -60,6 +81,7 @@ linters:
     - nilerr
     - nilnesserr
     - nilnil
+    - nlreturn
     - noctx
     - nolintlint
     - nonamedreturns
@@ -67,11 +89,14 @@ linters:
     - perfsprint
     - prealloc
     - predeclared
+    - promlinter
+    - protogetter
     - reassign
     - recvcheck
     - revive
     - rowserrcheck
     - sloglint
+    - spancheck
     - sqlclosecheck
     - staticcheck
     - tagalign
@@ -83,12 +108,16 @@ linters:
     - tparallel
     - unconvert
     - unparam
+    - unqueryvet
     - unused
     - usestdlibvars
     - usetesting
+    - varnamelen
     - wastedassign
     - whitespace
     - wrapcheck
+    - wsl_v5
+    - zerologlint
   disable:
     - depguard
     - noinlineerr
@@ -132,37 +161,99 @@ linters:
       min-complexity: 25
     godot:
       scope: toplevel
+    gomoddirectives:
+      replace-local: true
     gosec:
       excludes:
         - G102
         - G104
         - G301
-        - G302 # evidence JSON is world-readable fleet data, not secrets
+        - G302
         - G304
         - G306
         - G307
         - G404
+    ireturn:
+      allow:
+        - error
+        - empty
+        - anon
+        - stdlib
+        - generic
+    makezero:
+      always: true
     mnd:
       ignored-functions:
         - fmt.Errorf
         - fmt.Fprintf
         - fmt.Sprintf
         - time.ParseDuration
+    nestif:
+      min-complexity: 6
+    revive:
+      rules:
+        - disabled: true
+          name: package-comments
+    tagalign:
+      align: false
+      order:
+        - binding
+        - json
+        - yaml
+        - xml
+        - toml
+        - validate
+        - mapstructure
+      sort: true
     tagliatelle:
       case:
         rules:
-          # Hub-facing JSON (Datastar signals, patch payloads, discovery wire)
-          # is camelCase for JS. The core v1 document contract is snake_case,
-          # golden-pinned in v1_golden_test.go — excluded below.
           json: camel
+    testifylint:
+      disable:
+        - go-require
+      enable-all: true
+    varnamelen:
+      ignore-decls:
+        - err error
+        - wg sync.WaitGroup
+        - mu sync.Mutex
+        - c context.Context
+        - r *http.Request
+        - w http.ResponseWriter
+        - t *testing.T
+        - b *testing.B
+        - f *testing.F
+        - db *sql.DB
+        - tx *sql.Tx
+        - ok bool
+        - id string
+        - n int
+        - fn func()
+        - i int
+        - j int
+      ignore-map-index-ok: true
+      ignore-names:
+        - err
+        - ok
+        - tt
+        - fn
+        - t
+        - i
+        - m
+        - g
+        - a
+        - b
+        - v
+      ignore-type-assert-ok: true
+      max-distance: 15
+      min-name-length: 2
     wrapcheck:
-      # v2 keys are kebab-case (ignore-sigs / extra-ignore-sigs /
-      # ignore-package-globs, where * crosses /). Wrong keys are silently
-      # dropped by `run` — always `golangci-lint config verify` after edits.
+      extra-ignore-sigs:
+        - fmt.Fprintln(
       ignore-package-globs:
-        # core module: the family error constructors ARE the wrapped boundary
         - github.com/larsartmann/go-compliance
-        - github.com/larsartmann/go-compliance/hub # own module: delegation is not a boundary
+        - github.com/larsartmann/go-compliance/hub
         - github.com/larsartmann/go-compliance/hub/*
         - github.com/larsartmann/cmdguard
         - github.com/larsartmann/cmdguard/*
@@ -174,21 +265,13 @@ linters:
         - github.com/larsartmann/go-output/*
         - github.com/larsartmann/go-sqlitestore
         - github.com/larsartmann/go-sqlitestore/*
-      extra-ignore-sigs:
-        - fmt.Fprintln(
-    revive:
-      rules:
-        - name: package-comments
-          disabled: true
   exclusions:
+    generated: lax
     rules:
       - path: ^v1\.go$
+        text: json
         linters:
           - tagliatelle
-        text: json
-      # Demo programs are documentation artifacts: printing to stdout IS
-      # the feature, the numbers are illustrative payload, and the file
-      # path is the operator's own argument.
       - path: ^examples/
         linters:
           - forbidigo
@@ -204,3 +287,34 @@ linters:
           - gosec
           - mnd
           - wrapcheck
+          - exhaustruct_v5
+          - testpackage
+          - cyclop
+          - errcheck
+          - ireturn
+          - recvcheck
+          - contextcheck
+          - exhaustive
+      - path: _test\.go
+        text: unused
+        linters:
+          - unused
+    paths:
+      - \.gen\.go$
+      - _templ\.go$
+      - vendor/
+formatters:
+  enable:
+    - goimports
+    - gofumpt
+    - golines
+  settings:
+    golines:
+      max-len: 120
+  exclusions:
+    generated: lax
+    paths:
+      - _templ\.go$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

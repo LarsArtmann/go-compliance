@@ -2,10 +2,9 @@ package compliance
 
 import (
 	"bytes"
+	"encoding/json/v2"
 	"sort"
 	"time"
-
-	"encoding/json/v2"
 )
 
 // SchemaVersionV1 is the wire contract version of the compliance JSON

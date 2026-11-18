@@ -33,6 +33,7 @@ var _ = Describe("Branded types", func() {
 		Expect(string(encoded)).To(Equal(`"go-finding"`))
 
 		var zero compliance.RepoName
+
 		encoded, err = json.Marshal(zero)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(string(encoded)).To(Equal(`null`))

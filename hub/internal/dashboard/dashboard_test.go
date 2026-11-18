@@ -42,6 +42,7 @@ var _ = Describe("datastar patch stream", func() {
 		Expect(received[0].IsSignals()).To(BeTrue())
 		datastartest.RequireSignalsContain(GinkgoTB(), received[0], "counts")
 		datastartest.RequireSignalsContain(GinkgoTB(), received[0], "total")
+
 		var decoded struct {
 			Total  int            `json:"total"`
 			Counts map[string]int `json:"counts"`
@@ -77,8 +78,10 @@ var _ = Describe("datastar patch stream", func() {
 		stream := board.StreamHandler()
 
 		published := make(chan error, 1)
+
 		go func() {
 			testsupport.WaitForSubscriber(hub)
+
 			_, err := hub.PublishRefresh([]events.RepoRow{
 				rowFor("stable", compliance.StateStale),
 				rowFor("flipped", compliance.StateFailing),
@@ -91,10 +94,12 @@ var _ = Describe("datastar patch stream", func() {
 		// (signals, stat cards, append newcomer, replace flipped, remove
 		// doomed).
 		received := datastartest.CollectN(GinkgoTB(), stream, 8, datastartest.WithPath("/events"))
+
 		Expect(<-published).NotTo(HaveOccurred())
 
 		signals, found := datastartest.FindSignals(received[3:])
 		Expect(found).To(BeTrue())
+
 		var decoded struct {
 			Total  int            `json:"total"`
 			Counts map[string]int `json:"counts"`

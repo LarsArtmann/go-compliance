@@ -50,6 +50,7 @@ var _ = Describe("FileSource", func() {
 
 	BeforeEach(func() {
 		var err error
+
 		dir, err = os.MkdirTemp("", "compliance-filesource-*")
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(func() { _ = os.RemoveAll(dir) })
@@ -95,6 +96,7 @@ var _ = Describe("FileSource", func() {
 		Expect(err).To(MatchError(compliance.ErrIO))
 
 		By("creating the file inside the backoff window")
+
 		data, report := loadGoldenFixture()
 		Expect(os.WriteFile(path, data, 0o644)).To(Succeed())
 
@@ -115,6 +117,7 @@ var _ = Describe("CommandSource", func() {
 
 	BeforeEach(func() {
 		var err error
+
 		dir, err = os.MkdirTemp("", "compliance-cmdsource-*")
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(func() { _ = os.RemoveAll(dir) })

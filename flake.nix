@@ -17,7 +17,7 @@
     # Private Go dep (flake = false; pinned to the exact commit hub/go.mod
     # pseudo-versions, so the nix build compiles what go.sum pins).
     go-daemon = {
-      url = "github:LarsArtmann/go-daemon/e8e1a1fff5028d1e7fc292d0eeb87f8d65e2cf36";
+      url = "git+ssh://git@github.com/LarsArtmann/go-daemon?rev=e8e1a1fff5028d1e7fc292d0eeb87f8d65e2cf36";
       flake = false;
     };
   };
@@ -205,7 +205,7 @@
 
           checks = {
             hub-build = compliance-hub;
-            core-build = core-build;
+            inherit core-build;
           };
         };
     };

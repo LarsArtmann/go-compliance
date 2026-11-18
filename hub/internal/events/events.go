@@ -183,6 +183,7 @@ func (h *Hub) PublishRefresh(next []RepoRow) (bool, error) {
 	previous := h.Rows()
 	if len(previous) == 0 {
 		_, err := h.PublishSnapshot(next)
+
 		return len(next) > 0, err
 	}
 
@@ -194,6 +195,7 @@ func (h *Hub) PublishRefresh(next []RepoRow) (bool, error) {
 	h.setRows(next)
 
 	_, err := h.PublishUpdate(added, changed, removed)
+
 	return true, err
 }
 
@@ -240,7 +242,9 @@ func (h *Hub) Handler() http.Handler {
 					return
 				}
 
-				if stream.Send(sse.Event{Event: published.Name, Data: published.Data, ID: sse.NewEventID(published.ID)}) != nil {
+				if stream.Send(
+					sse.Event{Event: published.Name, Data: published.Data, ID: sse.NewEventID(published.ID)},
+				) != nil {
 					return
 				}
 			}

@@ -116,13 +116,16 @@ var _ = Describe("events hub endpoint", func() {
 		handler := hub.Handler()
 
 		published := make(chan error, 1)
+
 		go func() {
 			testsupport.WaitForSubscriber(hub)
+
 			_, err := hub.PublishRefresh(rowsFor("fleet", compliance.StateFailing))
 			published <- err
 		}()
 
 		received := ssetest.CollectN(GinkgoTB(), handler, 2, ssetest.WithPath("/events"))
+
 		Expect(<-published).NotTo(HaveOccurred())
 
 		ssetest.RequireEventCount(GinkgoTB(), received, 2)
@@ -173,6 +176,7 @@ var _ = Describe("events hub endpoint", func() {
 
 		_, err := hub.PublishSnapshot(rows)
 		Expect(err).NotTo(HaveOccurred())
+
 		rows[0].Severities["error"] = 99
 
 		current := hub.Rows()

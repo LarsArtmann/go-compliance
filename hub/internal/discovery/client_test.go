@@ -57,6 +57,7 @@ var _ = Describe("discovery client", func() {
 			var request struct {
 				SearchPaths []string `json:"searchPaths"`
 			}
+
 			requestBody, err := io.ReadAll(r.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(json.Unmarshal(requestBody, &request)).To(Succeed())
@@ -77,7 +78,10 @@ var _ = Describe("discovery client", func() {
 			flusher.Flush()
 
 			fmt.Fprint(w, ": heartbeat\n\n")
-			fmt.Fprint(w, "data: {\"type\":\"WatchProjectAdded\",\"timestamp\":\"2026-11-17T20:00:00Z\",\"path\":\"/p/new-repo\",\"project\":{\"dirName\":\"new-repo\",\"path\":\"/p/new-repo\"}}\n\n")
+			fmt.Fprint(
+				w,
+				"data: {\"type\":\"WatchProjectAdded\",\"timestamp\":\"2026-11-17T20:00:00Z\",\"path\":\"/p/new-repo\",\"project\":{\"dirName\":\"new-repo\",\"path\":\"/p/new-repo\"}}\n\n",
+			)
 			flusher.Flush()
 		})
 

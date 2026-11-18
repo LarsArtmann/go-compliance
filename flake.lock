@@ -46,16 +46,16 @@
       "locked": {
         "lastModified": 1793748425,
         "narHash": "sha256-VmR5bWKR3YPKkHvrCc4hw8Btq4U1ADoZnBRwyOTi72k=",
-        "owner": "LarsArtmann",
-        "repo": "go-daemon",
+        "ref": "refs/heads/master",
         "rev": "e8e1a1fff5028d1e7fc292d0eeb87f8d65e2cf36",
-        "type": "github"
+        "revCount": 127,
+        "type": "git",
+        "url": "ssh://git@github.com/LarsArtmann/go-daemon"
       },
       "original": {
-        "owner": "LarsArtmann",
-        "repo": "go-daemon",
         "rev": "e8e1a1fff5028d1e7fc292d0eeb87f8d65e2cf36",
-        "type": "github"
+        "type": "git",
+        "url": "ssh://git@github.com/LarsArtmann/go-daemon"
       }
     },
     "go-nix-helpers": {

@@ -18,6 +18,7 @@ func unixDialClient(socketPath string) *http.Client {
 	return &http.Client{Transport: &http.Transport{
 		DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
 			var d net.Dialer
+
 			return d.DialContext(ctx, "unix", socketPath)
 		},
 	}}
@@ -62,15 +63,18 @@ var _ = Describe("bind address handling", func() {
 
 			server := &http.Server{Handler: http.NotFoundHandler()}
 			go func() { _ = server.Serve(listener) }()
+
 			DeferCleanup(func() { _ = server.Close() })
 
 			client := unixDialClient(socketPath)
+
 			Eventually(func() int {
 				resp, err := client.Get("http://unix/healthz")
 				if err != nil {
 					return 0
 				}
 				defer func() { _ = resp.Body.Close() }()
+
 				return resp.StatusCode
 			}, "2s", "20ms").Should(Equal(http.StatusNotFound))
 		})
@@ -102,14 +106,17 @@ var _ = Describe("bind address handling", func() {
 
 			ctx, cancel := context.WithCancel(context.Background())
 			served := make(chan error, 1)
+
 			go func() {
 				defer GinkgoRecover()
+
 				served <- serveListener(ctx, server, "unix:"+socketPath, discardLogger())
 			}()
 
 			client := &http.Client{Transport: &http.Transport{
 				DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
 					var d net.Dialer
+
 					return d.DialContext(ctx, "unix", socketPath)
 				},
 			}}
@@ -120,6 +127,7 @@ var _ = Describe("bind address handling", func() {
 					return 0
 				}
 				defer func() { _ = resp.Body.Close() }()
+
 				return resp.StatusCode
 			}, "2s", "20ms").Should(Equal(http.StatusNotFound))
 
@@ -134,6 +142,7 @@ var _ = Describe("bind address handling", func() {
 
 			Eventually(func() bool {
 				_, err := os.Stat(socketPath)
+
 				return os.IsNotExist(err)
 			}, "2s", "20ms").Should(BeTrue())
 		})

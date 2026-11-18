@@ -30,6 +30,7 @@ func (s *ringStore) EventsAfter(lastID sse.EventID) ([]sse.Event, error) {
 	}
 
 	var replayable []sse.Event
+
 	for _, evt := range s.events {
 		if seq, ok := parseSeq(evt.ID); ok && seq > cutoff {
 			replayable = append(replayable, evt)
