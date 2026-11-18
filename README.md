@@ -53,6 +53,23 @@ application/json` clients.
 Or run the packaged service: `compliance-hub serve --source file --file
 compliance.json` (also `--source buildflow`, `--source cache --db path`).
 
+### Health surface (packaged service)
+
+`serve` exposes the standard probe routes for systemd, Kubernetes, or a
+scraping dashboard:
+
+| Route       | Meaning                                                                    |
+| ----------- | -------------------------------------------------------------------------- |
+| `/healthz`  | Liveness, always passes (an evidence failure must not restart the process) |
+| `/readyz`   | 503 until evidence is published; degraded-but-serving stays 200            |
+| `/startupz` | Startup latch, passes once the critical `evidence` check first passes      |
+| `/version`  | Build version stamp                                                        |
+
+Checks: `evidence` (critical gate), `cache-disk` (128 MiB floor, only with
+`--db`), `refresh-freshness` and `discovery` (warn when their loop stalls
+past 10 minutes), `sse-backpressure` (warn on new patch drops). Shutdown
+drains honestly: readiness flips to 503 before the listeners close.
+
 ## CI
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs per-module
