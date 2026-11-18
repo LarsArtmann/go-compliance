@@ -12,6 +12,7 @@
   "dockerfile": {},
   "excludes": [
     "vendor/**",
+    "testdata/**",
     ".git/**",
     "node_modules/**",
     "**/CHANGELOG.md",

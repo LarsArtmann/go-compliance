@@ -15,6 +15,7 @@ auto-commits everything else).
 ## a) FULLY DONE (verified this session)
 
 ### M10 — discovery client compile fix (F047–F049 remainder)
+
 - `client.go`: `json.NewDecoder(resp.Body).Decode` → `io.ReadAll` +
   `json.Unmarshal` (json/v2 has no NewDecoder); kept NewIOError/NewParseError
   wrapping.
@@ -25,7 +26,9 @@ auto-commits everything else).
 - M9 re-verified green (`internal/cache`) and flipped complete.
 
 ### M11 — events backbone (F050–F053)
+
 `hub/internal/events`:
+
 - `rows.go`: `RepoRow` projection (state/last-run/runs/failings/findings/
   severities/worst-steps/verdict), `RowsFromEvidence` (DeriveState per row),
   `DiffRows` → **added / changed / removed** three-way split.
@@ -44,8 +47,10 @@ auto-commits everything else).
   tests (drain + timeout-ctx before Shutdown).
 
 ### M12 — DataStar bridge (F054–F057)
+
 `hub/internal/dashboard` + deps `go-datastar`, `go-datastar/static`,
 `go-datastar/datastartest`:
+
 - `StreamHandler()`: SSE of patches — signals patch (counts/total) +
   elements patches; updates project as **append** (added rows) /
   **replace** (`tr[data-repo=X]`) / **remove** (disappeared) — the minimal
@@ -57,7 +62,9 @@ auto-commits everything else).
   signals via `UnmarshalSignals`).
 
 ### M13 — fleet table UI (F058–F062)
+
 templ-components v1.27.0 (skill loaded before authoring):
+
 - `view.templ`: `layout.Base` (no HTMX — DataStar owns realtime) +
   `Container` + `PageHeader` + `datastar.LiveRegion` (RetryAlways — same
   clean-EOF rationale as go-health-dashboard) wrapping the table; Play-CDN
@@ -74,6 +81,7 @@ templ-components v1.27.0 (skill loaded before authoring):
 - F062 render tests: full-page assertions + empty state.
 
 ### M14 — routes, negotiation, chips (F063–F067)
+
 - `routes.go`: `Routes`/`DefaultRoutes`/`RegisterRoutes(mux)` (one-call
   embed)/`RegisterRoutesAt` (base-path support); page route content
   negotiation (Accept q-values, JSON→`SnapshotJSON`, wildcard→HTML).
@@ -89,6 +97,7 @@ templ-components v1.27.0 (skill loaded before authoring):
   routes.
 
 ### M15 — health + systemd (F068–F071)
+
 - `health.go`: go-health `NewChecks` probe — critical `evidence` check
   (hub has published state), `cache-disk` headroom check when `--db` set
   (`cacheDirForDB` guards the empty case); `WithVersion`; probe.Start.
@@ -111,6 +120,7 @@ templ-components v1.27.0 (skill loaded before authoring):
 ## b) PARTIALLY DONE
 
 ### M20 — bind posture (F090–F093)
+
 - **Done:** decision doc `docs/decisions/bind-posture.md` (localhost
   default, loud non-loopback warning, unix-socket first-class, no auth
   until g1); `bind.go` unix-socket listen mode (`unix:` prefix: mkdir,
@@ -121,12 +131,14 @@ templ-components v1.27.0 (skill loaded before authoring):
   are green; the new paths are untested.
 
 ### Housekeeping debt from this session (small, deliberate)
+
 - No `go test -race` pass yet on the new concurrent code (hub, stream).
 - `waitForSubscriber` poll helper duplicated in two test packages.
 - templ-commit note not yet added to `.gitignore` (fleet convention
   comment).
 
 ## c) NOT STARTED
+
 - M17 docs set + dprint (F077–F081)
 - M18 flake.nix (F082–F085)
 - M19 CI workflows (F086–F089)
@@ -196,6 +208,7 @@ templ-components v1.27.0 (skill loaded before authoring):
 ## f) NEXT (ordered, ~40 items)
 
 **M20 finish (1)**
+
 1. F093: test non-localhost warning + unix-socket serve round-trip.
 
 **M17 docs (5)**
@@ -265,7 +278,7 @@ templ-components v1.27.0 (skill loaded before authoring):
 43. Tag train plan (core first, hub second) per fleet release procedure.
 44. Update STACK.md hosting/deploy row with systemd unit.
 45. Final pass: whole-repo build+test + plan-vs-tree audit + this
-    report's items harvested into TODO_LIST.
+report's items harvested into TODO_LIST.
 
 ## g) QUESTIONS (cannot resolve myself)
 
