@@ -30,13 +30,20 @@ The plan is a snapshot: this file is the living backlog.
 
 ## Low Impact
 
-| Task                                                                                                                                        | Status    | Impact | Effort | Evidence                                                                    |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | --------------------------------------------------------------------------- |
-| Drop hub `replace` directive when core tags v0.1.0                                                                                          | 🔴 `TODO` | Low    | 10m    | `hub/go.mod` replace block                                                  |
-| `templ fmt` gate for `.templ` sources in CI (canonical templ formatting; generated `*_templ.go` already committed)                          | 🔴 `TODO` | Low    | 10m    | 06-47 §39; `go tool templ fmt ./internal/dashboard/`; dprint excludes templ |
-| Archive sweep: `git mv` aged status reports to `docs/status/archived/` + archived README manifest (cadence gate threshold 15; currently 10) | 🔴 `TODO` | Low    | 15m    | 18-06 §8 remainder; docs-cadence gate                                       |
-| Investigate io-history-ratchet anomaly (43 files hashed vs median 16) with `buildflow --profile-io`                                         | 🔴 `TODO` | Low    | 30m    | 23-40 §f30                                                                  |
-| Confirm lychee's 4 path-excluded unscanned files are intentionally excluded                                                                 | 🔴 `TODO` | Low    | 10m    | 23-40 §f41                                                                  |
+| Task                                                                                                                                             | Status    | Impact | Effort | Evidence                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------ | ------ | --------------------------------------------------------------------------- |
+| Drop hub `replace` directive when core tags v0.1.0                                                                                               | 🔴 `TODO` | Low    | 10m    | `hub/go.mod` replace block                                                  |
+| `templ fmt` gate for `.templ` sources in CI (canonical templ formatting; generated `*_templ.go` already committed)                               | 🔴 `TODO` | Low    | 10m    | 06-47 §39; `go tool templ fmt ./internal/dashboard/`; dprint excludes templ |
+| Archive sweep: `git mv` aged status reports to `docs/status/archived/` + archived README manifest (cadence gate threshold 15; currently 10)      | 🔴 `TODO` | Low    | 15m    | 18-06 §8 remainder; docs-cadence gate                                       |
+| Investigate io-history-ratchet anomaly (43 files hashed vs median 16) with `buildflow --profile-io`                                              | 🔴 `TODO` | Low    | 30m    | 23-40 §f30                                                                  |
+| Confirm lychee's 4 path-excluded unscanned files are intentionally excluded                                                                      | 🔴 `TODO` | Low    | 10m    | 23-40 §f41                                                                  |
+| Core suite `-race` parity: run root module with `-race -count=1` + add it to the AGENTS.md commands block (hub already canonical)                | 🔴 `TODO` | Low    | 5m     | 00-53 §b1/c1                                                                |
+| Pin README health thresholds (128 MiB / 10 min) in the `/readyz` payload contract test or loosen the prose, so README drift fails CI             | 🔴 `TODO` | Low    | 10m    | 00-53 §d5; README "Health surface" vs health.go/refresher.go constants      |
+| Add devShell build to the standing verification ritual (AGENTS.md commands block)                                                                | 🔴 `TODO` | Low    | 5m     | 23-40 §f5; 00-53 §c5                                                        |
+| `nix flake check --all-systems` once; record aarch64-darwin/aarch64-linux status                                                                 | 🔴 `TODO` | Low    | 10m    | 00-53 §c4; nix omitted-systems warning                                      |
+| Semantic audit of the 23-40 report's ~22 token-"matched" open items (docs-gates token-match green ≠ harvest); strike or route each               | 🔴 `TODO` | Low    | 30m    | 00-53 §b3; docs-freshness matched-items list                                |
+| Exit-code policy in AGENTS.md commands block: redirect-to-file then `echo $?`, never `cmd \| tail; echo $?`                                      | 🔴 `TODO` | Low    | 5m     | 00-53 §d1 (3 in-session instances of the known trap)                        |
+| Goroutine window on probe-construction failure: clarifying comment in serve.go or ROADMAP conditional (embedder-only; never a code change today) | 🔴 `TODO` | Low    | 5m     | 00-53 §b6; serve.go:62-65 ordering                                          |
 
 ## Blocked (owner decisions)
 
