@@ -49,6 +49,20 @@ replaces).
   .templ files — do NOT import `github.com/a-h/templ` explicitly in a
   .templ import block (the generated file redeclares it).
 
+## Dedup Audit (art-dupl)
+
+- Audit with `art-dupl -t 1 --type-aware`; target "0 shown". Accept
+  leftover intentional clones with `// art-dupl:accept <why>` — gofmt
+  normalizes the directive to the spaced form and art-dupl still honors
+  it, but it must sit within 5 lines ABOVE the clone start (function-doc
+  distance is too far). Every suppression should be pinned by a directive
+  so future audits only ever litigate NEW clones (2026-11-18 audit).
+- Single homes for shared policies: SQL query + IO-error wrap =
+  `cache.Store.queryRows` + `wrapIterateErr` (hub/internal/cache); the
+  worst-steps defaulting rule = `worstStepLimitOrDefault` (fold.go);
+  dashboard filter validation delegates to `State.IsValid` so new core
+  states are filterable without touching routes.go.
+
 ## Testing Conventions
 
 - ginkgo/gomega; one suite bootstrap per package
