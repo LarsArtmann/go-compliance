@@ -19,7 +19,7 @@
 | Persistence  | SQLite (hub evidence cache; BuildFlow state DB stays source of truth, consumed via adapter)                                                                                                       |
 | Interfaces   | terminal tables, HTTP + SSE WebUI (Datastar), JSON API (frozen v1 overview-compat + hub v2), unix-socket HTTP (discovery)                                                                         |
 | Scale target | Single operator, fleet of ~280 local repos, one single-binary hub service                                                                                                                         |
-| Constraints  | nix flake build, public-capable modules (no private deps — daemon spoken to via plain HTTP), Go 1.27 floor, systemd via sd_notify; hosting: Forgejo (evo-x2) primary + GitHub mirror, both public |
+| Constraints  | nix flake build, Go 1.27 floor, systemd via sd_notify; hosting: Forgejo (evo-x2) primary + GitHub mirror, both public. Core module is public-clean; the hub builds against one PRIVATE dep (go-daemon) — see errata 2026-11-18 |
 
 ## Module layout (mirrors the go-health / go-health-dashboard split rationale)
 
@@ -114,3 +114,18 @@ decision.
   is primary (`origin`), GitHub (`git@github.com:LarsArtmann/go-compliance.git`)
   is the mirror remote (`github`), both public — the fleet convention observed
   in quotaboard/pim-sync. Answers status-report question g3.
+- 2026-11-18 — **Errata: templ generator is version-pinned.** The flake builds
+  `templ-gen` from the `a-h/templ` tag matching the hub go.mod tool directive
+  (v0.3.1100); nixpkgs' `templ` lags behind and its older parser can mangle
+  generated output (templ-components precedent). Never swap the pin for
+  `ps.templ` without checking parity with the tool directive.
+- 2026-11-18 — **Errata: the "no private deps" constraint is superseded for
+  the hub.** `hub/internal/cli/bind.go` imports `github.com/LarsArtmann/go-daemon`
+  (private): unix-socket + sd_notify building blocks. Consequence: the CORE
+  module stays proxy-fetchable by anyone; building the HUB requires a PAT
+  with read on go-daemon (CI gates those jobs on `FLAKE_PAT`; local dev
+  resolves it via nix.conf/git insteadOf). The discovery daemon is still
+  spoken to over plain HTTP as decided. Note: the go.mod require sits in the
+  indirect block only because tidy hasn't run since the import landed.
+  Escape hatch if the hub must become publicly buildable: publish go-daemon,
+  or extract the sd_notify surface behind a tiny public shim.
