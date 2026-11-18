@@ -192,7 +192,7 @@
             inherit version;
             src = self;
             postPatch = "rm -f go.work";
-            vendorHash = "sha256-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=";
+            vendorHash = "sha256-KKGkAmStPL8De3sxGZUl6q54bk+v/Vw1zrWAvxxPFYo=";
             subPackages = [ "." ];
             doCheck = true;
           };

@@ -1,0 +1,13 @@
+goos: linux
+goarch: amd64
+pkg: github.com/larsartmann/go-compliance
+cpu: AMD RYZEN AI MAX+ 395 w/ Radeon 8060S          
+BenchmarkFoldEvidence/0050repos-32         	   86761	     14816 ns/op	   23264 B/op	      62 allocs/op
+BenchmarkFoldEvidence/0341repos-32         	   10000	    127379 ns/op	  164099 B/op	     359 allocs/op
+BenchmarkFoldEvidence/1000repos-32         	    3566	    335896 ns/op	  505650 B/op	    1025 allocs/op
+BenchmarkDeriveState/0050repos-32          	 3519374	       374.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDeriveState/0341repos-32          	  408111	      2573 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDeriveState/1000repos-32          	  183938	      6474 ns/op	       0 B/op	       0 allocs/op
+BenchmarkV1DecodeFoldDerive-32             	    1197	    944653 ns/op	  596158 B/op	    4779 allocs/op
+PASS
+ok  	github.com/larsartmann/go-compliance	8.458s
