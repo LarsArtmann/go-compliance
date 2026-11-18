@@ -24,6 +24,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Hub module: sd_notify readiness/stopping/watchdog via go-daemon; hardened systemd unit under `deploy/`.
 - Hub module: bind posture — localhost-only default, `unix:` socket mode (0o660, stale-socket removal, cleanup on shutdown), non-localhost warning.
 - Repo hygiene: dprint gate, TODO_LIST, FEATURES, DOMAIN_LANGUAGE, planning + status docs.
+- Nix: two-module flake (devShell with pinned templ generator + dprint + actionlint; `compliance-hub` package; core build+test check) — `nix flake check` green. The hub vendorHash isolates a Go-files-only core copy (`_core_only`): `go mod vendor` copies directory-replaced modules verbatim, so vendoring the repo root would feed flake.nix (which carries the vendorHash) into the FOD — an unfixable self-reference flip-flop, root-caused by diffing two stored go-modules outputs.
+- CI: `.github/workflows/ci.yml` — per-module build+test and lint (golangci-lint pinned to the devShell 2.15.0), dprint + actionlint, stack-drift-check, docs-gates, `nix flake check`; hub/flake jobs skip (not fail) until the `FLAKE_PAT` secret exists. Valid on GitHub and Forgejo runners.
+- Lint: `.golangci.yml` (fleet-trimmed); both modules at 0 issues with tests green.
+- Docs: `examples/reporter` (runnable one-line integration demo), `docs/guides/integrate.md`, README screenshots (terminal table + live dashboard), `docs/decisions/v2-wire-design.md` (compat policy: v1 emittable forever), `docs/notes/federation-interop.md` (hub ↔ go-health-dashboard options), STACK.md errata (templ pin; hub's private go-daemon consequence).
+- Benchmarks: fold/derive/full-pipeline at 50/341/1000 repos (`bench_test.go`); baseline recorded under `benchmarks/` (fold @341 ≈ 150µs, derive @341 ≈ 2.3µs zero-alloc, decode+fold+derive @341 ≈ 0.9ms).
 
 ### Changed
 

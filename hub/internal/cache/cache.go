@@ -9,6 +9,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json/v2"
+	"sync"
 	"time"
 
 	"github.com/larsartmann/go-sqlitestore"
@@ -49,6 +50,9 @@ CREATE INDEX IF NOT EXISTS idx_evidence_runs_repo_time ON evidence_runs (repo, r
 // Store is the evidence cache.
 type Store struct {
 	db *sqlitestore.DB
+
+	onWriteMu sync.RWMutex
+	onWrite   func(repo compliance.RepoName)
 }
 
 // Open opens (creating) the cache database at path and applies migrations.
@@ -72,6 +76,17 @@ func (s *Store) Close() error { return s.db.Close() }
 
 // Name identifies the cache as a compliance Source.
 func (s *Store) Name() compliance.SourceName { return compliance.NewSourceName("cache") }
+
+// OnWrite registers a hook invoked synchronously on the writer's
+// goroutine after every successful evidence append (the hub uses it to
+// kick a debounced re-derive). Register once before serving; the hook
+// must not call back into the Store.
+func (s *Store) OnWrite(hook func(repo compliance.RepoName)) {
+	s.onWriteMu.Lock()
+	defer s.onWriteMu.Unlock()
+
+	s.onWrite = hook
+}
 
 // WriteEvidence implements compliance.EvidenceWriter: one append-only run
 // record. Queries derive the newest state, so out-of-order records cannot
@@ -98,6 +113,14 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		return compliance.NewIOError(err, "record evidence for %s", repo.Get())
 	}
 
+	s.onWriteMu.RLock()
+	hook := s.onWrite
+	s.onWriteMu.RUnlock()
+
+	if hook != nil {
+		hook(repo)
+	}
+
 	return nil
 }
 
@@ -117,12 +140,7 @@ func (s *Store) QueryEvidence(
 		return nil, err
 	}
 
-	latest, err := s.queryLatestRuns(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	findings, severities, err := s.queryLatestRunCounts(ctx, latest)
+	latest, findings, severities, err := s.queryLatestRecords(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -178,80 +196,70 @@ ORDER BY repo`, from)
 	return health, wrapIterateErr(rows.Err(), "iterate window health")
 }
 
-// queryLatestRuns returns each repo's all-history newest record.
-func (s *Store) queryLatestRuns(ctx context.Context) ([]compliance.LatestRun, error) {
+// queryLatestRecords returns each repo's all-history newest record in ONE
+// query: the latest-run fields plus that record's gate findings and
+// severity counts (the per-repo follow-up loop was an N+1; a correlated
+// id-subquery selects the same rows the latest-runs query picked).
+func (s *Store) queryLatestRecords(
+	ctx context.Context,
+) ([]compliance.LatestRun, []compliance.RepoFindings, []compliance.RepoSeverities, error) {
 	rows, err := s.db.DB().QueryContext(ctx, `
-SELECT repo, recorded_at, verdict, producer_version
+SELECT r.repo, r.recorded_at, r.verdict, r.producer_version, r.gate_findings, r.severity_counts
 FROM evidence_runs r
-WHERE id = (
+WHERE r.id = (
     SELECT id FROM evidence_runs newer
     WHERE newer.repo = r.repo
     ORDER BY newer.recorded_at DESC, newer.id DESC
     LIMIT 1
 )
-ORDER BY repo`)
+ORDER BY r.repo`)
 	if err != nil {
-		return nil, compliance.NewIOError(err, "query latest runs")
+		return nil, nil, nil, compliance.NewIOError(err, "query latest records")
 	}
 	defer func() { _ = rows.Close() }()
 
-	var runs []compliance.LatestRun
+	var (
+		runs       = make([]compliance.LatestRun, 0, 16)
+		findings   = make([]compliance.RepoFindings, 0, 16)
+		severities = make([]compliance.RepoSeverities, 0, 16)
+	)
 
 	for rows.Next() {
-		var repo, recordedAt, verdict, version string
+		var repo, recordedAt, verdict, version, gateJSON, severityJSON string
 
-		if err := rows.Scan(&repo, &recordedAt, &verdict, &version); err != nil {
-			return nil, compliance.NewIOError(err, "scan latest run")
+		if err := rows.Scan(&repo, &recordedAt, &verdict, &version, &gateJSON, &severityJSON); err != nil {
+			return nil, nil, nil, compliance.NewIOError(err, "scan latest record")
 		}
 
+		name := compliance.NewRepoName(repo)
+
 		runs = append(runs, compliance.LatestRun{
-			Repo:       compliance.NewRepoName(repo),
+			Repo:       name,
 			LastRunAt:  compliance.ParseWireTime(recordedAt),
 			HasVerdict: true,
 			AnyFailed:  verdict == compliance.VerdictFailed.String(),
 			Version:    version,
 		})
-	}
-
-	return runs, wrapIterateErr(rows.Err(), "iterate latest runs")
-}
-
-// queryLatestRunCounts loads each repo's latest gate findings and severity
-// counts.
-func (s *Store) queryLatestRunCounts(
-	ctx context.Context, latest []compliance.LatestRun,
-) ([]compliance.RepoFindings, []compliance.RepoSeverities, error) {
-	findings := make([]compliance.RepoFindings, 0, len(latest))
-	severities := make([]compliance.RepoSeverities, 0, len(latest))
-
-	for _, run := range latest {
-		var gateJSON, severityJSON string
-
-		err := s.db.DB().QueryRowContext(ctx, `
-SELECT gate_findings, severity_counts
-FROM evidence_runs
-WHERE repo = ? AND recorded_at = ?
-ORDER BY id DESC LIMIT 1`, run.Repo.Get(), compliance.FormatWireTime(run.LastRunAt)).
-			Scan(&gateJSON, &severityJSON)
-		if err != nil {
-			return nil, nil, compliance.NewIOError(err, "query latest run counts for %s", run.Repo.Get())
-		}
 
 		gate, err := unmarshalCounts(gateJSON)
 		if err != nil {
-			return nil, nil, compliance.NewParseError(err, "decode gate findings for %s", run.Repo.Get())
+			return nil, nil, nil, compliance.NewParseError(err, "decode gate findings for %s", repo)
 		}
 
 		sev, err := unmarshalCounts(severityJSON)
 		if err != nil {
-			return nil, nil, compliance.NewParseError(err, "decode severity counts for %s", run.Repo.Get())
+			return nil, nil, nil, compliance.NewParseError(err, "decode severity counts for %s", repo)
 		}
 
-		findings = append(findings, compliance.RepoFindings{Repo: run.Repo, Findings: gate})
-		severities = append(severities, compliance.RepoSeverities{Repo: run.Repo, Severities: sev})
+		findings = append(findings, compliance.RepoFindings{Repo: name, Findings: gate})
+		severities = append(severities, compliance.RepoSeverities{Repo: name, Severities: sev})
 	}
 
-	return findings, severities, nil
+	if err := wrapIterateErr(rows.Err(), "iterate latest records"); err != nil {
+		return nil, nil, nil, err
+	}
+
+	return runs, findings, severities, nil
 }
 
 // queryWindowVersions returns each repo's distinct producer versions in

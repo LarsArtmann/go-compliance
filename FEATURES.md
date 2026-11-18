@@ -52,12 +52,14 @@ not?
 
 ## Project infrastructure
 
-| Feature                              | Status                | Evidence                            | Notes                                       |
-| ------------------------------------ | --------------------- | ----------------------------------- | ------------------------------------------- |
-| dprint formatting gate               | 🟢 `FULLY_FUNCTIONAL` | `dprint.json`; `dprint check` green | testdata fixtures excluded (golden bytes)   |
-| flake.nix build + devShell           | ⚪ `PLANNED`          | M18 in TODO_LIST                    | go-nix-helpers pattern                      |
-| CI (build/test/lint/docs gates)      | ⚪ `PLANNED`          | M19 in TODO_LIST                    | must run on Forgejo + GitHub runners        |
-| `examples/reporter` integration demo | ⚪ `PLANNED`          | M21 in TODO_LIST                    | the one-line promise, documented            |
-| Benchmarks + baseline                | ⚪ `PLANNED`          | M22 in TODO_LIST                    | fold + derive at 300 repos                  |
-| v2 wire design                       | ⚪ `PLANNED`          | M24 in TODO_LIST                    | v1 stays emittable forever                  |
-| Federation (go-health-dashboard)     | ⚪ `DEMAND_GATED`     | M25 research in TODO_LIST           | research note first; build on demand signal |
+| Feature                              | Status                | Evidence                                                        | Notes                                                          |
+| ------------------------------------ | --------------------- | --------------------------------------------------------------- | -------------------------------------------------------------- |
+| dprint formatting gate               | 🟢 `FULLY_FUNCTIONAL` | `dprint.json`; `dprint check` green                              | testdata fixtures excluded (golden bytes)                      |
+| flake.nix build + devShell           | 🟢 `FULLY_FUNCTIONAL` | `flake.nix`; `nix flake check` green (both modules)              | `_core_only` vendor isolation; templ generator pinned v0.3.1100 |
+| CI (build/test/lint/docs gates)      | 🟢 `FULLY_FUNCTIONAL` | `.github/workflows/ci.yml`; actionlint clean                     | hub/flake jobs skip until `FLAKE_PAT` secret exists            |
+| golangci-lint (both modules)         | 🟢 `FULLY_FUNCTIONAL` | `.golangci.yml`; 0 issues core + hub                             | wrapcheck v2 keys are kebab-case (silently dropped otherwise)  |
+| `examples/reporter` integration demo | 🟢 `FULLY_FUNCTIONAL` | `examples/reporter/main.go`; `docs/guides/integrate.md`         | runnable; README screenshots in `docs/assets/`                 |
+| Benchmarks + baseline                | 🟢 `FULLY_FUNCTIONAL` | `bench_test.go`; `benchmarks/baseline.txt`                       | fold @341 ≈ 150µs; derive zero-alloc                           |
+| v2 wire design                       | 🟢 `DOCUMENTED`       | `docs/decisions/v2-wire-design.md`                               | design sketch; v1 stays emittable forever                      |
+| Federation (go-health-dashboard)     | 🟢 `DOCUMENTED`       | `docs/notes/federation-interop.md`                               | passive scrape is the default; build on demand signal          |
+| Live re-derive (watch mode)          | 🟡 `IN_PROGRESS`      | M27 in TODO_LIST                                                 | store write-hook + discovery watch + debounce                   |
