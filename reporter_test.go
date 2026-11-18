@@ -81,14 +81,12 @@ var _ = Describe("MemoryStore", func() {
 
 		var wg sync.WaitGroup
 		for range 16 {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				Expect(compliance.RecordTo(context.Background(), store,
 					compliance.NewRepoName("concurrent"), compliance.RunResult{
-					Verdict: compliance.VerdictPassed,
-				})).To(Succeed())
-			}()
+						Verdict: compliance.VerdictPassed,
+					})).To(Succeed())
+			})
 		}
 		wg.Wait()
 

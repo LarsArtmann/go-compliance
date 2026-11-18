@@ -125,8 +125,6 @@ var _ = Describe("BuildV1Report", func() {
 })
 
 var _ = Describe("MarshalV1 and DecodeV1Report", func() {
-	v1Now := time.Date(2026, 11, 17, 20, 0, 0, 0, time.UTC)
-
 	build := func() compliance.V1Report {
 		return compliance.BuildV1Report([]compliance.RepoEvidence{{
 			Repo: compliance.NewRepoName("round-trip"), Runs: 3, Failures: 1,
