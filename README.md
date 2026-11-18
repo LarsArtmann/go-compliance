@@ -4,10 +4,14 @@ Fleet compliance evidence for every LarsArtmann project: one state model
 (`compliant` / `failing` / `stale` / `never-covered`), one frozen wire
 contract, a realtime WebUI, and adapters instead of per-project plumbing.
 
-> **Status: pre-inception.** Only the stack decision exists so far — see
-> [STACK.md](STACK.md) for the chosen foundation and wiring order. The state
-> model, evidence fold, and v1 JSON contract port over from BuildFlow's
-> `compliance` command (stays byte-compatible with the overview dashboard).
+> **Status: inception.** Core module and hub are built and tested: state
+> model, evidence fold, frozen v1 contract, reporter SDK, the hub service
+> with realtime WebUI, SQLite cache, and discovery adapter. See
+> [FEATURES.md](FEATURES.md) and [STACK.md](STACK.md).
+
+![Fleet compliance table](docs/assets/terminal-table.svg)
+
+![Realtime fleet dashboard](docs/assets/dashboard.png)
 
 ## Planned shape
 
@@ -65,5 +69,6 @@ The hub module and the flake build need one private dependency
 
 ## Documentation
 
+- [Integrating a project in one line](docs/guides/integrate.md)
 - [STACK.md](STACK.md) — foundation decision record (enforced by
   stack-drift-check)
