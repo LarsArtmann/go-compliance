@@ -29,17 +29,27 @@ only on a demand signal:
 ## Deduplication and tooling ideas (2026-11-18 art-dupl audit)
 
 Raw ideas harvested from `docs/status/2026-11-18_17-49_art-dupl-dedup-audit-status.md` §f —
-not yet refined into tasks:
+each with an explicit keep-raw/groom verdict and demand-signal trigger
+(2026-11-18 grooming pass):
 
-- art-dupl calibration: a `--show-suppressed` pass to judge what the
-  actionability filter hides, hash-based detection (`-m hash`) as an audit
-  complement, and trend-tracking total clone tokens per audit.
-- Data-model candidate: a `WorstStepLimit` branded type with a defaulting
-  constructor (making invalid caps unrepresentable) — weigh public-API churn
-  before touching the v1-adjacent surface.
-- templ-components upstream candidate: an attribute-only "tickable"
-  RelativeTime mode so consumers stop hand-rolling
-  `templ.Attributes{"data-tc-relative": true}` (2026-11-18 final pass).
+- KEEP RAW — art-dupl calibration (`--show-suppressed` judgment pass,
+  `-m hash` complement, clone-token trend tracking). Trigger: run the
+  calibration pass when the NEXT dedup audit happens, not before; promote
+  to a TODO only if it surfaces a suppressed group worth litigating.
+- KEEP RAW — `WorstStepLimit` branded type (invalid caps unrepresentable).
+  Reason: v1-adjacent public-API churn outweighs the value while the
+  defaulting rule has a single tested home (`worstStepLimitOrDefault`);
+  reopens with the core v2 API design or a second caller misusing the cap.
+- KEEP RAW — templ-components upstream "tickable" RelativeTime mode
+  (attribute-only, so consumers stop hand-rolling
+  `templ.Attributes{"data-tc-relative": true}`). Trigger: a THIRD consumer
+  hand-rolling the attribute, or the next templ-components release window
+  (it is that repo's API, not this one's).
+- KEEP RAW, demand-gated (unchanged): hub v2 wire — build on a real
+  consumer needing >v1 shape; federation B/C/D options — build on
+  go-health-dashboard demand (docs/notes/federation-interop.md); the
+  art-dupl HTML "template leak" stays closed as NOT REPRODUCIBLE
+  (17-49 §f1 annotation) with the re-open trigger recorded there.
 - Acceptance policy DECIDED (2026-11-18 execution pass): BOTH mechanisms,
   layered — per-site `// art-dupl:accept <why>` directives stay the
   in-source record of intentional clones, AND a committed

@@ -30,11 +30,10 @@ The plan is a snapshot: this file is the living backlog.
 
 ## Low Impact
 
-| Task                                                                                                                                                                                                                         | Status    | Impact | Effort | Evidence                                                             |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | -------------------------------------------------------------------- |
-| Drop hub `replace` directive when core tags v0.1.0                                                                                                                                                                           | 🔴 `TODO` | Low    | 10m    | `hub/go.mod` replace block                                           |
-| Fix or file the art-dupl HTML template leak (self-scan accept comments leak into foreign reports) (repo: art-dupl)                                                                                                           | 🔴 `TODO` | Low    | 30m    | art-dupl v0.9.1 observed 2026-11-18; 17-49 §f14                      |
-| Re-prove the full battery (`-race` + lint both modules + `nix flake check`) — hub `-race` suite green again 19:39 session after Rows()/app.go fixes; core suite, core lint, and flake check still unproven since those edits | 🔴 `TODO` | Low    | 15m    | `docs/status/2026-11-18_20-02_samber-do-health-review-status.md` §c  |
+| Task                                                                                                                                                                                                                         | Status    | Impact | Effort | Evidence                                                            |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------- |
+| Drop hub `replace` directive when core tags v0.1.0                                                                                                                                                                           | 🔴 `TODO` | Low    | 10m    | `hub/go.mod` replace block                                          |
+| Re-prove the full battery (`-race` + lint both modules + `nix flake check`) — hub `-race` suite green again 19:39 session after Rows()/app.go fixes; core suite, core lint, and flake check still unproven since those edits | 🔴 `TODO` | Low    | 15m    | `docs/status/2026-11-18_20-02_samber-do-health-review-status.md` §c |
 
 ## Blocked (owner decisions)
 
