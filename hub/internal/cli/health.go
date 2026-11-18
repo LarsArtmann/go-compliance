@@ -3,12 +3,8 @@ package cli
 import (
 	"context"
 	"errors"
-	"log/slog"
-	"net"
-	"net/http"
-	"time"
+	"path/filepath"
 
-	"github.com/LarsArtmann/go-daemon"
 	"github.com/larsartmann/go-health"
 	"github.com/larsartmann/go-health/checks"
 
@@ -57,38 +53,12 @@ func buildHealthProbe(version string, hub *events.Hub, cacheDir string) (*health
 	return probe, nil
 }
 
-// serveListener binds, notifies systemd, and serves until ctx cancels.
-// Listener-first ordering means NotifyReady fires only once the socket
-// accepts traffic; under a systemd WatchdogSec the watchdog loop keeps the
-// unit from being killed mid-serve.
-func serveListener(
-	ctx context.Context, server *http.Server, address string, logger *slog.Logger,
-) error {
-	listener, err := net.Listen("tcp", address)
-	if err != nil {
-		return err
+// cacheDirForDB returns the directory to watch disk headroom on, or ""
+// when no cache database is configured.
+func cacheDirForDB(dbPath string) string {
+	if dbPath == "" {
+		return ""
 	}
 
-	daemon.NotifyReady(logger)
-
-	if interval, ok := daemon.WatchdogInterval(logger); ok {
-		go daemon.Watchdog(ctx, logger, interval)
-	}
-
-	serveError := make(chan error, 1)
-	go func() { serveError <- server.Serve(listener) }()
-
-	select {
-	case <-ctx.Done():
-		daemon.NotifyStopping(logger)
-
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		_ = server.Shutdown(shutdownCtx)
-
-		return nil
-	case err := <-serveError:
-		return err
-	}
+	return filepath.Dir(dbPath)
 }
