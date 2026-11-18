@@ -38,6 +38,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Hub `go mod tidy`: go-daemon and go-health sit in the direct require block they belong in (the vendored module set is unchanged — the FOD hash proved identical).
 - Docs health: AGENTS.md (hub conventions, FOD self-reference lesson, wrapcheck v2 key gotcha, testing canon) and ROADMAP.md (adoption triggers, federation build-on-demand options, the blocked M26 endgame question) created; all six status reports annotated inline (41 historical open items resolved with evidence or routed); docs-gates battery fully green (freshness, audit-all, annotate, routing, cadence).
 - Repo hygiene: `.gitignore` documents that generated `*_templ.go` files are committed deliberately; `scripts/refresh-fixture.sh` header documents the 341-repo fixture refresh ritual; lint config excludes `examples/` demo programs from forbidigo/gosec/mnd (demo printing and illustrative payload are the point).
+- Final pass: plan-vs-tree audit of all 109 plan features (F001–F109) — 106 verified against artifacts, 3 owner-blocked (Forgejo repo visibility, M26 endgame pair), zero missing; full battery green (build+vet+test -race+lint both modules, `nix flake check`, docs-gates 5/5).
+- Final pass: plan-vs-tree audit of all 109 plan features (F001–F109) — 106 verified against artifacts, 3 owner-blocked (Forgejo repo visibility, M26 endgame pair), zero missing; full battery green (build+vet+test -race+lint both modules, `nix flake check`, docs-gates 5/5).
 
 ### Deprecated
 
