@@ -165,6 +165,7 @@ func (s *Store) QueryEvidence(
 	}), nil
 }
 
+// art-dupl:accept the rows lifecycle is database/sql idiom; a collector taking scan callbacks costs more ceremony than the shared lines
 // queryWindowHealth aggregates the window-bounded counters per repo.
 func (s *Store) queryWindowHealth(ctx context.Context, from string) ([]compliance.WindowHealth, error) {
 	rows, err := s.queryRows(ctx, "query window health", `
@@ -267,6 +268,7 @@ ORDER BY r.repo`)
 	return runs, findings, severities, nil
 }
 
+// art-dupl:accept the rows lifecycle is database/sql idiom; a collector taking scan callbacks costs more ceremony than the shared lines
 // queryWindowVersions returns each repo's distinct producer versions in
 // the window.
 func (s *Store) queryWindowVersions(ctx context.Context, from string) ([]compliance.RepoVersions, error) {
