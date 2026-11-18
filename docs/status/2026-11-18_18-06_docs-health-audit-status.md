@@ -180,16 +180,14 @@ impact-ordered; real items beat padding._
 
 1. Full `-race` + lint battery re-run post-docs-pass **→ TODO_LIST Low row**
 2. STACK.md + CONTRIBUTING.md verification **→ TODO_LIST Low row**
-3. DOMAIN_LANGUAGE.md row-by-row verify **→ TODO_LIST Low row**
+3. ~~DOMAIN_LANGUAGE.md row-by-row verify~~ done 2026-11-18 ~22:40 — every core-term row's file/symbol anchor verified against the tree; one drift fixed (EvidenceWriter: reporter.go, not source.go); evidence in the 20-29 plan execution.
 4. Annotate 13-31 §f 2–7 (unblocks archive) **→ TODO_LIST Low row**
 5. Reconcile 42-vs-40 annotate count **→ TODO_LIST Low row**
 6. Resolve the acceptance-policy question (g1 below) → unblocks the
    art-dupl baseline/CI-gate TODO row.
 7. Scope the ~10 §f stragglers (g2 below): rows, ROADMAP, or explicit
    Won't-implement.
-8. Archive sweep: strike 13-31 §f 2–7 → `check-rows --strict` +
-   `bare-rows` over the 7 candidates → `git mv` to `docs/status/archived/`
-   - archived README manifest (timing per g3 below).
+8. Archive sweep: strike 13-31 §f 2–7 ~~→ `check-rows --strict` + `bare-rows` over the 7 candidates~~ — the STRIKE half is done (2026-11-18 ~22:42, 13-31 §f2–f7 annotated; see those rows); the report-move remainder is carried as its own TODO_LIST Low row to execute when the cadence count approaches its threshold.
 9. Push master (BLOCKED row) → then watch CI, especially the FLAKE_PAT
    hub/flake jobs on their first real run.
 10. FLAKE_PAT secrets on GitHub + Forgejo (BLOCKED row).
