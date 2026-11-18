@@ -20,7 +20,7 @@ golangci-lint run ./...                       # core (root .golangci.yml)
 cd hub && golangci-lint run -c ../.golangci.yml ./...
 nix flake check                                # both modules, sandboxed
 nix build .#compliance-hub                     # the server binary
-go tool templ generate ./internal/dashboard/   # after ANY .templ edit
+cd hub && go tool templ generate ./internal/dashboard/   # after ANY .templ edit; MUST run from hub/ (tool directive lives in hub/go.mod) — from the root it silently rewrites the embedded templ.Error FileName paths (hub/ prefix churn) instead of failing
 ```
 
 Run `go test` invocations SEQUENTIALLY on this machine (shared
