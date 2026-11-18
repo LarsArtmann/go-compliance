@@ -17,6 +17,11 @@ import (
 	"github.com/larsartmann/go-compliance"
 )
 
+// latestRecordsCapacity pre-sizes the per-query result slices (repos in a
+// typical fleet; growth beyond it is fine, this only avoids the first
+// reallocations).
+const latestRecordsCapacity = 16
+
 // migrations owns the cache schema. Append-only history: never modify,
 // reorder, or remove applied migrations (go-sqlitestore membership
 // semantics).
@@ -219,9 +224,9 @@ ORDER BY r.repo`)
 	defer func() { _ = rows.Close() }()
 
 	var (
-		runs       = make([]compliance.LatestRun, 0, 16)
-		findings   = make([]compliance.RepoFindings, 0, 16)
-		severities = make([]compliance.RepoSeverities, 0, 16)
+		runs       = make([]compliance.LatestRun, 0, latestRecordsCapacity)
+		findings   = make([]compliance.RepoFindings, 0, latestRecordsCapacity)
+		severities = make([]compliance.RepoSeverities, 0, latestRecordsCapacity)
 	)
 
 	for rows.Next() {

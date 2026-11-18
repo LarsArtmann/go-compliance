@@ -22,8 +22,7 @@ The plan is a snapshot: this file is the living backlog.
 
 | Task                                                      | Status    | Impact | Effort | Evidence                                                    |
 | --------------------------------------------------------- | --------- | ------ | ------ | ----------------------------------------------------------- |
-| M27: watch mode — re-derive on store writes, debounce     | 🔴 `TODO` | High   | 90m    | `hub/internal/cache/cache.go:221` no write hook yet         |
-| M27: fix `queryLatestRunCounts` N+1 (single window query) | 🔴 `TODO` | High   | 30m    | `hub/internal/cache/cache.go:221` per-repo query loop       |
+| (none — M27 watch mode + N+1 landed 2026-11-18, see CHANGELOG) | | | | |
 
 ## Medium Impact
 

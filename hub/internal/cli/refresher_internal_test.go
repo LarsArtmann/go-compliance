@@ -50,22 +50,34 @@ var _ = Describe("live re-derive", func() {
 
 		received := datastartest.CollectWithTimeout(GinkgoTB(), board.StreamHandler(), 5*time.Second,
 			datastartest.WithPath("/events"))
-		datastartest.RequireEventCount(GinkgoTB(), received, 3) // initial snapshot
 
-		found := false
+		// Initial snapshot: signals + stat cards + the full rows patch.
+		Expect(len(received)).To(BeNumerically(">=", 3),
+			"expected the initial snapshot patches; events: %s", describeEvents(received))
+
+		bootRendered, lateAppended := false, false
 
 		for _, evt := range received {
-			if !evt.IsElements() {
+			if !evt.IsElements() || evt.Selector() != dashboard.DefaultRowsSelector {
 				continue
 			}
 
-			datastartest.RequireElementsContains(GinkgoTB(), evt,
-				"#"+dashboard.RowsID, string(datastar.ElementPatchModeAppend), "late-repo")
-			found = true
+			switch evt.Mode() {
+			case string(datastar.ElementPatchModeInner):
+				datastartest.RequireElementsContains(GinkgoTB(), evt,
+					dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeInner), "boot-repo")
+				bootRendered = true
+			case string(datastar.ElementPatchModeAppend):
+				datastartest.RequireElementsContains(GinkgoTB(), evt,
+					dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeAppend), "late-repo")
+				lateAppended = true
+			}
 		}
 
-		Expect(found).To(BeTrue(),
-			"no elements patch carried the late-repo row; events: %s", describeEvents(received))
+		Expect(bootRendered).To(BeTrue(),
+			"no inner rows patch carried the initial boot-repo row; events: %s", describeEvents(received))
+		Expect(lateAppended).To(BeTrue(),
+			"no appended rows patch carried the late-repo row; events: %s", describeEvents(received))
 	})
 })
 
