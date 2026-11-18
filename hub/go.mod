@@ -4,6 +4,7 @@ go 1.27.2
 
 require (
 	charm.land/lipgloss/v2 v2.0.6
+	github.com/LarsArtmann/go-daemon v0.4.1-0.20261103232705-e8e1a1fff502
 	github.com/a-h/templ v0.3.1100
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/larsartmann/cmdguard/v5 v5.1.0
@@ -11,6 +12,7 @@ require (
 	github.com/larsartmann/go-datastar v0.6.2
 	github.com/larsartmann/go-datastar/datastartest v0.6.2
 	github.com/larsartmann/go-datastar/static v0.6.1
+	github.com/larsartmann/go-health v0.10.0
 	github.com/larsartmann/go-output v0.38.7
 	github.com/larsartmann/go-output/table v0.38.7
 	github.com/larsartmann/go-sqlitestore v0.1.1
@@ -26,7 +28,6 @@ require (
 
 require (
 	charm.land/fang/v2 v2.0.1 // indirect
-	github.com/LarsArtmann/go-daemon v0.4.1-0.20261103232705-e8e1a1fff502 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/Oudwins/tailwind-merge-go v0.2.3 // indirect
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
@@ -69,7 +70,6 @@ require (
 	github.com/larsartmann/go-codec v0.3.3 // indirect
 	github.com/larsartmann/go-error-family v0.12.0 // indirect
 	github.com/larsartmann/go-flightrecorder v0.2.1 // indirect
-	github.com/larsartmann/go-health v0.10.0 // indirect
 	github.com/larsartmann/go-ndjson v0.0.1 // indirect
 	github.com/larsartmann/go-output/d2 v0.38.7 // indirect
 	github.com/larsartmann/go-output/daghtml v0.38.7 // indirect

@@ -24,21 +24,14 @@ The plan is a snapshot: this file is the living backlog.
 
 ## Medium Impact
 
-| Task                                                      | Status    | Impact | Effort | Evidence                                                            |
-| --------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------- |
-| Race-detector pass over hub suites                        | 🔴 `TODO` | Med    | 20m    | new concurrent code in `hub/internal/events` untested under `-race` |
-| AGENTS.md: hub conventions + verified library API facts   | 🔴 `TODO` | Med    | 30m    | no `AGENTS.md` in repo                                              |
-| `go mod tidy` in hub: go-daemon require sits in the indirect block | 🔴 `TODO` | Low | 5m | `hub/go.mod`; direct import in `bind.go` — tidy moves it (touches vendorHash) |
+(none open — race pass, AGENTS.md, and hub `go mod tidy` landed 2026-11-18,
+see CHANGELOG)
 
 ## Low Impact
 
 | Task                                                        | Status    | Impact | Effort | Evidence                                                           |
 | ----------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------ |
-| Dedupe `waitForSubscriber` test helper across 2 packages    | 🔴 `TODO` | Low    | 15m    | duplicated in events + dashboard test files                        |
-| Verify RelativeTime purity inside DataStar patches          | 🔴 `TODO` | Low    | 15m    | `hub/internal/dashboard/rows.templ` uses RelativeTime              |
-| .gitignore note: generated `*_templ.go` files ARE committed | 🔴 `TODO` | Low    | 5m     | fleet precedent (go-health-dashboard)                              |
 | Drop hub `replace` directive when core tags v0.1.0          | 🔴 `TODO` | Low    | 10m    | `hub/go.mod` replace block                                         |
-| Fixture pins exactly 341 repos — document refresh ritual    | 🔴 `TODO` | Low    | 10m    | `testdata/buildflow-v1-fixture.json`, `scripts/refresh-fixture.sh` |
 
 ## Blocked (owner decisions)
 

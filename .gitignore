@@ -46,9 +46,6 @@ workflow-audit-log.*
 reports/
 
 ## Go
-# Generated templ output (*_templ.go) IS committed: the flake build and
-# CI consume it without a templ generate step, matching the fleet
-# precedent (go-health-dashboard). Do not add it to this ignore file.
 *.exe
 *.dll
 *.so
@@ -60,3 +57,7 @@ go.work
 go.work.sum
 /go-compliance
 # <<< buildflow-managed (.gitignore) <<<
+
+# Generated templ output (*_templ.go) IS committed, deliberately: the
+# flake build and CI consume it without a templ generate step, matching
+# the fleet precedent (go-health-dashboard). Do not add it to .gitignore.
