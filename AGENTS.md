@@ -108,7 +108,10 @@ published fleet IS ready). The non-critical `refresh-freshness` check
 verdict g1: warn stays 200 — stale view is degraded truth, not service
 loss) plus the per-refresh `refreshTimeout` (30s) close the former wedge
 hole: a hung `QueryEvidence` now fails ONE refresh (logged, retried) and
-degrades /readyz to warn instead of freezing green. DI posture:
+degrades /readyz to warn instead of freezing green. The non-critical
+`discovery` check (same warn semantics, stamp = last watch connect or
+snapshot, threshold 10 min) makes a long-dead daemon visible in /readyz.
+DI posture:
 samber/do is transitive only (cmdguard v5 + go-health); the hub wires
 manually by recorded decision (STACK.md) — see
 docs/architecture-understanding/2026-11-18_19-39_samber-do-health-architecture.md.

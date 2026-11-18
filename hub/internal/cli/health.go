@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/larsartmann/go-health"
@@ -28,6 +29,11 @@ const refreshFreshnessCheckName = "refresh-freshness"
 // best-effort completeness of the never-covered set, not serving.
 const discoveryCheckName = "discovery"
 
+// sseBackpressureCheckName is non-critical and delta-based: it warns only
+// on drops NEW since the last evaluation, so a past burst self-clears
+// instead of standing warn forever (the drop counter is cumulative).
+const sseBackpressureCheckName = "sse-backpressure"
+
 var (
 	// ErrEvidenceNotPublished is the evidence check's failure: the hub booted
 	// but has not folded evidence yet (source error or first query pending).
@@ -49,6 +55,10 @@ var (
 	// ErrDiscoverySilent wraps every past-threshold discovery silence with
 	// the concrete age.
 	ErrDiscoverySilent = errors.New("discovery daemon silent too long")
+
+	// ErrSSEDropped wraps every backpressure warning with the new, total,
+	// and subscriber counts.
+	ErrSSEDropped = errors.New("sse patches dropped since the last health evaluation")
 )
 
 // buildHealthProbe wires the hub's health probe: liveness is always pass;
@@ -92,6 +102,27 @@ func buildHealthProbe(
 
 			return nil
 		},
+	}
+
+	var (
+		lastDropped int64
+		dropMu      sync.Mutex
+	)
+
+	checksByName[sseBackpressureCheckName] = func(_ context.Context) error {
+		dropMu.Lock()
+		defer dropMu.Unlock()
+
+		dropped := hub.Dropped()
+		delta := dropped - lastDropped
+		lastDropped = dropped
+
+		if delta > 0 {
+			return fmt.Errorf("%w: %d new (total %d, subscribers %d)",
+				ErrSSEDropped, delta, dropped, hub.SubscriberCount())
+		}
+
+		return nil
 	}
 
 	if cacheDir != "" {

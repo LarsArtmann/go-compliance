@@ -9,8 +9,57 @@ import (
 
 	"github.com/larsartmann/go-health"
 
+	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
+
+// booted returns a probe over an empty-but-published fleet (verdict g2:
+// the evidence gate passes), so spec bodies can control freshness and
+// discovery stamps directly.
+func booted(refresher *refresher) *health.Probe {
+	hub := events.NewHub()
+	_, err := hub.PublishSnapshot(nil)
+	Expect(err).NotTo(HaveOccurred())
+
+	probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, "")
+	Expect(err).NotTo(HaveOccurred())
+	DeferCleanup(probe.Shutdown)
+
+	return probe
+}
+
+var _ = Describe("health probe sse-backpressure check", func() {
+	It("warns on new drops since the last evaluation and clears when they stop", func() {
+		hub := events.NewHub()
+
+		_, unsubscribe := hub.SubscribeFeed()
+		DeferCleanup(unsubscribe)
+
+		refresher := newRefresher(hub, nil, time.Hour, 24*time.Hour, 3, "")
+		refresher.lastRefreshSuccess.Store(time.Now().UnixNano())
+		refresher.markDiscoverySuccess()
+
+		probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, "")
+		Expect(err).NotTo(HaveOccurred())
+		DeferCleanup(probe.Shutdown)
+
+		Expect(probe.Evaluate(context.Background()).Checks[sseBackpressureCheckName].Status).
+			To(Equal(health.StatusPass))
+
+		row := events.RepoRow{Repo: "backpressure", State: compliance.StateFailing}
+		for i := 0; i < 200; i++ {
+			_, _ = hub.PublishSnapshot([]events.RepoRow{row})
+		}
+
+		warned := probe.Evaluate(context.Background())
+		Expect(warned.Checks[sseBackpressureCheckName].Status).To(Equal(health.StatusWarn))
+		Expect(warned.Checks[sseBackpressureCheckName].Error).To(ContainSubstring("dropped"))
+		Expect(warned.Checks[sseBackpressureCheckName].Error).To(ContainSubstring("subscribers 1"))
+
+		Expect(probe.Evaluate(context.Background()).Checks[sseBackpressureCheckName].Status).
+			To(Equal(health.StatusPass))
+	})
+})
 
 var _ = Describe("health probe discovery check", func() {
 	It("warns — never fails — while the daemon has never been contacted, then passes on contact", func() {
@@ -64,20 +113,6 @@ var _ = Describe("health probe evidence gate", func() {
 })
 
 var _ = Describe("health probe refresh-freshness check", func() {
-	// An empty published fleet satisfies the evidence gate (verdict g2);
-	// the freshness specs below then control lastRefreshSuccess directly.
-	booted := func(refresher *refresher) *health.Probe {
-		hub := events.NewHub()
-		_, err := hub.PublishSnapshot(nil)
-		Expect(err).NotTo(HaveOccurred())
-
-		probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, "")
-		Expect(err).NotTo(HaveOccurred())
-		DeferCleanup(probe.Shutdown)
-
-		return probe
-	}
-
 	It("warns — never fails — while no refresh has succeeded, then passes on a fresh success", func() {
 		refresher := newRefresher(nil, nil, time.Hour, 24*time.Hour, 3, "")
 		probe := booted(refresher)
@@ -90,6 +125,7 @@ var _ = Describe("health probe refresh-freshness check", func() {
 			"freshness is non-critical: it must degrade readiness to warn, not fail it")
 
 		refresher.lastRefreshSuccess.Store(time.Now().UnixNano())
+		refresher.markDiscoverySuccess()
 
 		after := probe.Evaluate(context.Background())
 		Expect(after.Checks[refreshFreshnessCheckName].Status).To(Equal(health.StatusPass))
