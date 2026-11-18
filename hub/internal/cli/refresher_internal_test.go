@@ -88,14 +88,18 @@ var _ = Describe("refresh freshness guard", func() {
 	It("bounds a hung query: the refresh fails fast, nothing is stamped, and the next refresh works", func() {
 		hub := events.NewHub()
 
-		hanging := compliance.SourceFunc(func(ctx context.Context, _ time.Time, _ int, _ string) ([]compliance.RepoEvidence, error) {
-			<-ctx.Done()
+		hanging := compliance.SourceFunc(
+			func(ctx context.Context, _ time.Time, _ int, _ string) ([]compliance.RepoEvidence, error) {
+				<-ctx.Done()
 
-			return nil, ctx.Err()
-		})
-		good := compliance.SourceFunc(func(_ context.Context, _ time.Time, _ int, _ string) ([]compliance.RepoEvidence, error) {
-			return []compliance.RepoEvidence{}, nil
-		})
+				return nil, ctx.Err()
+			},
+		)
+		good := compliance.SourceFunc(
+			func(_ context.Context, _ time.Time, _ int, _ string) ([]compliance.RepoEvidence, error) {
+				return []compliance.RepoEvidence{}, nil
+			},
+		)
 
 		refresher := newRefresher(hub, hanging, time.Hour, 24*time.Hour, 3, "")
 		refresher.queryTimeout = 50 * time.Millisecond
@@ -111,9 +115,11 @@ var _ = Describe("refresh freshness guard", func() {
 	It("stamps LastRefreshSuccess only after query AND publish succeed", func() {
 		hub := events.NewHub()
 
-		failing := compliance.SourceFunc(func(_ context.Context, _ time.Time, _ int, _ string) ([]compliance.RepoEvidence, error) {
-			return nil, context.Canceled
-		})
+		failing := compliance.SourceFunc(
+			func(_ context.Context, _ time.Time, _ int, _ string) ([]compliance.RepoEvidence, error) {
+				return nil, context.Canceled
+			},
+		)
 
 		refresher := newRefresher(hub, failing, time.Hour, 24*time.Hour, 3, "")
 

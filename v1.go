@@ -68,6 +68,8 @@ type V1Step struct {
 
 // marshalOpts ensures deterministic map key ordering in all JSON output:
 // encoding/json/v2 serializes map keys in unspecified order otherwise.
+//
+//nolint:gochecknoglobals // immutable encoding/json/v2 option set, built once
 var marshalOpts = json.Deterministic(true)
 
 // MarshalV1 encodes a report deterministically (sorted map keys, struct

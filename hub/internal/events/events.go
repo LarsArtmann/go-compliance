@@ -31,7 +31,11 @@ const (
 	defaultHeartbeat        = 15 * time.Second
 )
 
-var marshalOpts = json.Deterministic(true) //nolint:gochecknoglobals // immutable encoding/json/v2 option set, built once
+// marshalOpts keeps published JSON deterministic (sorted map keys); v2
+// otherwise serializes map keys in unspecified order.
+//
+//nolint:gochecknoglobals // immutable encoding/json/v2 option set, built once
+var marshalOpts = json.Deterministic(true)
 
 // Snapshot is the full-state payload of EventSnapshot.
 type Snapshot struct {

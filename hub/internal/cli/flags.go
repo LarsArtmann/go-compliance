@@ -36,6 +36,8 @@ type ServeFlags struct {
 // resolveSource builds the Source the flags select. The cache store is
 // returned alongside so long-running callers (serve) can close it on
 // shutdown; one-shot callers ignore it.
+//
+//nolint:ireturn // compliance.Source IS the port; callers depend on the interface by design
 func resolveSource(ctx context.Context, flags QueryFlags) (compliance.Source, io.Closer, error) {
 	switch flags.Source {
 	case "", "file":

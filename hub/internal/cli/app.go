@@ -14,6 +14,8 @@ import (
 )
 
 // Version is the hub binary version (overridden at release time).
+//
+//nolint:gochecknoglobals // release-time override target (ldflags), by convention
 var Version = "dev"
 
 // Config is the hub's global configuration (empty for now; config-file
@@ -23,7 +25,7 @@ type Config struct{}
 // buildApp composes the production CLI. out and errW are injectable for
 // tests; production passes os.Stdout/os.Stderr.
 func buildApp(out, errW io.Writer) (*v5.CLI[Config], error) {
-	cli, err := v5.NewCLI[Config](
+	cli, err := v5.NewCLI(
 		"compliance-hub", "Fleet compliance evidence: report, table, and the realtime hub",
 		Config{},
 		v5.WithCLIVersion(Version),

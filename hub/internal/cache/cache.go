@@ -25,6 +25,8 @@ const latestRecordsCapacity = 16
 // migrations owns the cache schema. Append-only history: never modify,
 // reorder, or remove applied migrations (go-sqlitestore membership
 // semantics).
+//
+//nolint:gochecknoglobals // append-only schema history, intentionally package-level
 var migrations = []sqlitestore.Migration{{
 	Version:     1,
 	Description: "evidence_runs: append-only per-repo run records",

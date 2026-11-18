@@ -17,6 +17,8 @@ type colorService struct {
 }
 
 // success/error/warning/info styles (fleet palette).
+//
+//nolint:gochecknoglobals // immutable fleet-palette styles, built once at init
 var (
 	styleSuccess = lipgloss.NewStyle().Foreground(lipgloss.Color("#10B981"))
 	styleError   = lipgloss.NewStyle().Foreground(lipgloss.Color("#EF4444"))
