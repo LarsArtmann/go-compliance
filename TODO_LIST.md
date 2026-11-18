@@ -29,9 +29,6 @@ The plan is a snapshot: this file is the living backlog.
 | ------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------------------------------------------------- |
 | Regression test: `?state=` filter accepts ANY valid `State` constant (table over the 4-state enum)                                          | 🔴 `TODO` | Med    | 15m    | `hub/internal/dashboard/routes.go:145` → `State.IsValid`; routes_test.go:105 covers `failing` only; 17-49 §f3 |
 | Commit `.art-dupl-baseline.json` + wire `art-dupl check` as a CI/pre-commit gate (hash-pinned; replaces line-proximity directive fragility) | 🔴 `TODO` | Med    | 30m    | no baseline in tree; AGENTS.md Dedup Audit; 17-49 §f4 |
-| Verify FEATURES.md + prior status reports for claims about the readiness gate (it was inert before 19-39 — any doc claiming it gated was overselling) | 🔴 `TODO` | Med    | 20m    | 19-39 review §5.1; 20-02 status §b3 |
-| Decide tolerant-boot: should `serve` start and report not-ready when the initial refresh fails, instead of exiting? Makes the readiness window real over HTTP; then add the E2E (boot-fail → 503 → recover → 200) | 🔴 `TODO` | Med    | 45m    | `hub/internal/cli/serve.go:54-56`; 20-02 status §f8 |
-
 ## Low Impact
 
 | Task                                                                                                                                              | Status    | Impact | Effort | Evidence                                                             |

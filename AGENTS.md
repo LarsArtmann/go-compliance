@@ -98,6 +98,14 @@ process's writes; documented limitation), discovery `/v1/watch` with 30s
 backoff. `/v1/compliance` serves the refresher's snapshot (503 before the
 first successful refresh).
 
+Boot contract (verdict recorded 2026-11-18): `serve` EXITS when the
+boot refresh fails — no tolerant boot. A failed first query means the
+evidence source itself is broken; systemd `Restart=on-failure` retries
+with backoff and the operator gets paged by the service manager instead
+of a green process advertising a 503 window. The readiness machinery
+(503-until-publish, MarkShuttingDown ordering) remains for embedders
+and graceful shutdown.
+
 Health surface: the `evidence` readiness check (cli/health.go) gates on
 `hub.Rows() == nil` — `Hub.Rows()` returning nil BEFORE the first publish
 and non-nil for an EMPTY published fleet is a load-bearing contract

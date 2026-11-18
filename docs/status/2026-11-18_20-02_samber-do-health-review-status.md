@@ -85,6 +85,9 @@ Verified this session, with commands/artifacts: every hub wiring/liveness file r
 2. **Empty-fleet semantics:** is a published fleet of **zero repos** genuinely healthy (my chosen contract: ready), or suspicious enough to degrade readiness (it can mean discovery + evidence both went dark while the process hums along)?
 3. **Lint posture:** for the 16 standing findings — fix the class (nolint-with-reason on the idiomatic globals, close the bodyclose closure shape), disable the offending linters, or adopt a baseline file? Owner taste; a permanently red lint gate guards nothing either way.
 
+**RESOLVED same day (2026-11-18 ~22:15, execution pass; owner green-lit autonomous execution of the whole plan):**
+g1 = **warn, stays 200, threshold 10 min** (recommendation adopted; `refreshFreshnessWarn`, pinned in health_internal_test.go). g2 = **empty published fleet IS ready** (chosen contract confirmed as final; pinned + documented in AGENTS.md/FEATURES.md). g3 = **real fixes + nolint-with-reason, NO baseline file** — both modules at 0 findings (see the 22:xx CHANGELOG entries; note: the bodyclose "closure shape" fix turned out to be a false positive — the stream goroutine owns the close via defer, now documented at the call site).
+
 ---
 
 *Written 2026-11-18 20:02. Auto-commit daemon owns the commit; harness forbids manual commits. Waiting for instructions.*

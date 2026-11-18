@@ -44,7 +44,7 @@ not?
 | Dashboard page (templ-components)     | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/dashboard/view.templ`         | stat cards, badges, severity cells, empty state          |
 | DataStar patch stream + SDK bundle    | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/dashboard/dashboard.go:72`    | three-way diff → append/replace/remove patches           |
 | Filter chips + JSON negotiation       | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/dashboard/routes.go`          | `?state=` filter; browsers get HTML, clients get JSON    |
-| Health probe (`/healthz` etc.)        | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/health.go`; `app_test.go` | go-health; evidence + cache-disk checks                  |
+| Health probe (`/healthz` etc.)        | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/health.go`; `cli/health_internal_test.go` | go-health; evidence (critical) + cache-disk + refresh-freshness + discovery + sse-backpressure checks; empty published fleet = ready (g2); stale refresh/daemon = warn, stays 200 (g1) |
 | sd_notify + watchdog                  | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/bind.go:95`               | go-daemon; listener-first ordering                       |
 | Unix-socket bind + non-localhost warn | 🟢 `FULLY_FUNCTIONAL`     | `hub/internal/cli/bind.go:23`; bind tests   | socket 0o660, stale-remove, cleanup on shutdown          |
 | systemd unit (hardened)               | 🟡 `PARTIALLY_FUNCTIONAL` | `deploy/compliance-hub.service`             | reviewed vs nixos-module precedent; not yet deployed     |
