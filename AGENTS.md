@@ -157,7 +157,11 @@ regression test.
   package AND the CI devShell's hub-module build) — bootstrap BOTH;
   `nix build .#compliance-hub` alone can pass while `nix flake check`
   still fails on the second site. The core check's hash is stable (no
-  directory replace in its module set).
+  directory replace in its module set). There is a THIRD hash site:
+  templ-gen's devShell `buildGoModule` (flake.nix) — its `vendorHash`
+  tracks the upstream templ repo's module set and can go stale with NO
+  local change (2026-11-18: devShell build failed on a mismatch; the
+  same paste-`got:` ritual fixed it, converged first paste).
 - CI hub/flake jobs need the `FLAKE_PAT` secret (private go-daemon);
   missing secret SKIPS those jobs (step-level `if: env.FLAKE_PAT != ''`
   — job-level env-if is invalid per actionlint).
