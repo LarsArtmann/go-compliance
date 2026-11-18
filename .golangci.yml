@@ -156,19 +156,26 @@ linters:
           # golden-pinned in v1_golden_test.go — excluded below.
           json: camel
     wrapcheck:
-      ignorePackageRegexp:
-        - ^github\.com/larsartmann/go-compliance/hub # own module: delegation is not a boundary
-        - ^github\.com/larsartmann/cmdguard
-        - ^github\.com/larsartmann/go-sse
-        - ^github\.com/larsartmann/go-health
-        - ^github\.com/larsartmann/go-output
-      ignoreSigs:
-        - github.com/larsartmann/go-compliance.NewIOError
-        - github.com/larsartmann/go-compliance.NewInternalError
-        - github.com/larsartmann/go-compliance.NewParseError
-        - github.com/larsartmann/go-compliance.NewValidationError
-        - github.com/larsartmann/go-compliance.MarshalV1
-        - fmt.Fprintln
+      # v2 keys are kebab-case (ignore-sigs / extra-ignore-sigs /
+      # ignore-package-globs, where * crosses /). Wrong keys are silently
+      # dropped by `run` — always `golangci-lint config verify` after edits.
+      ignore-package-globs:
+        # core module: the family error constructors ARE the wrapped boundary
+        - github.com/larsartmann/go-compliance
+        - github.com/larsartmann/go-compliance/hub # own module: delegation is not a boundary
+        - github.com/larsartmann/go-compliance/hub/*
+        - github.com/larsartmann/cmdguard
+        - github.com/larsartmann/cmdguard/*
+        - github.com/larsartmann/go-sse
+        - github.com/larsartmann/go-sse/*
+        - github.com/larsartmann/go-health
+        - github.com/larsartmann/go-health/*
+        - github.com/larsartmann/go-output
+        - github.com/larsartmann/go-output/*
+        - github.com/larsartmann/go-sqlitestore
+        - github.com/larsartmann/go-sqlitestore/*
+      extra-ignore-sigs:
+        - fmt.Fprintln(
     revive:
       rules:
         - name: package-comments
