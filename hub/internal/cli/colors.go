@@ -37,10 +37,12 @@ func newColorService(mode output.ColorMode) *colorService {
 		return &colorService{enabled: true}
 	case output.ColorModeNever:
 		return &colorService{enabled: false}
-	default: // auto
+	case output.ColorModeAuto:
 		return &colorService{
 			enabled: colorprofile.Detect(os.Stdout, os.Environ()) != colorprofile.Ascii,
 		}
+	default:
+		return &colorService{enabled: false}
 	}
 }
 

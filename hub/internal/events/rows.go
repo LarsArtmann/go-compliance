@@ -59,6 +59,8 @@ func RowsFromEvidence(evidence []compliance.RepoEvidence, now time.Time, staleAf
 // changed rows existed but moved a displayed field, removed lists repos
 // that disappeared. Unchanged rows are omitted so update payloads stay
 // small.
+//
+//nolint:nonamedreturns // the names document the heterogeneous 3-tuple
 func DiffRows(previous, next []RepoRow) (added, changed []RepoRow, removed []string) {
 	previousByKey := make(map[string]RepoRow, len(previous))
 	for _, row := range previous {

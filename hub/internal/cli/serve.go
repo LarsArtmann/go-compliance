@@ -15,6 +15,11 @@ import (
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
 
+const (
+	// readHeaderTimeout bounds slowloris-style header stalls.
+	readHeaderTimeout = 10 * time.Second
+)
+
 // runServe runs the hub HTTP server: the realtime dashboard (page, DataStar
 // patch stream, SDK bundle), the evidence JSON API, and the health probe
 // surface (/healthz /readyz /startupz /version).
@@ -30,7 +35,7 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 			return err
 		}
 
-		probe, err := buildHealthProbe(Version, hub, cacheDirForDB(flags.DB))
+		probe, err := buildHealthProbe(ctx, Version, hub, cacheDirForDB(flags.DB))
 		if err != nil {
 			return err
 		}
@@ -63,7 +68,7 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		server := &http.Server{
 			Addr:              flags.Addr,
 			Handler:           mux,
-			ReadHeaderTimeout: 10 * time.Second,
+			ReadHeaderTimeout: readHeaderTimeout,
 		}
 
 		if !isLoopbackBind(flags.Addr) {
@@ -76,7 +81,9 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 
 		probe.MarkShuttingDown()
 		probe.Shutdown()
-		_ = hub.Shutdown(context.Background())
+		// Background, not ctx: ctx is cancelled at this point, and the
+		// subscriber drain needs its own live deadline.
+		_ = hub.Shutdown(context.Background()) //nolint:contextcheck
 
 		if serveError != nil {
 			fmt.Fprintf(errW, "serve: %v\n", serveError)

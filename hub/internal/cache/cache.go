@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS evidence_runs (
 CREATE INDEX IF NOT EXISTS idx_evidence_runs_repo_time ON evidence_runs (repo, recorded_at);
 `)
 		if err != nil {
-			return err
+			return compliance.NewIOError(err, "create evidence_runs table")
 		}
 
 		return nil
@@ -175,7 +175,7 @@ ORDER BY repo`, from)
 		health = append(health, row)
 	}
 
-	return health, rows.Err()
+	return health, wrapIterateErr(rows.Err(), "iterate window health")
 }
 
 // queryLatestRuns returns each repo's all-history newest record.
@@ -213,7 +213,7 @@ ORDER BY repo`)
 		})
 	}
 
-	return runs, rows.Err()
+	return runs, wrapIterateErr(rows.Err(), "iterate latest runs")
 }
 
 // queryLatestRunCounts loads each repo's latest gate findings and severity
@@ -293,6 +293,8 @@ ORDER BY repo, producer_version`, from)
 }
 
 // marshalCounts encodes a count map column.
+//
+//nolint:wrapcheck // callers wrap with family constructors
 func marshalCounts(counts map[string]int) (string, error) {
 	if len(counts) == 0 {
 		return "{}", nil
@@ -307,6 +309,8 @@ func marshalCounts(counts map[string]int) (string, error) {
 }
 
 // unmarshalCounts decodes a count map column; empty and null yield nil.
+//
+//nolint:nilnil,wrapcheck // (nil, nil) is the documented empty contract; callers wrap
 func unmarshalCounts(raw string) (map[string]int, error) {
 	if raw == "" || raw == "{}" {
 		return nil, nil
@@ -322,4 +326,13 @@ func unmarshalCounts(raw string) (map[string]int, error) {
 	}
 
 	return counts, nil
+}
+
+// wrapIterateErr keeps rows.Err() propagation family-typed.
+func wrapIterateErr(err error, what string) error {
+	if err == nil {
+		return nil
+	}
+
+	return compliance.NewIOError(err, "%s", what)
 }

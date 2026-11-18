@@ -151,13 +151,34 @@ linters:
     tagliatelle:
       case:
         rules:
-          json: snake
+          # Hub-facing JSON (Datastar signals, patch payloads, discovery wire)
+          # is camelCase for JS. The core v1 document contract is snake_case,
+          # golden-pinned in v1_golden_test.go — excluded below.
+          json: camel
+    wrapcheck:
+      ignorePackageRegexp:
+        - ^github\.com/larsartmann/go-compliance/hub # own module: delegation is not a boundary
+        - ^github\.com/larsartmann/cmdguard
+        - ^github\.com/larsartmann/go-sse
+        - ^github\.com/larsartmann/go-health
+        - ^github\.com/larsartmann/go-output
+      ignoreSigs:
+        - github.com/larsartmann/go-compliance.NewIOError
+        - github.com/larsartmann/go-compliance.NewInternalError
+        - github.com/larsartmann/go-compliance.NewParseError
+        - github.com/larsartmann/go-compliance.NewValidationError
+        - github.com/larsartmann/go-compliance.MarshalV1
+        - fmt.Fprintln
     revive:
       rules:
         - name: package-comments
           disabled: true
   exclusions:
     rules:
+      - path: ^v1\.go$
+        linters:
+          - tagliatelle
+        text: json
       - path: _test\.go
         linters:
           - err113

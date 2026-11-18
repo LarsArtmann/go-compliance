@@ -24,7 +24,7 @@ var ErrEvidenceNotPublished = errors.New("evidence not published yet")
 // buildHealthProbe wires the hub's health probe: liveness is always pass;
 // readiness/startup gate on published evidence; disk headroom keeps the
 // SQLite cache honest.
-func buildHealthProbe(version string, hub *events.Hub, cacheDir string) (*health.Probe, error) {
+func buildHealthProbe(ctx context.Context, version string, hub *events.Hub, cacheDir string) (*health.Probe, error) {
 	checksByName := map[string]health.CheckFunc{
 		evidenceCheckName: func(_ context.Context) error {
 			if hub.Rows() == nil {
@@ -46,7 +46,7 @@ func buildHealthProbe(version string, hub *events.Hub, cacheDir string) (*health
 		health.WithCriticalServices(evidenceCheckName),
 	)
 
-	if err := probe.Start(context.Background()); err != nil {
+	if err := probe.Start(ctx); err != nil {
 		return nil, err
 	}
 

@@ -3,6 +3,7 @@ package events
 import (
 	"context"
 	"encoding/json/v2"
+	"maps"
 	"net/http"
 	"strconv"
 	"sync"
@@ -10,6 +11,8 @@ import (
 	"time"
 
 	"github.com/larsartmann/go-sse"
+
+	"github.com/larsartmann/go-compliance"
 )
 
 // SSE event names on the /events stream.
@@ -300,7 +303,7 @@ func (h *Hub) setRows(rows []RepoRow) {
 func (h *Hub) publish(eventName string, payload any, snapshot *Snapshot, update *Update) (string, error) {
 	data, err := json.Marshal(payload, marshalOpts)
 	if err != nil {
-		return "", err
+		return "", compliance.NewInternalError(err, "encode %s event", eventName)
 	}
 
 	id := h.seq.Add(1)
@@ -324,9 +327,7 @@ func copySeverities(severities map[string]int) map[string]int {
 	}
 
 	copied := make(map[string]int, len(severities))
-	for severity, count := range severities {
-		copied[severity] = count
-	}
+	maps.Copy(copied, severities)
 
 	return copied
 }

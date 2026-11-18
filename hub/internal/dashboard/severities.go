@@ -32,6 +32,8 @@ func severityTone(severity string) string {
 
 // severityOrder ranks known severities for deterministic rendering; unknown
 // severities sort after the known ones, alphabetically.
+//
+//nolint:mnd // rank ladder; the keys carry the meaning
 var severityOrder = map[string]int{
 	"error":    0,
 	"critical": 1,

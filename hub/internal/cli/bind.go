@@ -18,16 +18,23 @@ import (
 // unixAddrPrefix selects unix-socket listen mode.
 const unixAddrPrefix = "unix:"
 
+const (
+	socketDirPerm  = 0o755
+	socketFilePerm = 0o660
+	// shutdownGracePeriod bounds graceful HTTP drain after ctx cancels.
+	shutdownGracePeriod = 5 * time.Second
+)
+
 // bindAddress resolves the --addr flag into a listener. Unix-socket
 // addresses ("unix:/path.sock") create their directory, remove a stale
 // socket file before binding, and restrict permissions to owner+group.
-func bindAddress(address string) (net.Listener, error) {
+func bindAddress(ctx context.Context, address string) (net.Listener, error) {
 	if !strings.HasPrefix(address, unixAddrPrefix) {
-		return net.Listen("tcp", address)
+		return (&net.ListenConfig{}).Listen(ctx, "tcp", address)
 	}
 
 	socketPath := strings.TrimPrefix(address, unixAddrPrefix)
-	if err := os.MkdirAll(filepath.Dir(socketPath), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(socketPath), socketDirPerm); err != nil {
 		return nil, fmt.Errorf("create socket directory %s: %w", filepath.Dir(socketPath), err)
 	}
 
@@ -35,12 +42,12 @@ func bindAddress(address string) (net.Listener, error) {
 		return nil, fmt.Errorf("remove stale socket %s: %w", socketPath, err)
 	}
 
-	listener, err := net.Listen("unix", socketPath)
+	listener, err := (&net.ListenConfig{}).Listen(ctx, "unix", socketPath)
 	if err != nil {
 		return nil, fmt.Errorf("listen on unix socket %s: %w", socketPath, err)
 	}
 
-	if err := os.Chmod(socketPath, 0o660); err != nil {
+	if err := os.Chmod(socketPath, socketFilePerm); err != nil {
 		_ = listener.Close()
 		return nil, fmt.Errorf("restrict socket %s permissions: %w", socketPath, err)
 	}
@@ -81,7 +88,7 @@ func isLoopbackBind(address string) bool {
 func serveListener(
 	ctx context.Context, server *http.Server, address string, logger *slog.Logger,
 ) error {
-	listener, err := bindAddress(address)
+	listener, err := bindAddress(ctx, address)
 	if err != nil {
 		return err
 	}
@@ -99,7 +106,9 @@ func serveListener(
 	case <-ctx.Done():
 		daemon.NotifyStopping(logger)
 
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		// Background, not ctx: the parent is already cancelled, and the
+		// graceful-drain window must not inherit that cancellation.
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownGracePeriod) //nolint:contextcheck
 		defer cancel()
 
 		_ = server.Shutdown(shutdownCtx)
