@@ -71,7 +71,7 @@ func Record(ctx context.Context, repo RepoName, result RunResult) error {
 
 // RecordTo writes one repository's run evidence to an explicit writer.
 func RecordTo(ctx context.Context, writer EvidenceWriter, repo RepoName, result RunResult) error {
-	return writer.WriteEvidence(ctx, repo, result) //nolint:wrapcheck // pure delegation; the writer owns wrapping semantics
+	return writer.WriteEvidence(ctx, repo, result)
 }
 
 // MemoryStore is an in-process EvidenceWriter: the newest result per

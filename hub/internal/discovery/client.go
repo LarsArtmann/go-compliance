@@ -30,8 +30,8 @@ const (
 	discoverTimeout = 60 * time.Second
 
 	// SSE frame scan budget: 64 KiB initial buffer, 1 MiB max line length.
-	scanBufSize  = 64 * 1024
-	maxScanLine  = 1024 * 1024
+	scanBufSize = 64 * 1024
+	maxScanLine = 1024 * 1024
 )
 
 // errDaemonStatus marks a non-200 daemon response; the concrete status

@@ -1,0 +1,141 @@
+# CI for the two-module workspace (core at root, hub/). Jobs mirror the
+# local gates: per-module build+test with GOWORK=off (module isolation),
+# golangci-lint pinned to the devShell version, dprint formatting,
+# actionlint, stack-drift-check, docs-gates, and nix flake check.
+#
+# Hub jobs and flake-check need the FLAKE_PAT secret (fine-grained PAT,
+# read-only Contents on LarsArtmann/go-daemon); they are skipped, not
+# failed, while the secret is absent so the public mirror stays green.
+# Valid on GitHub runners and Forgejo Actions (standard constructs only).
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+env:
+  FLAKE_PAT: ${{ secrets.FLAKE_PAT }}
+
+jobs:
+  core:
+    name: build+test (core)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - run: GOWORK=off go build ./...
+      - run: GOWORK=off go test -count=1 ./...
+
+  hub:
+    name: build+test (hub)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: hub/go.mod
+          cache-dependency-path: hub/go.sum
+      # go-daemon is the only private module; the rest resolve from the proxy.
+      # Step-level guard: env context is not allowed in job-level if, and a
+      # missing secret must SKIP the work, not fail the public mirror.
+      - name: Authenticate Go private modules
+        if: env.FLAKE_PAT != ''
+        run: git config --global url."https://x-access-token:${FLAKE_PAT}@github.com/".insteadOf "https://github.com/"
+      - run: GOWORK=off go build ./...
+        if: env.FLAKE_PAT != ''
+        working-directory: hub
+      - run: GOWORK=off go test -count=1 ./...
+        if: env.FLAKE_PAT != ''
+        working-directory: hub
+
+  lint-core:
+    name: lint (core)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Install golangci-lint v2.15.0 (devShell parity)
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.15.0
+      - run: GOWORK=off golangci-lint run ./...
+
+  lint-hub:
+    name: lint (hub)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: hub/go.mod
+          cache-dependency-path: hub/go.sum
+      - name: Authenticate Go private modules
+        if: env.FLAKE_PAT != ''
+        run: git config --global url."https://x-access-token:${FLAKE_PAT}@github.com/".insteadOf "https://github.com/"
+      - name: Install golangci-lint v2.15.0 (devShell parity)
+        if: env.FLAKE_PAT != ''
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.15.0
+      # The one root .golangci.yml serves both modules (v2 has no extends).
+      - run: GOWORK=off golangci-lint run -c ../.golangci.yml ./...
+        if: env.FLAKE_PAT != ''
+        working-directory: hub
+
+  format:
+    name: dprint + actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install dprint 0.64.3 (devShell parity)
+        run: |
+          curl -fsSL https://dprint.dev/install.sh | sh -s 0.64.3
+          echo "$PWD/bin" >> "$GITHUB_PATH"
+      - run: dprint check
+      - name: Install actionlint 1.7.12 (devShell parity)
+        run: bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
+      - run: actionlint
+
+  stack-drift:
+    name: stack drift check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Fetch the stack-selection drift checker
+        run: git clone --depth 1 https://github.com/LarsArtmann/SKILLS /tmp/skills
+      - run: bash /tmp/skills/stack-selection/scripts/stack-drift-check.sh "$PWD"
+
+  docs-gates:
+    name: docs gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # main
+      - run: nix run github:Artmann-Technologies/docs-gates -- run .
+
+  flake-check:
+    name: nix flake check
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # main
+        if: env.FLAKE_PAT != ''
+        with:
+          extra-conf: access-tokens = github.com=${{ env.FLAKE_PAT }}
+      - run: nix flake check
+        if: env.FLAKE_PAT != ''
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

@@ -33,7 +33,7 @@ error, see §d3) and one nix nondeterminism is unresolved (§d4).
 - Hub test suite — same compile error.
 - `nix flake check` — blocked on the vendorHash flip (§d4).
 - Root cause of the hash flip — not investigated yet (needs same-rev rebuild
-  + vendor-tree diff).
+  - vendor-tree diff).
 - CI workflow validity — file not written yet (M19 research only).
 - All M21+ items — not started.
 
@@ -261,5 +261,5 @@ error, see §d3) and one nix nondeterminism is unresolved (§d4).
 
 ---
 
-*Report written 11:21 CET; auto-commit daemon will absorb it. Waiting for
-instructions.*
+_Report written 11:21 CET; auto-commit daemon will absorb it. Waiting for
+instructions._
