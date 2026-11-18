@@ -8,7 +8,7 @@
 Verified against the go-health-dashboard repo (2026-11-18 checkout):
 
 - The **`aggregate` package** (`github.com/larsartmann/go-health/aggregate`)
-  merges N local `Prober`s into one surface `dashboard.New` renders
+  merges N local `Prober` instances into one surface `dashboard.New` renders
   (`aggregate.Source{Name, Probe}`). It is an IN-PROCESS merge, not a wire
   protocol.
 - The **`health-hub` binary** (`cmd/health-hub`) is the cross-machine

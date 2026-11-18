@@ -186,6 +186,14 @@ linters:
         linters:
           - tagliatelle
         text: json
+      # Demo programs are documentation artifacts: printing to stdout IS
+      # the feature, the numbers are illustrative payload, and the file
+      # path is the operator's own argument.
+      - path: ^examples/
+        linters:
+          - forbidigo
+          - gosec
+          - mnd
       - path: _test\.go
         linters:
           - err113
