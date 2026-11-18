@@ -10,7 +10,11 @@ import (
 )
 
 var _ = Describe("table cell helpers", func() {
-	colors := newColorService(output.ColorModeNever)
+	var colors *colorService
+
+	BeforeEach(func() {
+		colors = newColorService(output.ColorModeNever)
+	})
 
 	DescribeTable("severity cells",
 		func(severities map[string]int, errs, warns, infos, total string) {

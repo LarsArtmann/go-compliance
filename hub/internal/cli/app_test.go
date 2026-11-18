@@ -226,7 +226,7 @@ var _ = Describe("compliance-hub CLI", func() {
 
 // freePort asks the kernel for a currently-unused localhost TCP port.
 func freePort() int {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	listener, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 	port := listener.Addr().(*net.TCPAddr).Port
 	ExpectWithOffset(1, listener.Close()).To(Succeed())

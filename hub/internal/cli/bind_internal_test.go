@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"io"
 	"log/slog"
 	"net"
 	"net/http"

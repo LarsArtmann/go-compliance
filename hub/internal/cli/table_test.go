@@ -70,7 +70,9 @@ var _ = Describe("fleet table", func() {
 		Expect(rendered).To(ContainSubstring("INFO"))
 		Expect(rendered).To(ContainSubstring("FINDINGS"))
 
-		body := rendered[strings.Index(rendered, "REPO"):]
+		header := strings.Index(rendered, "REPO")
+		Expect(header).To(BeNumerically(">=", 0), "table header must be rendered")
+		body := rendered[header:]
 		failing := strings.Index(body, "failing")
 		stale := strings.Index(body, "stale")
 		compliant := strings.Index(body, "compliant")

@@ -99,14 +99,14 @@ func preferJSON(accept string) bool {
 
 	htmlQuality, jsonQuality := -1.0, -1.0
 
-	for _, part := range strings.Split(accept, ",") {
+	for part := range strings.SplitSeq(accept, ",") {
 		mediaType := part
 		if parameters := strings.Index(mediaType, ";"); parameters >= 0 {
 			mediaType = mediaType[:parameters]
 		}
 
 		quality := 1.0
-		for _, parameter := range strings.Split(part, ";") {
+		for parameter := range strings.SplitSeq(part, ";") {
 			parameter = strings.TrimSpace(parameter)
 			if !strings.HasPrefix(parameter, "q=") {
 				continue

@@ -30,7 +30,7 @@ func newUnixTestServer(handler http.Handler) *unixTestServer {
 	Expect(err).NotTo(HaveOccurred())
 
 	socket := filepath.Join(dir, "daemon.sock")
-	listener, err := net.Listen("unix", socket)
+	listener, err := (&net.ListenConfig{}).Listen(context.Background(), "unix", socket)
 	Expect(err).NotTo(HaveOccurred())
 
 	server := &http.Server{Handler: handler, ReadHeaderTimeout: 5 * time.Second}

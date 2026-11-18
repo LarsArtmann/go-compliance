@@ -44,7 +44,7 @@ var _ = Describe("routes and content negotiation", func() {
 		stream := httptest.NewRecorder()
 		streamRequest := httptest.NewRequest(http.MethodGet, "/events", nil)
 		streamRequest.Header.Set("Accept", "text/event-stream")
-		go func() { mux.ServeHTTP(stream, streamRequest) }() //nolint:bodyclose // recorder has no body to close
+		go func() { mux.ServeHTTP(stream, streamRequest) }()
 		Eventually(func() string { return stream.Body.String() }).
 			Should(ContainSubstring("datastar-patch-signals"))
 	})
