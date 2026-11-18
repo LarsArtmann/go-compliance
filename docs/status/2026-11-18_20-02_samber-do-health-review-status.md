@@ -62,7 +62,7 @@ Verified this session, with commands/artifacts: every hub wiring/liveness file r
 10. ✎ `?state=` filter table test over all four states.
 11. ✎ art-dupl baseline commit + CI gate.
 12. Add a `/readyz` payload contract test (JSON shape stability for federation consumers).
-13. ✎ infertypeargs cleanup app.go:26.
+13. ~~✎ infertypeargs cleanup app.go:26.~~ done 2026-11-18 ~22:05 — explicit type arguments dropped (`v5.NewCLI(`, and `sse.NewBroadcaster(` in events.go from the same class); build + lint + LSP clean.
 14. ✎ varnamelen `r` in runDiscoveryWatch; makezero ×3; ireturn in resolveSource — fold into the lint triage.
 15. Consider `go-health` federation/aggregate adoption once a second probe-owning service exists (YAGNI today — do not install).
 16. Record the version-pin-external-reads lesson in crush-config `references/lessons.md` (cross-project; needs a commit there — session writes are read-only by design).

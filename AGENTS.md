@@ -149,9 +149,15 @@ regression test.
   `postPatchExtra` builds `_core_only` (Go files + go.mod/go.sum only)
   and repoints the hub replace at it. Consequence: doc-only edits no
   longer change the hub vendorHash.
-- go.mod/go.sum bumps invalidate `vendorHash`: tidy per module FIRST,
-  then bootstrap (`vendorHash = "sha256-AAA..."` → build → paste the
-  `got:` hash → rebuild to confirm convergence) and `nix flake check`.
+- go.mod/go.sum bumps — and ANY root-module Go-file edit (the `_core_only`
+  replace target is vendored verbatim) — invalidate `vendorHash`: tidy per
+  module FIRST, then bootstrap (`vendorHash = "sha256-AAA..."` → build →
+  paste the `got:` hash → rebuild to confirm convergence) and `nix flake
+  check`. The hub hash appears at TWO flake sites (the `compliance-hub`
+  package AND the CI devShell's hub-module build) — bootstrap BOTH;
+  `nix build .#compliance-hub` alone can pass while `nix flake check`
+  still fails on the second site. The core check's hash is stable (no
+  directory replace in its module set).
 - CI hub/flake jobs need the `FLAKE_PAT` secret (private go-daemon);
   missing secret SKIPS those jobs (step-level `if: env.FLAKE_PAT != ''`
   — job-level env-if is invalid per actionlint).

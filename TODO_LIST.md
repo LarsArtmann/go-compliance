@@ -30,12 +30,11 @@ The plan is a snapshot: this file is the living backlog.
 
 ## Low Impact
 
-| Task                                                                                                                                                                                                                         | Status    | Impact | Effort | Evidence                                                                    |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | --------------------------------------------------------------------------- |
-| Drop hub `replace` directive when core tags v0.1.0                                                                                                                                                                           | 🔴 `TODO` | Low    | 10m    | `hub/go.mod` replace block                                                  |
-| `templ fmt` gate for `.templ` sources in CI (canonical templ formatting; generated `*_templ.go` already committed)                                                                                                           | 🔴 `TODO` | Low    | 10m    | 06-47 §39; `go tool templ fmt ./internal/dashboard/`; dprint excludes templ |
-| Archive sweep: `git mv` aged status reports to `docs/status/archived/` + archived README manifest (cadence gate threshold 15; currently 10)                                                                                  | 🔴 `TODO` | Low    | 15m    | 18-06 §8 remainder; docs-cadence gate                                       |
-| Re-prove the full battery (`-race` + lint both modules + `nix flake check`) — hub `-race` suite green again 19:39 session after Rows()/app.go fixes; core suite, core lint, and flake check still unproven since those edits | 🔴 `TODO` | Low    | 15m    | `docs/status/2026-11-18_20-02_samber-do-health-review-status.md` §c         |
+| Task                                                                                                                                        | Status    | Impact | Effort | Evidence                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | --------------------------------------------------------------------------- |
+| Drop hub `replace` directive when core tags v0.1.0                                                                                          | 🔴 `TODO` | Low    | 10m    | `hub/go.mod` replace block                                                  |
+| `templ fmt` gate for `.templ` sources in CI (canonical templ formatting; generated `*_templ.go` already committed)                          | 🔴 `TODO` | Low    | 10m    | 06-47 §39; `go tool templ fmt ./internal/dashboard/`; dprint excludes templ |
+| Archive sweep: `git mv` aged status reports to `docs/status/archived/` + archived README manifest (cadence gate threshold 15; currently 10) | 🔴 `TODO` | Low    | 15m    | 18-06 §8 remainder; docs-cadence gate                                       |
 
 ## Blocked (owner decisions)
 
