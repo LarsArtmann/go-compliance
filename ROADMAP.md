@@ -79,6 +79,10 @@ call), go-appkit (TCP-only core grows a listener seam), go-cqrs-lite (hub
 grows a command side), cqrs-htmx (multi-user posture), go-codec (core dep
 policy loosening — currently policy-banned), go-atomic-write (same).
 
+Also watched (outside the lib audit): ssetest — the pin sits at the v0.5.0
+tag because go-sse v0.7.0 publishes no ssetest; revisit the pin the day a
+tag newer than v0.5.0 ships (14-43 §f37).
+
 ## Fleet adoption waves (raw, from the 2026-11-19 utilization audit)
 
 Each likely repeats across LarsArtmann projects; promote to a fleet

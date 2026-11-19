@@ -194,7 +194,7 @@ path-excluded files + semantic audit of the 22 token-matched items), T13
 14. T8.2: check whether the next cmdguard tag ships `AssertDescribeContract`.
 15. T8.3: upstream Nd-duration-codec TODO (BLOCKED on OG.5).
 16. T9.1: `errorpage` for Go-default 404s.
-17. T9.2: `layout.ThemeToggle`.
+~~17. T9.2: `layout.ThemeToggle`.~~ done at 2026-11-19: ThemeToggle + ThemeScript shipped in the compiled-CSS pass (view.templ; pinned by routes_test "links the compiled stylesheet versioned and stays off the Tailwind Play CDN")
 18. T9.3–9.4: Play CDN → compiled CSS pipeline + CSP-safety verification.
 19. T9.6: view_test regression + patch-size check (rows stay script-free).
 20. T15.1a/b: go-branded-id utilization report.
@@ -217,7 +217,7 @@ path-excluded files + semantic audit of the 22 token-matched items), T13
     re-warned: state DB 1.04 GB); cache-DB delete (OG.3).
 35. Owner: T21 go signal (core v0.1.0 release pass).
 36. dprint check re-run (files edited after the buildflow pass).
-37. ssetest pin: revisit when a ssetest tag newer than v0.5.0 ships.
+~~37. ssetest pin: revisit when a ssetest tag newer than v0.5.0 ships.~~ resolved: routed to ROADMAP "Conditions watched" (ssetest flip trigger row, 2026-11-19)
 38. TODO_LIST harvest: mark the plan rows T1/T2/T4/T5/T3/T7 (+T6 partial)
     per this report.
 39. go-daemon report rank-3 opportunity (`NewHTTPClientNoTimeout` for the

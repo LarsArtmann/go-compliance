@@ -236,7 +236,7 @@ before moving on, honest reporting of everything that broke along the way.
 23. M15/F068: go-health probe registration
 24. M15/F069: sd_notify wiring via go-daemon
 25. M15/F070: systemd unit file + docs
-26. M15/F071: smoke: serve + curl /health
+~~26. M15/F071: smoke: serve + curl /health~~ done at 2026-11-19: serve smoke exists — dynamic port, /healthz + full route sweep with hardening-header assertions (hub/internal/cli/app_test.go:96-150)
 27. M27/F107: re-derive on store writes (hook)
 28. M27/F108: debounce + coalesce events
 29. M27/F109: E2E: evidence change → browser event

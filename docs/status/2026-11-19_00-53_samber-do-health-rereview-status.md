@@ -95,7 +95,7 @@ _Ranked; inherited items carry their source. Verdicts inline where I could settl
 28. 📌 flake meta `homepage` (23-40 §f21).
 29. 📌 flake-parts duplicate input via `follows` or accept-and-silence (23-40 §f22).
 30. 📌 Layout items: README install section (cheap, real); assets/internal/scripts accepts (23-40 §f23).
-31. 📌 `.buildflow.yml` minimal-config decision vs permanent auto-detection (23-40 §f24).
+~~31. 📌 `.buildflow.yml` minimal-config decision vs permanent auto-detection (23-40 §f24).~~ Won't implement: keep buildflow auto-detection — zero repo-specific keys are needed (manual runs + CI mirror the defaults). Flip: add .buildflow.yml the day a repo-specific key exists
 32. 📌 Refresh stale `./result` symlink + re-run `buildflow -s lychee` / `-s vulnix` to green (23-40 §f3-4).
 33. 📌 buildflow reinstall from HEAD + `type -a buildflow` shadow check + `buildflow doctor` (23-40 §f27-28).
 34. 📌 M26 overview endgame (Blocked, owner g2).

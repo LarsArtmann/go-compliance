@@ -222,7 +222,7 @@ templ-components v1.27.0 (skill loaded before authoring):
 7. flake.nix skeleton (both modules).
 8. devShell (go, templ, golangci, dprint).
 9. packages + vendorHash bootstrap loop.
-10. `nix flake check` green.
+~~10. `nix flake check` green.~~ done at 2026-11-19: green at both wave boundaries and twice re-verified after the go-filewatcher and errorpage go.mod windows
 
 **M19 CI (4)**
 11. build+test per module (Forgejo+GitHub compatible).
@@ -258,14 +258,14 @@ templ-components v1.27.0 (skill loaded before authoring):
 **M27 realtime loop (4)**
 28. Fix `queryLatestRunCounts` N+1 (single query with window join).
 29. Re-derive on store writes (hook → hub.PublishRefresh).
-30. discovery.Watch → refresh trigger with debounce/coalesce.
+~~30. discovery.Watch → refresh trigger with debounce/coalesce.~~ done at 2026-11-19: runDiscoveryWatch kicks the refresher — cap-1 trigger channel (coalescing) + 500ms debounce + 5-min safety net (hub/internal/cli/refresher.go, serve.go)
 31. E2E: evidence change → browser event.
 
 **Quality debts from this session (8)**
 32. `go test -race` across hub (events/dashboard/cli concurrency).
 33. golangci-lint config + run for hub module (per-module parity).
 34. Shared `waitForSubscriber`/AwaitSubscriber test helper.
-35. Dynamic port in serve smoke test.
+~~35. Dynamic port in serve smoke test.~~ done at 2026-11-19: serve smoke binds a free dynamic port (hub/internal/cli/app_test.go:100 freePort())
 36. Patch purity check for RelativeTime (align with dashboard pattern).
 37. ~~.gitignore templ-commit note.~~ done — .gitignore templ-commit note
 38. ~~AGENTS.md: hub conventions learned this session.~~ done — AGENTS.md
