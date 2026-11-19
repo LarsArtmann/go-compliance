@@ -6,6 +6,7 @@ Do not reopen them; the living backlog is TODO_LIST.md and the decision
 context lives in the status reports each plan links.
 
 <!-- check-rows:ledger -->
+
 | Archived plan                                             | Closed     | Why archived                                                                                                                                         |
 | --------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-11-17_20-01_go-compliance-pareto-execution-plan.md   | 2026-11-19 | All 27 medium + 109 fine tasks executed (106 tree-verified by the 15-00 final-pass audit; M26 pair + Forgejo-visibility routed to TODO blocked rows) |
