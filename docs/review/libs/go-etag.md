@@ -1,12 +1,12 @@
 # go-etag
 
-| Field            | Value                                                                                                                                                                                                                                                                                                                                                       |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Reviewed         | 2026-11-19                                                                                                                                                                                                                                                                                                                                                   |
-| Group            | C (library-utilization audit, HTTP/wire-protocol family)                                                                                                                                                                                                                                                                                                     |
-| Consumer modules | core — **absent**; hub — **absent** (not in either `go.mod`, direct or indirect; note: `httputil` *depends on* `go-etag/server`, but httputil itself is absent too)                                                                                                                                                                                            |
-| Library version  | repo tag `v0.7.1`; last commit `39f9f37 2026-11-18 "chore: auto-commit 2 changed file(s) (heuristic)"`                                                                                                                                                                                                                                                        |
-| Recent tags      | `v0.7.1`, `metrics/v0.6.2`, `client/v0.6.2`, `server/v0.6.2`, `entitytag/v0.6.2`, `v0.7.0`, …                                                                                                                                                                                                                                                                |
+| Field            | Value                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reviewed         | 2026-11-19                                                                                                                                                                                                                                                                                                                                                 |
+| Group            | C (library-utilization audit, HTTP/wire-protocol family)                                                                                                                                                                                                                                                                                                   |
+| Consumer modules | core — **absent**; hub — **absent** (not in either `go.mod`, direct or indirect; note: `httputil` _depends on_ `go-etag/server`, but httputil itself is absent too)                                                                                                                                                                                        |
+| Library version  | repo tag `v0.7.1`; last commit `39f9f37 2026-11-18 "chore: auto-commit 2 changed file(s) (heuristic)"`                                                                                                                                                                                                                                                     |
+| Recent tags      | `v0.7.1`, `metrics/v0.6.2`, `client/v0.6.2`, `server/v0.6.2`, `entitytag/v0.6.2`, `v0.7.0`, …                                                                                                                                                                                                                                                              |
 | Modules          | root is a **deprecated alias shim** for the server package (removed in v1.0.0 per README); real modules: `go-etag/server` (middleware, FNV-64a, 304s), `go-etag/client` (conditional-GET RoundTripper cache), `go-etag/entitytag` (RFC 7232 §2.3 domain type), `go-etag/metrics` (atomic counters for hooks). Sub-module lines are at v0.6.2; root v0.7.1. |
 
 ## What the consumer sets today (verified)
@@ -21,7 +21,7 @@
   `Cache-Control: public, max-age=86400` (`hub/internal/dashboard/dashboard.go:31,113-119`)
   — correct as-is: the bundle is version-pinned by its module, so expiry
   caching beats revalidation; an ETag there would add nothing.
-- SSE replay is a *different mechanism*: `/events` and the JSON stream honor
+- SSE replay is a _different mechanism_: `/events` and the JSON stream honor
   `Last-Event-ID` via `sse.LastEventIDFromRequest` + `sse.Replay` over the
   in-memory ring store (`hub/internal/events/events.go:213-222`,
   `hub/internal/events/store.go`).
@@ -66,7 +66,7 @@ has complained — there is exactly one known poller class (overview, local),
 payload is 170 KB over loopback or a unix socket, and the v2 design doc
 (`docs/decisions/v2-wire-design.md`, pain point 2: "No snapshot identity — a
 consumer cannot tell two documents apart") already owns this problem at the
-*contract* level, where it should be solved first. Adding go-etag now would be
+_contract_ level, where it should be solved first. Adding go-etag now would be
 a wire-level patch for a contract-level gap.
 
 **Flip trigger (any one):** (a) v2 lands and adds snapshot identity — then
@@ -85,17 +85,17 @@ but see the sketch: the handler-side validator is required either way.
 
 Bands: 85-100 excellent · 70-84 good · 50-69 fair · <50 poor.
 
-| Capability                          | Status                   | Library evidence (path)                  | Consumer evidence (path:line)                                                                                          |
-| ----------------------------------- | ------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Server ETag + If-None-Match → 304   | Missed — 0 (justified)   | `server/` README "Server Quick Start"    | no validator set (`hub/internal/cli/serve.go:83-102`); body non-repeatable per request (`v1.go:162`) — default mode useless |
-| Handler-validator passthrough       | Missed — 0 (justified)   | `ETagConfig.SkipIfPresent` (go doc)      | no handler sets an ETag; `lastRefreshSuccess` exists and would serve (`hub/internal/cli/refresher.go:69-72`)             |
-| Streaming/SSE safety (Skip, Hijack/Flush-aware) | Covered elsewhere — 1 | `ETagConfig.Skip`, README "Streams gracefully" | SSE streams use go-sse directly (`hub/internal/events/events.go:215`), never wrapped in body-buffering middleware |
-| HEAD correctness (Content-Length, no body) | N/A            | README "RFC 7230 compliant HEAD"         | nobody issues conditional HEADs to the hub; ServeMux handles bare HEAD via GET handler                                   |
-| If-Match lost-update prevention    | N/A                      | `MatchesIfMatch`                         | zero write/PUT endpoints — nothing to lose updates on (`hub/internal/cli/serve.go:75-83`, all GET)                       |
-| Client conditional-GET cache        | N/A                      | `client/` README "Client Quick Start"    | hub's only outbound GET is the SSE watch (a stream, not a cacheable resource) — `hub/internal/discovery/client.go:158`   |
-| Entity-tag domain type (parse/compare) | N/A                   | `entitytag/`                             | no entity-tag handling anywhere in the consumer                                                                          |
-| Hit-ratio counters                  | N/A                      | `metrics/` (`Attach`, `HitRatio`)        | no ETag surface to count on yet                                                                                          |
-| Cache-Control policy                | Covered elsewhere — 1    | README "Pair ETags with explicit Cache-Control" | the one resource that needs it (immutable JS bundle) already has `max-age=86400` (`hub/internal/dashboard/dashboard.go:31,116`) |
+| Capability                                      | Status                 | Library evidence (path)                         | Consumer evidence (path:line)                                                                                                   |
+| ----------------------------------------------- | ---------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Server ETag + If-None-Match → 304               | Missed — 0 (justified) | `server/` README "Server Quick Start"           | no validator set (`hub/internal/cli/serve.go:83-102`); body non-repeatable per request (`v1.go:162`) — default mode useless     |
+| Handler-validator passthrough                   | Missed — 0 (justified) | `ETagConfig.SkipIfPresent` (go doc)             | no handler sets an ETag; `lastRefreshSuccess` exists and would serve (`hub/internal/cli/refresher.go:69-72`)                    |
+| Streaming/SSE safety (Skip, Hijack/Flush-aware) | Covered elsewhere — 1  | `ETagConfig.Skip`, README "Streams gracefully"  | SSE streams use go-sse directly (`hub/internal/events/events.go:215`), never wrapped in body-buffering middleware               |
+| HEAD correctness (Content-Length, no body)      | N/A                    | README "RFC 7230 compliant HEAD"                | nobody issues conditional HEADs to the hub; ServeMux handles bare HEAD via GET handler                                          |
+| If-Match lost-update prevention                 | N/A                    | `MatchesIfMatch`                                | zero write/PUT endpoints — nothing to lose updates on (`hub/internal/cli/serve.go:75-83`, all GET)                              |
+| Client conditional-GET cache                    | N/A                    | `client/` README "Client Quick Start"           | hub's only outbound GET is the SSE watch (a stream, not a cacheable resource) — `hub/internal/discovery/client.go:158`          |
+| Entity-tag domain type (parse/compare)          | N/A                    | `entitytag/`                                    | no entity-tag handling anywhere in the consumer                                                                                 |
+| Hit-ratio counters                              | N/A                    | `metrics/` (`Attach`, `HitRatio`)               | no ETag surface to count on yet                                                                                                 |
+| Cache-Control policy                            | Covered elsewhere — 1  | README "Pair ETags with explicit Cache-Control" | the one resource that needs it (immutable JS bundle) already has `max-age=86400` (`hub/internal/dashboard/dashboard.go:31,116`) |
 
 Inputs: N=9, A=4 (1+0+0+1), Σ=2.0 → **score = round(100×2.0/4) = 50 (fair)**.
 Publish: **2 of 4**. The two misses are real gaps in the counterfactual but are
@@ -107,7 +107,7 @@ the v2 snapshot-identity decision.
 
 ### G1 — The actual fix, when wanted: derived validator, not body hash
 
-Impact: moderate *iff* polling grows; ease: high. stdlib-only version:
+Impact: moderate _iff_ polling grows; ease: high. stdlib-only version:
 
 ```go
 // hub/internal/cli/serve.go — inside the GET /v1/compliance handler
@@ -176,7 +176,7 @@ For: every fleet HTTP API with a pollable snapshot (go-health federation
 peers, CV, this hub) re-derives conditional-request logic; a shared two-sided
 library (server middleware + client RoundTripper that rebuilds 304→200) is
 exactly the kind of plumbing that should exist once. If v2 gives this hub
-snapshot identity, the server side is a natural adopter and the *client* side
+snapshot identity, the server side is a natural adopter and the _client_ side
 becomes interesting for any fleet poller (e.g. a future overview that polls
 `/v1/compliance` through `etagclient.NewTransport` and gets 304s for free).
 Against: adopting before snapshot identity exists in the contract would bake a

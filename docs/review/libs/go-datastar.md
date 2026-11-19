@@ -1,13 +1,13 @@
 # go-datastar
 
-| Field                | Value                                                                                              |
-| -------------------- | -------------------------------------------------------------------------------------------------- |
-| Reviewed             | 2026-11-19                                                                                         |
-| Group                | B (realtime-dashboard stack)                                                                       |
-| Consumer module      | `hub` (`github.com/larsartmann/go-compliance/hub`)                                                  |
-| Pins                 | `github.com/larsartmann/go-datastar v0.6.2` (direct); `go-datastar/datastartest v0.6.2` (direct, tests); `go-datastar/static v0.6.1` (direct). `broadcast/` sub-module not required. |
-| Library version      | newest tag `static/v0.8.0`; main-module line newest `v0.7.0`; HEAD `f909928 2026-11-17 feat: export named version constants and VersionIsValid`; tags newest-first: `static/v0.8.0`, `broadcast/v0.7.0`, `datastartest/v0.7.0`, `static/v0.7.0`, `v0.7.0` |
-| Pin current?         | **No.** Root/datastartest one minor behind (v0.6.2 → v0.7.0), static two behind (v0.6.1 → v0.8.0, embeds DataStar JS 1.0.3 → 1.0.4). Effective MVS resolution equals the pins (verified `go list -m all`; templ-components v1.27.0 also requires static v0.6.1, so nothing drags them up). |
+| Field           | Value                                                                                                                                                                                                                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Reviewed        | 2026-11-19                                                                                                                                                                                                                                                                                 |
+| Group           | B (realtime-dashboard stack)                                                                                                                                                                                                                                                               |
+| Consumer module | `hub` (`github.com/larsartmann/go-compliance/hub`)                                                                                                                                                                                                                                         |
+| Pins            | `github.com/larsartmann/go-datastar v0.6.2` (direct); `go-datastar/datastartest v0.6.2` (direct, tests); `go-datastar/static v0.6.1` (direct). `broadcast/` sub-module not required.                                                                                                       |
+| Library version | newest tag `static/v0.8.0`; main-module line newest `v0.7.0`; HEAD `f909928 2026-11-17 feat: export named version constants and VersionIsValid`; tags newest-first: `static/v0.8.0`, `broadcast/v0.7.0`, `datastartest/v0.7.0`, `static/v0.7.0`, `v0.7.0`                                  |
+| Pin current?    | **No.** Root/datastartest one minor behind (v0.6.2 → v0.7.0), static two behind (v0.6.1 → v0.8.0, embeds DataStar JS 1.0.3 → 1.0.4). Effective MVS resolution equals the pins (verified `go list -m all`; templ-components v1.27.0 also requires static v0.6.1, so nothing drags them up). |
 
 ## Verdict: UNDERUSED-moderate
 
@@ -17,7 +17,7 @@ inner/append/replace/remove modes drives the whole dashboard diff machinery
 (`hub/internal/dashboard/dashboard.go:149-215`), and `datastartest` is used
 exactly per the repo's testing conventions (CollectN/CollectWithTimeout,
 Require\*, finders — `dashboard_test.go:38-124`, `routes_test.go:49-50`,
-`cli/refresher_internal_test.go:53-74`). But everything *around* the patch types
+`cli/refresher_internal_test.go:53-74`). But everything _around_ the patch types
 is hand-rolled: the script handler reimplements `datastar.ScriptHandler` without
 its ETag/304 contract (`dashboard.go:113-118`), the replay ring reimplements
 `datastar.MemoryStore` line-for-line (`hub/internal/events/store.go:14-51` vs
@@ -39,27 +39,27 @@ ADOPTED at high band; if `broadcast/` is adopted too, very high.
 
 ## Capability inventory
 
-| # | Capability | Status | Library evidence (path) | Consumer evidence (path:line) |
-|---|---|---|---|---|
-| 1 | Element patches from templ (`ElementsFromTempl`) | Fully | `go-datastar/elements.go`; `patch.go` (`Patch.Event() sse.Event`) | `dashboard.go:149-152,173-176,183-186,207-210` |
-| 2 | Patch modes inner/append/replace/remove + selectors | Fully | `go-datastar/options.go` (`WithMode*`, `WithSelector*`) | `dashboard.go:151,175,185,194`; row selector helper `dashboard.go:240-243` |
-| 3 | Signals patches (`NewSignalsPatch`/`MarshalSignals`) | Partial | `go-datastar/signals.go:62,82-84` (plain `json.Marshal`, no determinism option) | `dashboard.go:228-233` hand-marshals with `json.Deterministic(true)`, then `SignalsPatch{Signals: encoded}` |
-| 4 | Script serving with ETag/304 (`ScriptHandler`/`ScriptHandlerWith`) | **Misused** | `go-datastar/script_handler.go:47-62` (ETag + `If-None-Match` 304 + max-age=86400) | `dashboard.go:111-118` hand-rolls the handler: max-age=86400, **no ETag, no 304** |
-| 5 | Cache-busting versioned script tag (`ScriptTagVersioned`, v0.7.0) | Missed | `go-datastar/script.go` (`ScriptTagVersioned`); CHANGELOG [0.7.0] | `hub/internal/dashboard/view.templ:67-73` emits plain `/datastar.js` via templ-components `SDKScript` |
-| 6 | In-memory replay store (`MemoryStore` implements `sse.EventStore`) | Missed | `go-datastar/store.go:20-77` (capacity ring, numeric `EventsAfter`) | `hub/internal/events/store.go:14-51` (`ringStore`) — same design, same semantics, hand-written |
-| 7 | `broadcast/` module: connection lifecycle (ServeHTTP, heartbeat, replay, `NewBroadcasterFromHub`) | Partial | `go-datastar/broadcast/` (`Broadcaster.ServeHTTP`, `WithReplayCapacity`, `WithHeartbeatInterval/Disabled`) | not required; `dashboard.go:84-109` hand-rolls the serve loop over `events.Hub.SubscribeFeed` |
-| 8 | Last-Event-ID replay on the patch stream (STACK.md rationale names it) | Partial | `broadcast/` replay wiring; `datastar.LastEventID` | realized only on the JSON `/events` stream (`hub/internal/events/events.go:220-224`); patch stream sends no event IDs and replays nothing — reconnect correctness rests entirely on full re-snapshot (`dashboard.go:88-90`) |
-| 9 | Stream error/notification frames (`ErrorResponse`, `NotificationResponse`) | Partial | `go-datastar/errors.go` | no call site; a failing render or empty hub degrades to silent EOF → client `RetryAlways` reconnect (`view.templ:50-53`) with no operator-visible signal |
-| 10 | `datastartest` Collect family | Fully | `datastartest/collect.go` | `dashboard_test.go:38-39,96`, `routes_test.go:49-50`, `cli/refresher_internal_test.go:53-54` |
-| 11 | `datastartest` assertions/finders | Fully | `datastartest/` (`RequireElementsContains`, `FindSignals`, `FindAllElements`, …) | `dashboard_test.go:41-124`, `cli/refresher_internal_test.go:69-74` |
-| 12 | Self-hosted client bundle (`static/` module) | Fully | `go-datastar/static/static.go` (`Bytes()`, `Version`) | `dashboard.go:14,117` — self-hosted, no CDN dependency (good offline/CSP posture) |
-| 13 | Inbound signal reading (`ReadSignals`) | N/A | `go-datastar/inbound.go` | server never reads signals; filtering is client-side via `data-show` (`rows.templ:25`) |
-| 14 | Client-side SSE URL attributes (`GetSSE`/`PatchSSE`/…) | N/A | `go-datastar/sugar.go`, `adapters.go` | templ-components `datastar.LiveRegion` owns the SSE region markup (`view.templ:45-56`) — correct layer |
-| 15 | `Response` builder (redirects, `ReplaceURLQuerystring`, console patches) | N/A | `go-datastar/response.go` | no action endpoints; pure patch-stream app |
-| 16 | Custom-event / script patches (`NewDispatchCustomEventPatch`, `NewConsole*Patch`) | N/A | `go-datastar/patch.go`, `script_convenience.go` | no client-side event/script needs |
-| 17 | View transitions options (`WithViewTransitions*`) | N/A | `go-datastar/options.go` | cosmetic opt-in; table patches should not morph-animate |
-| 18 | `ElementsFromGostar` adapter | N/A | `go-datastar/elements.go` | the dashboard is templ-based (`ElementsFromTempl` used) |
-| 19 | `broadcast/storecontract` assertions for custom stores | N/A | `broadcast/storecontract/` (v0.7.0) | consumer would only need this if it kept a custom store after adopting `MemoryStore` (row 6 makes it moot) |
+| #  | Capability                                                                                        | Status      | Library evidence (path)                                                                                    | Consumer evidence (path:line)                                                                                                                                                                                               |
+| -- | ------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | Element patches from templ (`ElementsFromTempl`)                                                  | Fully       | `go-datastar/elements.go`; `patch.go` (`Patch.Event() sse.Event`)                                          | `dashboard.go:149-152,173-176,183-186,207-210`                                                                                                                                                                              |
+| 2  | Patch modes inner/append/replace/remove + selectors                                               | Fully       | `go-datastar/options.go` (`WithMode*`, `WithSelector*`)                                                    | `dashboard.go:151,175,185,194`; row selector helper `dashboard.go:240-243`                                                                                                                                                  |
+| 3  | Signals patches (`NewSignalsPatch`/`MarshalSignals`)                                              | Partial     | `go-datastar/signals.go:62,82-84` (plain `json.Marshal`, no determinism option)                            | `dashboard.go:228-233` hand-marshals with `json.Deterministic(true)`, then `SignalsPatch{Signals: encoded}`                                                                                                                 |
+| 4  | Script serving with ETag/304 (`ScriptHandler`/`ScriptHandlerWith`)                                | **Misused** | `go-datastar/script_handler.go:47-62` (ETag + `If-None-Match` 304 + max-age=86400)                         | `dashboard.go:111-118` hand-rolls the handler: max-age=86400, **no ETag, no 304**                                                                                                                                           |
+| 5  | Cache-busting versioned script tag (`ScriptTagVersioned`, v0.7.0)                                 | Missed      | `go-datastar/script.go` (`ScriptTagVersioned`); CHANGELOG [0.7.0]                                          | `hub/internal/dashboard/view.templ:67-73` emits plain `/datastar.js` via templ-components `SDKScript`                                                                                                                       |
+| 6  | In-memory replay store (`MemoryStore` implements `sse.EventStore`)                                | Missed      | `go-datastar/store.go:20-77` (capacity ring, numeric `EventsAfter`)                                        | `hub/internal/events/store.go:14-51` (`ringStore`) — same design, same semantics, hand-written                                                                                                                              |
+| 7  | `broadcast/` module: connection lifecycle (ServeHTTP, heartbeat, replay, `NewBroadcasterFromHub`) | Partial     | `go-datastar/broadcast/` (`Broadcaster.ServeHTTP`, `WithReplayCapacity`, `WithHeartbeatInterval/Disabled`) | not required; `dashboard.go:84-109` hand-rolls the serve loop over `events.Hub.SubscribeFeed`                                                                                                                               |
+| 8  | Last-Event-ID replay on the patch stream (STACK.md rationale names it)                            | Partial     | `broadcast/` replay wiring; `datastar.LastEventID`                                                         | realized only on the JSON `/events` stream (`hub/internal/events/events.go:220-224`); patch stream sends no event IDs and replays nothing — reconnect correctness rests entirely on full re-snapshot (`dashboard.go:88-90`) |
+| 9  | Stream error/notification frames (`ErrorResponse`, `NotificationResponse`)                        | Partial     | `go-datastar/errors.go`                                                                                    | no call site; a failing render or empty hub degrades to silent EOF → client `RetryAlways` reconnect (`view.templ:50-53`) with no operator-visible signal                                                                    |
+| 10 | `datastartest` Collect family                                                                     | Fully       | `datastartest/collect.go`                                                                                  | `dashboard_test.go:38-39,96`, `routes_test.go:49-50`, `cli/refresher_internal_test.go:53-54`                                                                                                                                |
+| 11 | `datastartest` assertions/finders                                                                 | Fully       | `datastartest/` (`RequireElementsContains`, `FindSignals`, `FindAllElements`, …)                           | `dashboard_test.go:41-124`, `cli/refresher_internal_test.go:69-74`                                                                                                                                                          |
+| 12 | Self-hosted client bundle (`static/` module)                                                      | Fully       | `go-datastar/static/static.go` (`Bytes()`, `Version`)                                                      | `dashboard.go:14,117` — self-hosted, no CDN dependency (good offline/CSP posture)                                                                                                                                           |
+| 13 | Inbound signal reading (`ReadSignals`)                                                            | N/A         | `go-datastar/inbound.go`                                                                                   | server never reads signals; filtering is client-side via `data-show` (`rows.templ:25`)                                                                                                                                      |
+| 14 | Client-side SSE URL attributes (`GetSSE`/`PatchSSE`/…)                                            | N/A         | `go-datastar/sugar.go`, `adapters.go`                                                                      | templ-components `datastar.LiveRegion` owns the SSE region markup (`view.templ:45-56`) — correct layer                                                                                                                      |
+| 15 | `Response` builder (redirects, `ReplaceURLQuerystring`, console patches)                          | N/A         | `go-datastar/response.go`                                                                                  | no action endpoints; pure patch-stream app                                                                                                                                                                                  |
+| 16 | Custom-event / script patches (`NewDispatchCustomEventPatch`, `NewConsole*Patch`)                 | N/A         | `go-datastar/patch.go`, `script_convenience.go`                                                            | no client-side event/script needs                                                                                                                                                                                           |
+| 17 | View transitions options (`WithViewTransitions*`)                                                 | N/A         | `go-datastar/options.go`                                                                                   | cosmetic opt-in; table patches should not morph-animate                                                                                                                                                                     |
+| 18 | `ElementsFromGostar` adapter                                                                      | N/A         | `go-datastar/elements.go`                                                                                  | the dashboard is templ-based (`ElementsFromTempl` used)                                                                                                                                                                     |
+| 19 | `broadcast/storecontract` assertions for custom stores                                            | N/A         | `broadcast/storecontract/` (v0.7.0)                                                                        | consumer would only need this if it kept a custom store after adopting `MemoryStore` (row 6 makes it moot)                                                                                                                  |
 
 ## Gap analysis
 
@@ -105,7 +105,7 @@ consumer-side.
 
 **Consumer does:** `view.templ:67-73` renders the SDK via templ-components
 `datastar.SDKScript` with `Src: "/datastar.js"` — unversioned. The 24 h max-age
-then holds the *previous* bundle across an upgrade.
+then holds the _previous_ bundle across an upgrade.
 
 **Impact:** low today (wire format between DataStar 1.0.3/1.0.4 is stable;
 goldens unchanged per CHANGELOG), but the failure mode is protocol skew appearing
@@ -134,7 +134,7 @@ the hub can self-serve:
 `store.go:48-50`, same `strconv.ParseUint` cutoff at `store.go:53-64`).
 
 **Consumer does:** keeps its own 65-line `ringStore` + `parseSeq`. The only
-semantic difference: `ringStore.EventsAfter` *excludes* stored events with
+semantic difference: `ringStore.EventsAfter` _excludes_ stored events with
 unparseable IDs (`store.go:35`) while `MemoryStore` treats them as sequence 0 —
 irrelevant here, since the Hub mints all IDs as `strconv.FormatUint`
 (`events.go:324-327`).
@@ -199,9 +199,9 @@ shares an existing `sse.Broadcaster[sse.Event]`; `WithReplayCapacity`,
 `WithHeartbeatInterval/Disabled` (`broadcast/broadcaster.go`).
 
 **Consumer does:** `dashboard.go:84-109` hand-rolls the equivalent loop because
-the projection is *per-subscriber*: each `Published` event is converted to patches
+the projection is _per-subscriber_: each `Published` event is converted to patches
 inside the subscriber's handler (`sendPublished`, `dashboard.go:123-134`). The
-library's model projects *once* at publish time and broadcasts `sse.Event`
+library's model projects _once_ at publish time and broadcasts `sse.Event`
 patches.
 
 **Impact:** architecture, not bug. The consumer's shape buys snapshot-first
@@ -218,7 +218,7 @@ STACK.md's rationale for choosing go-datastar cites "broadcaster + Last-Event-ID
 replay" — realized in this repo on the **JSON** stream (`events.go:220-224`) but
 not the **patch** stream: patches carry no IDs (`dashboard.go` never sets
 `WithElementsEventID` / ID fields), and reconnection correctness rests on the
-full re-snapshot. For this dashboard that is *simpler and sufficient*: rows are a
+full re-snapshot. For this dashboard that is _simpler and sufficient_: rows are a
 projection, and a snapshot is strictly more correct than replayed patches.
 Cost of the current shape: a reconnect during heavy churn re-downloads the whole
 table once. **No action recommended**; the row is Partial only because the cited
@@ -239,13 +239,13 @@ would be a nice-to-have, not a gap worth a PR now.
 
 - **v0.6.2 → v0.7.0** (all four modules lockstep-tagged on one commit; v0.6.3 was
   a defective root-only cut, repaired by v0.7.0). Contents: `ScriptTagVersioned`
-  + `ETagFor` export (rows 4-5), `broadcast.WithHeartbeatDisabled` +
-  `NewBroadcasterFromHub` variadic options, `datastartest.RequireScriptTagVersion`
-  / `RequireETagForBundle`, `broadcast/storecontract`, embedded client
-  DataStar JS 1.0.3 → **1.0.4**, and go-sse bumped to v0.7.0.
+  - `ETagFor` export (rows 4-5), `broadcast.WithHeartbeatDisabled` +
+    `NewBroadcasterFromHub` variadic options, `datastartest.RequireScriptTagVersion`
+    / `RequireETagForBundle`, `broadcast/storecontract`, embedded client
+    DataStar JS 1.0.3 → **1.0.4**, and go-sse bumped to v0.7.0.
 - **Breaking change in v0.7.0:** `ScriptHandlerWith(bundle, version)` drops the
   dead second parameter. The consumer never calls it (it hand-rolls — row 4), so
-  the migration is a no-op here; adopting the library handler *after* the bump
+  the migration is a no-op here; adopting the library handler _after_ the bump
   uses the new one-arg signature directly.
 - **static v0.6.1 → v0.8.0:** additive only — named version constants
   (`Version1_0_4`, …) + `VersionIsValid` (`f909928`). The 1.0.3 → 1.0.4 client
@@ -263,11 +263,11 @@ would be a nice-to-have, not a gap worth a PR now.
 **Expand.** 26 consumers per STACK.md; this repo proves the core patch model but
 leaves the lifecycle layer (script serving, replay store, broadcast) as local
 plumbing — the precise anti-pattern the fleet constraint names. Three of the
-gaps have *upstream* components that would pay fleet-wide dividends: a
+gaps have _upstream_ components that would pay fleet-wide dividends: a
 `WithDeterministic` signals option, a versioned self-host `SDKScript` in
 templ-components (or `ScriptTagVersioned` adoption pattern), and ideally moving
 the generic ring `EventStore` into go-sse where it belongs. Conversely, the
-`broadcast/` non-adoption is a *justified* leave — the per-subscriber projection
+`broadcast/` non-adoption is a _justified_ leave — the per-subscriber projection
 over a typed Hub is better architecture for snapshot-first dashboards, and
 writing that decision down prevents future litigating. **Adopt** rows 4-6,
 **leave** row 7, **upstream** rows 3 and 5.
@@ -322,3 +322,11 @@ cd /home/lars/projects/go-datastar/broadcast && GOWORK=off go doc -all . | grep 
 ```
 
 All file:line citations spot-checked against the working tree on 2026-11-19.
+
+## Citation drift addendum (2026-11-19 post-audit wave)
+
+`events.go:324-327` shifted to `events.go:267-270` (ringStore deletion +
+Handler extraction). `dashboard.go:240-243` was born stale (the file
+never exceeded 242 lines); the rows-selector option tail it gestures at
+lives at `dashboard.go:219-236` (see `.citations-baseline`; verified by
+`scripts/check-citations.sh`).

@@ -1,13 +1,13 @@
 # go-retry
 
-| Field            | Value                                                                                                                                                                                                                                                               |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Reviewed         | 2026-11-19                                                                                                                                                                                                                                                           |
-| Group            | C (library-utilization audit, HTTP/wire-protocol family)                                                                                                                                                                                                             |
-| Consumer modules | core — **absent**; hub — **absent** (not in either `go.mod`, direct or indirect)                                                                                                                                                                                      |
-| Library version  | repo tag `v0.9.0`; last commit `356fbd4 2026-11-14 "chore: auto-commit 2 changed file(s) (heuristic)"`                                                                                                                                                                |
-| Recent tags      | `v0.9.0`, `v0.8.0`, `v0.7.1`, `v0.7.0`, `v0.6.1` (newest first)                                                                                                                                                                                                      |
-| Modules          | root `github.com/larsartmann/go-retry` (the library; only runtime dep go-error-family); `tools/` is a dev-tools module (actionlint/govulncheck pins), not a library surface — effectively a single-module library for consumers. Go 1.26+ floor (README).            |
+| Field            | Value                                                                                                                                                                                                                                                     |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reviewed         | 2026-11-19                                                                                                                                                                                                                                                |
+| Group            | C (library-utilization audit, HTTP/wire-protocol family)                                                                                                                                                                                                  |
+| Consumer modules | core — **absent**; hub — **absent** (not in either `go.mod`, direct or indirect)                                                                                                                                                                          |
+| Library version  | repo tag `v0.9.0`; last commit `356fbd4 2026-11-14 "chore: auto-commit 2 changed file(s) (heuristic)"`                                                                                                                                                    |
+| Recent tags      | `v0.9.0`, `v0.8.0`, `v0.7.1`, `v0.7.0`, `v0.6.1` (newest first)                                                                                                                                                                                           |
+| Modules          | root `github.com/larsartmann/go-retry` (the library; only runtime dep go-error-family); `tools/` is a dev-tools module (actionlint/govulncheck pins), not a library surface — effectively a single-module library for consumers. Go 1.26+ floor (README). |
 
 ## The consumer's hand-rolled retry/backoff landscape (verified)
 
@@ -22,13 +22,13 @@
 4. **30 s query timeout** (refresher.go:29) — timeout, not retry; a failed
    refresh is logged and retried on the next trigger/safety-net tick
    (refresher.go:207-209).
-5. **SQLite busy-retry** — owned *inside* go-sqlitestore (STACK.md ★ row:
+5. **SQLite busy-retry** — owned _inside_ go-sqlitestore (STACK.md ★ row:
    "DSN+PRAGMAs, WAL, busy-retry"), i.e. already delegated to the right layer.
 
 ## Does go-retry match the watch-reconnect need? No — contract mismatch
 
 go-retry is a **bounded** retry loop: `Config.MaxAttempts` (default 3,
-*including* the first call), exponential backoff `Initial×Mult^(n-1)` capped at
+_including_ the first call), exponential backoff `Initial×Mult^(n-1)` capped at
 `MaxDelay`, additive jitter, `IsRetryable` predicate (defaults to
 `errorfamily.IsRetryable`), `DelayFunc` (e.g. honor `Retry-After`),
 `OnRetry`/`OnExhausted` hooks, ctx-aware with classified terminal errors
@@ -40,7 +40,7 @@ There is no attempt budget, nothing to exhaust, no escalation desired:
 - **Fixed 30 s is a design property, not a simplification.** The daemon is
   either up or down for minutes; exponential backoff (100 ms → 5 s cap) would
   hammer the socket early for no benefit, and unbounded growth would hide a
-  dead daemon *slower* than the flat 30 s. Visibility of a dead daemon is
+  dead daemon _slower_ than the flat 30 s. Visibility of a dead daemon is
   owned by the non-critical `discovery` health check with a 10-min warn
   threshold (refresher.go:36-41, health.go) — retry escalation would be
   redundant signal.
@@ -49,7 +49,7 @@ There is no attempt budget, nothing to exhaust, no escalation desired:
 - **Wrapping `retry.Do` inside the for-loop adds nothing**: the loop body
   already is "attempt once, sleep ctx-aware, log" — the library's value (backoff
   computation, exhaustion semantics) sits precisely on the axis this loop
-  deliberately flattened. Embarassingly, the *closest* fit is one-shot
+  deliberately flattened. Embarassingly, the _closest_ fit is one-shot
   `Discover()` (client.go:101-141, 60 s timeout): but a failed snapshot is
   warned and naturally retried 30 s later by the reconnect cycle
   (refresher.go:240-244) — a bounded retry there would just front-load
@@ -68,7 +68,7 @@ directions: importing a retry library into a service whose loops are
 deliberately non-retry-shaped is the "adopting a poor fit also costs fleet
 maintenance" side of the owner's constraint.
 
-**Flip trigger:** the hub grows an outbound *one-shot* call to a genuinely
+**Flip trigger:** the hub grows an outbound _one-shot_ call to a genuinely
 flaky endpoint where transient errors and server-provided delays exist —
 e.g. an HTTP evidence push, a federation-peer fetch, a webhook delivery, or
 the discovery daemon ever moving off the local socket to a network address.
@@ -82,17 +82,17 @@ first such call site = adopt; the watch loop still stays hand-rolled.
 
 Bands: 85-100 excellent · 70-84 good · 50-69 fair · <50 poor.
 
-| Capability                              | Status                    | Library evidence (path)               | Consumer evidence (path:line)                                                                                          |
-| --------------------------------------- | ------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Bounded retry with exponential backoff  | N/A (no bounded-retry site) | `retry.go` (`Do`, `Backoff`)        | no call site wants a budget: refresh failures retry on next trigger (refresher.go:207-209); discover retries via reconnect cycle (:240-244) |
-| Jitter (thundering-herd dampening)      | N/A                       | `JitterAdditive` (`options.go`)       | single consumer over a unix socket (client.go:86-90) — no herd                                                          |
-| Retryable-error classification          | Covered elsewhere — 1     | `IsRetryable` = `errorfamily.IsRetryable` | consumer already classifies with go-error-family families (`NewIOError/NewInternalError/NewParseError`, client.go:107,113,120,125,133,137) |
-| Server-provided delay (`Retry-After`)   | N/A                       | `DelayFunc` (README "Server-provided delays") | no outbound endpoint emits Retry-After (daemon is local socket; client.go:124-127 treats non-200 as terminal)      |
-| Ctx-aware cancellation during backoff   | Covered elsewhere — 1     | `ErrCanceled`/`ErrDeadlineExceeded`   | `sleepCtx` returns false on ctx cancel; every loop exits on it (refresher.go:220-222,229-231,253-255,275-285)           |
-| Infinite supervision/reconnect          | N/A (wrong tool)          | — (no forever-mode in the API)        | the actual need: hand-rolled loop, fixed interval, health-check visibility (refresher.go:218-257)                        |
-| Value-returning retry (`DoWithValue`)   | N/A                       | `retry.go` (`DoWithValue`)            | no value-returning flaky call exists                                                                                    |
-| Nested-loop fail-closed semantics       | N/A                       | README "Exhaustion and nesting"       | no nested retry exists                                                                                                   |
-| SQLite busy-retry                       | Covered elsewhere — 1     | — (not go-retry's surface)            | owned inside go-sqlitestore (STACK.md Evidence store row; cache.go uses `ExecWrite`/`queryRows`, cache.go:118-124,359)   |
+| Capability                             | Status                      | Library evidence (path)                       | Consumer evidence (path:line)                                                                                                               |
+| -------------------------------------- | --------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bounded retry with exponential backoff | N/A (no bounded-retry site) | `retry.go` (`Do`, `Backoff`)                  | no call site wants a budget: refresh failures retry on next trigger (refresher.go:207-209); discover retries via reconnect cycle (:240-244) |
+| Jitter (thundering-herd dampening)     | N/A                         | `JitterAdditive` (`options.go`)               | single consumer over a unix socket (client.go:86-90) — no herd                                                                              |
+| Retryable-error classification         | Covered elsewhere — 1       | `IsRetryable` = `errorfamily.IsRetryable`     | consumer already classifies with go-error-family families (`NewIOError/NewInternalError/NewParseError`, client.go:107,113,120,125,133,137)  |
+| Server-provided delay (`Retry-After`)  | N/A                         | `DelayFunc` (README "Server-provided delays") | no outbound endpoint emits Retry-After (daemon is local socket; client.go:124-127 treats non-200 as terminal)                               |
+| Ctx-aware cancellation during backoff  | Covered elsewhere — 1       | `ErrCanceled`/`ErrDeadlineExceeded`           | `sleepCtx` returns false on ctx cancel; every loop exits on it (refresher.go:220-222,229-231,253-255,275-285)                               |
+| Infinite supervision/reconnect         | N/A (wrong tool)            | — (no forever-mode in the API)                | the actual need: hand-rolled loop, fixed interval, health-check visibility (refresher.go:218-257)                                           |
+| Value-returning retry (`DoWithValue`)  | N/A                         | `retry.go` (`DoWithValue`)                    | no value-returning flaky call exists                                                                                                        |
+| Nested-loop fail-closed semantics      | N/A                         | README "Exhaustion and nesting"               | no nested retry exists                                                                                                                      |
+| SQLite busy-retry                      | Covered elsewhere — 1       | — (not go-retry's surface)                    | owned inside go-sqlitestore (STACK.md Evidence store row; cache.go uses `ExecWrite`/`queryRows`, cache.go:118-124,359)                      |
 
 Inputs: N=9, A=3 (the three "Covered elsewhere" rows; the other six are N/A
 with one-line reasons — no bounded-retry call site exists), Σ=3.0 →
@@ -133,10 +133,11 @@ exactly as is — fixed 30 s, health-check visibility, no attempt budget.
 
 Not pinned. Library very healthy: v0.9.0 (2026-11-14), near-weekly tags
 through v0.4.0→v0.9.0, 100% local coverage with a 95% CI floor, nightly fuzz
-+ race stress workflows (README "Development"). No currency risk while
-absent; when the trigger fires, adopt at latest — the API surface
-(`Do`/`DoWithValue`/`Config`/options) has been additive across the visible
-tag range.
+
+- race stress workflows (README "Development"). No currency risk while
+  absent; when the trigger fires, adopt at latest — the API surface
+  (`Do`/`DoWithValue`/`Config`/options) has been additive across the visible
+  tag range.
 
 ## Fleet leverage
 

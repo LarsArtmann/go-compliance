@@ -21,10 +21,26 @@
 # Usage:  scripts/check-citations.sh [report.md ...]   (default: all reports)
 # Output: TSV lines  <status>\t<doc>\t<citation>\t<detail>
 # Exit:   0 = no stale citations, 1 = stale found, 2 = usage error.
+#
+# Accepted drift: docs/review/libs/.citations-baseline lists citations whose
+# in-range drift is adjudicated (file splits moved the code, or the basename
+# is shadowed by an unrelated in-repo file). Entries: <doc>\t<citation>\t<note>.
+# Baselined citations print ACCEPTED and never fail — the ratchet only
+# litigates NEW drift, like the art-dupl baseline in this repo.
 set -euo pipefail
 
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
+
+baseline_file="docs/review/libs/.citations-baseline"
+declare -A ACCEPTED
+if [ -f "$baseline_file" ]; then
+  while IFS=$'\t' read -r bdoc bcite _; do
+    [ -z "${bdoc:-}" ] && continue
+    case "$bdoc" in \#*) continue ;; esac
+    ACCEPTED["$bdoc|$bcite"]=1
+  done <"$baseline_file"
+fi
 
 if [ $# -gt 0 ]; then
   targets=("$@")
@@ -44,6 +60,7 @@ stale=0
 checked=0
 external=0
 ok=0
+accepted=0
 
 check_one() { # $1=doc $2=citation
   local doc="$1" cite="$2" file part start end
@@ -64,6 +81,12 @@ check_one() { # $1=doc $2=citation
   if [ ${#candidates[@]} -eq 0 ]; then
     printf 'EXTERNAL\t%s\t%s\tno in-repo file; presumed library-side cite\n' "$doc" "$cite"
     external=$((external + 1))
+    return
+  fi
+
+  if [ -n "${ACCEPTED[$doc|$cite]:-}" ]; then
+    printf 'ACCEPTED\t%s\t%s\tbaseline entry (adjudicated drift)\n' "$doc" "$cite"
+    accepted=$((accepted + 1))
     return
   fi
 
@@ -93,5 +116,5 @@ for doc in "${targets[@]}"; do
 done
 
 echo "--"
-echo "checked=$checked ok=$ok stale=$stale external(presumed lib-side)=$external"
+echo "checked=$checked ok=$ok stale=$stale accepted=$accepted external(presumed lib-side)=$external"
 [ "$stale" -eq 0 ]

@@ -1,13 +1,13 @@
 # go-output
 
-| Field                | Value                                                                                              |
-| -------------------- | -------------------------------------------------------------------------------------------------- |
-| Reviewed             | 2026-11-19                                                                                         |
-| Group                | B (realtime-dashboard stack)                                                                       |
-| Consumer module      | `hub` (`github.com/larsartmann/go-compliance/hub`) — core module does not depend on go-output       |
-| Pins                 | `github.com/larsartmann/go-output v0.38.7` (direct) + `go-output/table v0.38.7` (direct). 11 further sub-modules resolved at v0.38.7 as **indirect** via `cmdguard/v5` → `samber-do-auditlog` (tree, markdown, delimited, markup, escape, d2, daghtml, graph, plantuml, serialization, testhelpers). |
-| Library version      | root line newest `v0.38.7` (`git -C /home/lars/projects/go-output tag \| grep '^v' \| sort -V \| tail -1`); repo-wide newest tag `bdd/v0.38.7` (`git describe --tags --abbrev=0`); HEAD `90fb2a6 2026-11-17 fix(nix): update vendor hash...`; tags newest-first: `bdd/v0.38.7`, `d2/v0.38.7`, `daghtml/v0.38.7`, `delimited/v0.38.7`, `escape/v0.38.7` |
-| Pin current?         | **Yes** — v0.38.7 is the newest root-line tag (the 19-module v0.38.7 family was cut together; HEAD commits since are release/nix/lint chores with no API delta). |
+| Field           | Value                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Reviewed        | 2026-11-19                                                                                                                                                                                                                                                                                                                                             |
+| Group           | B (realtime-dashboard stack)                                                                                                                                                                                                                                                                                                                           |
+| Consumer module | `hub` (`github.com/larsartmann/go-compliance/hub`) — core module does not depend on go-output                                                                                                                                                                                                                                                          |
+| Pins            | `github.com/larsartmann/go-output v0.38.7` (direct) + `go-output/table v0.38.7` (direct). 11 further sub-modules resolved at v0.38.7 as **indirect** via `cmdguard/v5` → `samber-do-auditlog` (tree, markdown, delimited, markup, escape, d2, daghtml, graph, plantuml, serialization, testhelpers).                                                   |
+| Library version | root line newest `v0.38.7` (`git -C /home/lars/projects/go-output tag \| grep '^v' \| sort -V \| tail -1`); repo-wide newest tag `bdd/v0.38.7` (`git describe --tags --abbrev=0`); HEAD `90fb2a6 2026-11-17 fix(nix): update vendor hash...`; tags newest-first: `bdd/v0.38.7`, `d2/v0.38.7`, `daghtml/v0.38.7`, `delimited/v0.38.7`, `escape/v0.38.7` |
+| Pin current?    | **Yes** — v0.38.7 is the newest root-line tag (the 19-module v0.38.7 family was cut together; HEAD commits since are release/nix/lint chores with no API delta).                                                                                                                                                                                       |
 
 ## Verdict: UNDERUSED-moderate
 
@@ -24,7 +24,7 @@ unused. The `report` command correctly does NOT use go-output's serialization
 (the frozen v1 contract is stdlib `encoding/json/v2` by explicit policy —
 STACK.md "JSON" row: "all third-party JSON libs banned" — and go-output's
 `serialization` module is go-faster/jx-based, i.e. exactly the banned class;
-leaving it unused is *compliance*, not underuse). The moderate verdict rests on
+leaving it unused is _compliance_, not underuse). The moderate verdict rests on
 one axis: the fleet's terminal-output standard is 2 modules deep in this repo
 while 13 more sit in the module graph already paid for.
 
@@ -39,22 +39,22 @@ UNDERUSED-slight; adopt the footer totals row → ADOPTED-adjacent.
 
 ## Capability inventory
 
-| # | Capability | Status | Library evidence (path) | Consumer evidence (path:line) |
-|---|---|---|---|---|
-| 1 | Terminal table rendering (`table.New`/`SetHeaders`/`AddRow`/`Render`) | Fully | `table/` (`Table` type, `Render`) | `hub/internal/cli/table.go:52-54,69-74,77-82` |
-| 2 | ANSI display-width alignment (lipgloss-backed renderer — gotcha #298) | Fully | `table/` renderer internals; FEATURES.md "Rendering Infrastructure" | `table.go:25-30` (comment names the lesson); regression-tested in `table_test.go` / `table_internal_test.go` |
-| 3 | ColorMode plumbing (`ColorModeAuto/Never/Always`, single authority) | Fully | `go-output/color.go`; `table.WithColorMode` | `colors.go:9,32-48` (mode decided once, shared by cells + chrome via `colorMode()` at `colors.go:67-73`) |
-| 4 | Color/env detection helpers (`IsNoColor`, `IsCI`) | Partial | `go-output/envdetect.go:20,32` | `colors.go:33` hand-checks `os.Getenv("NO_COLOR")`; TTY detection hand-rolled via `colorprofile.Detect` (`colors.go:44`) instead of the library's envdetect |
-| 5 | Per-cell style functions (`StyleFunc`, `WithFooterStyle`) | Partial | `table/table.go` (`StyleFunc(fn func(row, col int) lipgloss.Style)`) | cells are pre-colored *strings* via `colorService` (`table.go:67-74`, `colors.go:54-58`) — works, but couples styling into data cells instead of the render layer |
-| 6 | Footer/totals row (`SetFooter`/`Table.Footer`) | Missed | `table/` (`SetFooter` — bold-styled totals; root `Table.Footer` doc: rendered by tabular formats) | `table.go:52-75` builds no footer — FINDINGS/RUNS/FAILS column totals are a one-call add |
-| 7 | Multi-format rendering (`output.RenderTable`, 16 `Format` values incl. csv/tsv/markdown/html/yaml) | Missed | `go-output/format.go:7-26` (16 formats); `RenderTable` doc "supports all registered formats when respective sub-modules are imported" | no `--format` flag exists (`flags.go` — QueryFlags only); `report.go:14-31` emits frozen v1 JSON via `compliance.MarshalV1` (stdlib — correct, separate concern) |
-| 8 | `TableProvider`/`FromTable` struct-driven tables | N/A | `table/` (`FromTable`, `FooterProvider`) | the CLI assembles rows from `BuildV1Report` output in one loop; variadic `AddRow` fits |
-| 9 | Streaming writers (`WriteRendered*`, `streaming.go`) | N/A | `go-output/streaming.go`, `write_rendered.go` | one-shot renders to stdout; no streaming needs |
-| 10 | Cell width caps/truncation | N/A | not offered by `table/` (no max-width option in its API) | `table.go:143-152` hand-rolls `truncateCell` (24-rune cap + ellipsis) — justified, the library has no equivalent |
-| 11 | `markdown/` module (docs generation) | N/A (revisit) | `markdown/` | nothing generates docs today; revisit for README fleet-status snapshots or refresh-report attachments |
-| 12 | `tree/` module (hierarchical output) | N/A | `tree/` | no hierarchy in the fleet view (worst-steps lists live inside table cells) |
-| 13 | Graph family (`graph/`, `d2/`, `plantuml/`, `daghtml/`, `delimited/`) | N/A | `go-output/graph.go`, `d2/`, … | no graph/diagram surface; `delimited` is subsumed by row 7's `FormatCSV/TSV` |
-| 14 | `serialization/` module | N/A — banned here by policy | `serialization/` (go-faster/jx-based) | STACK.md JSON policy: stdlib `encoding/json/v2` only, third-party JSON banned; the frozen v1 wire contract (`v1.go`, `MarshalV1`) correctly stays stdlib — this row is a policy alignment, not a gap |
+| #  | Capability                                                                                         | Status                      | Library evidence (path)                                                                                                               | Consumer evidence (path:line)                                                                                                                                                                        |
+| -- | -------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | Terminal table rendering (`table.New`/`SetHeaders`/`AddRow`/`Render`)                              | Fully                       | `table/` (`Table` type, `Render`)                                                                                                     | `hub/internal/cli/table.go:52-54,69-74,77-82`                                                                                                                                                        |
+| 2  | ANSI display-width alignment (lipgloss-backed renderer — gotcha #298)                              | Fully                       | `table/` renderer internals; FEATURES.md "Rendering Infrastructure"                                                                   | `table.go:25-30` (comment names the lesson); regression-tested in `table_test.go` / `table_internal_test.go`                                                                                         |
+| 3  | ColorMode plumbing (`ColorModeAuto/Never/Always`, single authority)                                | Fully                       | `go-output/color.go`; `table.WithColorMode`                                                                                           | `colors.go:9,32-48` (mode decided once, shared by cells + chrome via `colorMode()` at `colors.go:67-73`)                                                                                             |
+| 4  | Color/env detection helpers (`IsNoColor`, `IsCI`)                                                  | Partial                     | `go-output/envdetect.go:20,32`                                                                                                        | `colors.go:33` hand-checks `os.Getenv("NO_COLOR")`; TTY detection hand-rolled via `colorprofile.Detect` (`colors.go:44`) instead of the library's envdetect                                          |
+| 5  | Per-cell style functions (`StyleFunc`, `WithFooterStyle`)                                          | Partial                     | `table/table.go` (`StyleFunc(fn func(row, col int) lipgloss.Style)`)                                                                  | cells are pre-colored _strings_ via `colorService` (`table.go:67-74`, `colors.go:54-58`) — works, but couples styling into data cells instead of the render layer                                    |
+| 6  | Footer/totals row (`SetFooter`/`Table.Footer`)                                                     | Missed                      | `table/` (`SetFooter` — bold-styled totals; root `Table.Footer` doc: rendered by tabular formats)                                     | `table.go:52-75` builds no footer — FINDINGS/RUNS/FAILS column totals are a one-call add                                                                                                             |
+| 7  | Multi-format rendering (`output.RenderTable`, 16 `Format` values incl. csv/tsv/markdown/html/yaml) | Missed                      | `go-output/format.go:7-26` (16 formats); `RenderTable` doc "supports all registered formats when respective sub-modules are imported" | no `--format` flag exists (`flags.go` — QueryFlags only); `report.go:14-31` emits frozen v1 JSON via `compliance.MarshalV1` (stdlib — correct, separate concern)                                     |
+| 8  | `TableProvider`/`FromTable` struct-driven tables                                                   | N/A                         | `table/` (`FromTable`, `FooterProvider`)                                                                                              | the CLI assembles rows from `BuildV1Report` output in one loop; variadic `AddRow` fits                                                                                                               |
+| 9  | Streaming writers (`WriteRendered*`, `streaming.go`)                                               | N/A                         | `go-output/streaming.go`, `write_rendered.go`                                                                                         | one-shot renders to stdout; no streaming needs                                                                                                                                                       |
+| 10 | Cell width caps/truncation                                                                         | N/A                         | not offered by `table/` (no max-width option in its API)                                                                              | `table.go:143-152` hand-rolls `truncateCell` (24-rune cap + ellipsis) — justified, the library has no equivalent                                                                                     |
+| 11 | `markdown/` module (docs generation)                                                               | N/A (revisit)               | `markdown/`                                                                                                                           | nothing generates docs today; revisit for README fleet-status snapshots or refresh-report attachments                                                                                                |
+| 12 | `tree/` module (hierarchical output)                                                               | N/A                         | `tree/`                                                                                                                               | no hierarchy in the fleet view (worst-steps lists live inside table cells)                                                                                                                           |
+| 13 | Graph family (`graph/`, `d2/`, `plantuml/`, `daghtml/`, `delimited/`)                              | N/A                         | `go-output/graph.go`, `d2/`, …                                                                                                        | no graph/diagram surface; `delimited` is subsumed by row 7's `FormatCSV/TSV`                                                                                                                         |
+| 14 | `serialization/` module                                                                            | N/A — banned here by policy | `serialization/` (go-faster/jx-based)                                                                                                 | STACK.md JSON policy: stdlib `encoding/json/v2` only, third-party JSON banned; the frozen v1 wire contract (`v1.go`, `MarshalV1`) correctly stays stdlib — this row is a policy alignment, not a gap |
 
 ## Gap analysis
 
@@ -71,14 +71,14 @@ samber-do-auditlog — promoting them to direct costs zero new dependency weight
 
 **Consumer does:** `table.go:31-86` renders the ANSI table only; `flags.go`
 defines no format flag; the `report` command covers JSON via the frozen contract
-(`report.go:23-25`) — which is right and must stay stdlib, but it is the *wire*
-concern, not the *human* one. There is no way to get the fleet view as CSV (for
+(`report.go:23-25`) — which is right and must stay stdlib, but it is the _wire_
+concern, not the _human_ one. There is no way to get the fleet view as CSV (for
 spreadsheets), Markdown (for status posts/notes), or HTML (for a static
 drop-in-page) from the tool that already computed it.
 
 **Impact:** moderate. BuildFlow's `compliance` heritage (flag compatibility is
 explicit — `flags.go:12-13` "matching BuildFlow compliance muscle memory") argues
-for a *new* flag, not a changed one: `--format` with default `table` changes no
+for a _new_ flag, not a changed one: `--format` with default `table` changes no
 existing invocation. Fleet-level: this is the single cheapest utilization win in
 this audit — the data loop (`table.go:65-75`) already produces every cell.
 
@@ -135,7 +135,7 @@ plus the accumulators.
 
 **Consumer does:** `colors.go:33` checks `os.Getenv("NO_COLOR")` directly,
 and detects TTY via `colorprofile.Detect(os.Stdout, os.Environ())`
-(`colors.go:44`). The colorprofile route is *more* capable than the
+(`colors.go:44`). The colorprofile route is _more_ capable than the
 library's (it handles termcap profiles, not just on/off), so this is a
 half-duplicate: NO_COLOR should defer to `output.IsNoColor()` (one call, fleet
 semantics kept in one place), while the colorprofile detection is a justified
@@ -146,7 +146,7 @@ local refinement. Low stakes either way.
 **Library offers:** `StyleFunc(fn func(row, col int) lipgloss.Style)` — style at
 render time, keyed by coordinates.
 
-**Consumer does:** pre-colors cell *values* (`stateLabel`, `severityCells` —
+**Consumer does:** pre-colors cell _values_ (`stateLabel`, `severityCells` —
 `table.go:90-131`) and relies on the width-aware renderer to measure ANSI
 correctly. This works (that's the whole gotcha-#298 point) and keeps the domain
 → string mapping simple, but it means the same table rendered via
@@ -185,7 +185,7 @@ via row 7 (which subsumes it) rather than as a separate adoption.
 
 1. **`--format` flag on `table` via `output.RenderTable`** (row 7) — high
    impact (16 formats, fleet convention, zero new deps), high ease (~25 lines
-   + one flag + tests).
+   - one flag + tests).
 2. **Totals footer via `SetFooter`** (row 6) — moderate impact (triage summary),
    trivial ease.
 3. **`output.IsNoColor()` instead of the direct env check** (row 4) — small

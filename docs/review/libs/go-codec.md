@@ -1,13 +1,13 @@
 # go-codec
 
-| Field            | Value                                                                                                                                                                                                                                                                                                                    |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Reviewed         | 2026-11-19                                                                                                                                                                                                                                                                                                                 |
-| Group            | C (library-utilization audit, HTTP/wire-protocol family)                                                                                                                                                                                                                                                                   |
-| Consumer modules | core — **absent**; hub — **INDIRECT**, pinned `github.com/larsartmann/go-codec v0.3.3 // indirect` (hub/go.mod). **Puller identified: `github.com/LarsArtmann/go-daemon v0.4.1-0.20261103232705-e8e1a1fff502`** — the hub's only private dep (sd_notify/unix-socket, `hub/internal/cli/bind.go:15`). Zero consumer code imports it. |
-| Library version  | repo tag `v0.3.3` (= the pinned version); last commit `98bb1bc 2026-11-15 "chore: auto-commit 1 changed file(s) (heuristic)"`                                                                                                                                                                                              |
-| Recent tags      | `v0.3.3`, `v0.3.2`, `v0.3.1`, `v0.3.0`, `v0.2.0`, `v0.1.0` (single module, no sub-modules)                                                                                                                                                                                                                                  |
-| Library identity | **Not a JSON-helper library.** It is a `Codec` interface abstraction (CBOR / JSON / Raw) for event-sourced payloads — the serialization contract at the center of a go-cqrs-lite stack (README architecture diagram: consumed by storage/pebble, event, signing, encryption). CBOR (via `fxamacker/cbor/v2`, which go-codec requires at v2.10.0) is the *recommended* codec; JSON is the interop codec. |
+| Field            | Value                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reviewed         | 2026-11-19                                                                                                                                                                                                                                                                                                                                                                                              |
+| Group            | C (library-utilization audit, HTTP/wire-protocol family)                                                                                                                                                                                                                                                                                                                                                |
+| Consumer modules | core — **absent**; hub — **INDIRECT**, pinned `github.com/larsartmann/go-codec v0.3.3 // indirect` (hub/go.mod). **Puller identified: `github.com/LarsArtmann/go-daemon v0.4.1-0.20261103232705-e8e1a1fff502`** — the hub's only private dep (sd_notify/unix-socket, `hub/internal/cli/bind.go:15`). Zero consumer code imports it.                                                                     |
+| Library version  | repo tag `v0.3.3` (= the pinned version); last commit `98bb1bc 2026-11-15 "chore: auto-commit 1 changed file(s) (heuristic)"`                                                                                                                                                                                                                                                                           |
+| Recent tags      | `v0.3.3`, `v0.3.2`, `v0.3.1`, `v0.3.0`, `v0.2.0`, `v0.1.0` (single module, no sub-modules)                                                                                                                                                                                                                                                                                                              |
+| Library identity | **Not a JSON-helper library.** It is a `Codec` interface abstraction (CBOR / JSON / Raw) for event-sourced payloads — the serialization contract at the center of a go-cqrs-lite stack (README architecture diagram: consumed by storage/pebble, event, signing, encryption). CBOR (via `fxamacker/cbor/v2`, which go-codec requires at v2.10.0) is the _recommended_ codec; JSON is the interop codec. |
 
 ## What go-codec actually IS (read from README + API)
 
@@ -25,7 +25,7 @@
   (`json_compat_v2.go:1 //go:build goexperiment.jsonv2`) only compiles under
   the `GOEXPERIMENT=jsonv2` build tag. So in a default build, adopting
   go-codec's JSON path would route the hub's JSON through a wrapper around
-  *v1* stdlib JSON — a regression against both policy and byte-compat, not a
+  _v1_ stdlib JSON — a regression against both policy and byte-compat, not a
   neutral choice.
 
 ## The policy engagement (STACK.md: "JSON: encoding/json/v2 (stdlib), GA in Go 1.27; all third-party JSON libs banned")
@@ -34,7 +34,7 @@ Non-adoption in core's frozen v1 contract is **policy-correct, plainly**:
 core's `MarshalV1` calls `encoding/json/v2` directly (`v1.go:5`) and its
 byte-exactness is pinned by a golden fixture with 341 real repos
 (`testdata/buildflow-v1-fixture.json`, `v1_golden_test.go`) plus
-structure-order comments that exist *because* the wire bytes are load-bearing
+structure-order comments that exist _because_ the wire bytes are load-bearing
 (`v1.go:29` struct-declaration-order under json/v2; `v1.go:70` map-key
 sorting). Any `Codec`-shaped indirection in that path adds a translation
 layer between the golden fixture and the stdlib behavior it pins, for zero
@@ -44,7 +44,7 @@ capability gain — the hub's other JSON surfaces (SSE event payloads
 `hub/internal/cache/cache.go:11`) are likewise direct `encoding/json/v2`.
 
 Strictly, go-codec is first-party (larsartmann), so the "third-party JSON
-libs banned" line does not name it; but the policy's *mechanism* — JSON goes
+libs banned" line does not name it; but the policy's _mechanism_ — JSON goes
 through stdlib so behavior is exactly what the toolchain documents — applies
 with full force, and go-codec's default-v1 JSON path fails even the letter of
 the intent. Verdict on direct adoption for JSON: banned-equivalent, correctly
@@ -76,8 +76,8 @@ go-compliance's problem only if: (a) go-codec (or cbor) grows a CVE — then the
 fix is a `go get github.com/larsartmann/go-codec@<fixed>` bump, same as any
 transitive; (b) the binary-size/attack-surface cost of carrying cbor+float16
 into a hub binary ever matters (it does not: pure-Go, small); or (c)
-STACK.md's policy were interpreted to ban non-stdlib JSON *anywhere in the
-build graph* — it is not; the policy governs *this repo's chosen JSON path*,
+STACK.md's policy were interpreted to ban non-stdlib JSON _anywhere in the
+build graph_ — it is not; the policy governs _this repo's chosen JSON path_,
 and go-daemon's internal payload encoding is go-daemon's policy domain (the
 same reasoning by which the hub already accepts go-daemon's other transitive
 deps, e.g. cmdguard → samber/do, recorded as "transitive only" in AGENTS.md).
@@ -101,7 +101,7 @@ go-compliance's wire contract; the hub's wire surfaces never pass through it.
 
 ## Verdict — **NOT-ADOPTED-justified** (core: policy-correct absence; hub: no capability fit; indirect pin: benign, owned by go-daemon)
 
-**Flip triggers:** (a) core ever grows a *second* wire encoding deliberately
+**Flip triggers:** (a) core ever grows a _second_ wire encoding deliberately
 (e.g. a CBOR sidecar for the SSE patch stream to cut browser payload) — the
 STACK.md policy row would need a decision-log update first, and go-codec's
 CBOR would be the candidate; (b) go-compliance adopts direct ownership of a
@@ -112,16 +112,16 @@ drops go-codec — the indirect pin disappears with it, no action needed here.
 
 Bands: 85-100 excellent · 70-84 good · 50-69 fair · <50 poor.
 
-| Capability                            | Status                   | Library evidence (path)                        | Consumer evidence (path:line)                                                                                        |
-| ------------------------------------- | ------------------------ | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| JSON encode/decode                    | Covered elsewhere — 1    | `json.go` (`JSONCodec`)                        | direct `encoding/json/v2` at every JSON site: `v1.go:5`, `events/events.go:5`, `discovery/client.go:11`, `cache/cache.go:11` |
-| Byte-stable wire marshaling           | Covered elsewhere — 1    | deterministic codecs, golden tests             | golden fixture byte-exactness pinned natively (`v1_golden_test.go`, `testdata/buildflow-v1-fixture.json`, 341 repos)  |
-| CBOR payloads                         | N/A                      | `cbor.go` (`CBORCodec`, recommended)           | no CBOR surface exists in the consumer; SQLite cache uses JSON TEXT (`cache/cache.go:324-338`)                         |
-| Compact/schema-drift-rejecting decode | N/A                      | `cbor_compact.go`                              | all inbound shapes are frozen contracts with explicit decoders (`DecodeV1Report`, discovery wire structs)             |
-| Zero-alloc / pooled encoding          | N/A                      | `pool.go`, `BufferEncoder`, `streaming.go`     | hot paths are SSE event sends (already go-sse) and a 5-min-cadence derive — no alloc-bound encode path                |
-| Observable codec (hooks/metrics)      | N/A                      | `observability.go`                             | no codec telemetry need                                                                                                |
-| Transcode CBOR↔JSON                   | N/A                      | `transcode.go`                                 | no mixed-format data                                                                                                   |
-| Envelope / COSE / signing safety      | N/A                      | `envelope.go`, `cose.go`, `DeterministicCodec` | no payload signing in the consumer (localhost/socket posture, `docs/decisions/bind-posture.md`)                      |
+| Capability                            | Status                | Library evidence (path)                        | Consumer evidence (path:line)                                                                                                |
+| ------------------------------------- | --------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| JSON encode/decode                    | Covered elsewhere — 1 | `json.go` (`JSONCodec`)                        | direct `encoding/json/v2` at every JSON site: `v1.go:5`, `events/events.go:5`, `discovery/client.go:11`, `cache/cache.go:11` |
+| Byte-stable wire marshaling           | Covered elsewhere — 1 | deterministic codecs, golden tests             | golden fixture byte-exactness pinned natively (`v1_golden_test.go`, `testdata/buildflow-v1-fixture.json`, 341 repos)         |
+| CBOR payloads                         | N/A                   | `cbor.go` (`CBORCodec`, recommended)           | no CBOR surface exists in the consumer; SQLite cache uses JSON TEXT (`cache/cache.go:324-338`)                               |
+| Compact/schema-drift-rejecting decode | N/A                   | `cbor_compact.go`                              | all inbound shapes are frozen contracts with explicit decoders (`DecodeV1Report`, discovery wire structs)                    |
+| Zero-alloc / pooled encoding          | N/A                   | `pool.go`, `BufferEncoder`, `streaming.go`     | hot paths are SSE event sends (already go-sse) and a 5-min-cadence derive — no alloc-bound encode path                       |
+| Observable codec (hooks/metrics)      | N/A                   | `observability.go`                             | no codec telemetry need                                                                                                      |
+| Transcode CBOR↔JSON                   | N/A                   | `transcode.go`                                 | no mixed-format data                                                                                                         |
+| Envelope / COSE / signing safety      | N/A                   | `envelope.go`, `cose.go`, `DeterministicCodec` | no payload signing in the consumer (localhost/socket posture, `docs/decisions/bind-posture.md`)                              |
 
 Inputs: N=8, A=2 (both "Covered elsewhere", Σ=2.0) → **score = round(100×2.0/2)
 = 100 (excellent)** counterfactual: the only capabilities in go-codec's domain
@@ -153,11 +153,11 @@ only when go-daemon moves — nothing for this repo to track.
 
 For: go-codec is the serialization contract for the cqrs-lite half of the
 fleet; services in that family get signing-safe determinism and pooled
-encoding from one place. Against: go-compliance is deliberately *not* in that
+encoding from one place. Against: go-compliance is deliberately _not_ in that
 family — its serialization story is "frozen stdlib JSON bytes, proven by a
 golden fixture", the opposite of an abstraction. Pulling the contract layer
 in would create a second place where wire behavior is defined. The fleet is
-best served here by *not* consolidating: the pin exists only as cargo on the
+best served here by _not_ consolidating: the pin exists only as cargo on the
 go-daemon truck, which is exactly right.
 
 ## Ranked opportunities (impact × ease)
@@ -165,7 +165,7 @@ go-daemon truck, which is exactly right.
 1. **Nothing now.** Optional: add one line to STACK.md's decision log noting
    "go-codec rides go-daemon (transitive; policy governs our direct JSON
    path)" if the indirect larsartmann pin ever trips the stack-drift-check —
-   as of this audit the check only covers *direct* requires, so no entry is
+   as of this audit the check only covers _direct_ requires, so no entry is
    required.
 
 ## How to verify (all commands executed 2026-11-19)
@@ -207,3 +207,9 @@ output; v1.go:5 / events.go:5 / client.go:11 / cache.go:11 imports read
 directly. The MVS-resolved cbor version (v2.10.0 vs go-codec's v2.9.6 floor)
 verified from `go mod graph` output showing go-daemon itself requires
 v2.10.0.
+
+## Citation drift addendum (2026-11-19 post-audit wave)
+
+`hub/internal/cache/cache.go:324-338` (marshalCounts) moved to
+`hub/internal/cache/queries.go:168-182` in the cache split (see
+`.citations-baseline`; verified by `scripts/check-citations.sh`).

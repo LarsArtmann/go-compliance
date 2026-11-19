@@ -1,0 +1,30 @@
+docs/review/libs/go-atomic-write.md	reporter.go:222-246	moved: filestore.go:111-135 (filestore split, 2026-11-19 wave)
+docs/review/libs/go-atomic-write.md	reporter.go:222-258	moved: filestore.go:111-137
+docs/review/libs/go-atomic-write.md	reporter.go:248	moved: filestore.go:137
+docs/review/libs/go-atomic-write.md	reporter.go:359-360	moved: filestore.go:149-150
+docs/review/libs/go-atomic-write.md	reporter.go:362	moved: filestore.go:152 (writeFileAtomic)
+docs/review/libs/go-atomic-write.md	reporter.go:362-386	moved: filestore.go:152-176
+docs/review/libs/go-atomic-write.md	reporter.go:365	moved: filestore.go:155
+docs/review/libs/go-atomic-write.md	reporter.go:380-383	moved: filestore.go:170-173
+docs/review/libs/go-atomic-write.md	reporter.go:385	moved: filestore.go:175 (os.Rename)
+docs/review/libs/go-atomic-write.md	reporter.go:395	moved: filestore.go:185 (acquireFileLock)
+docs/review/libs/go-atomic-write.md	reporter.go:395-411	moved: filestore.go:185-201
+docs/review/libs/go-atomic-write.md	reporter.go:398	moved: filestore.go:188
+docs/review/libs/go-atomic-write.md	reporter.go:400	moved: filestore.go:190
+docs/review/libs/go-codec.md	hub/internal/cache/cache.go:324-338	moved: queries.go:168-182 (cache split)
+docs/review/libs/go-cqrs-lite.md	cache.go:172-323	moved: queries.go:16-167 (cache split)
+docs/review/libs/go-credentials-store.md	reporter.go:351-353	moved: filestore.go:141-143
+docs/review/libs/go-credentials-store.md	reporter.go:353	moved: filestore.go:143
+docs/review/libs/go-datastar.md	dashboard.go:240-243	born-stale: file never exceeded 242 lines; rows-selector option tail now dashboard.go:219-236
+docs/review/libs/go-datastar.md	events.go:324-327	moved: events.go:267-270 (seq ID minting, post-handler-extraction shift)
+docs/review/libs/go-error-family.md	cache.go:299	moved: queries.go:33 region (queryRows scan loop)
+docs/review/libs/go-error-family.md	cache.go:299-310	moved: queries.go:33-44 region
+docs/review/libs/go-filewatcher.md	reporter.go:362-386	moved: filestore.go:152-176
+docs/review/libs/go-filewatcher.md	reporter.go:385	moved: filestore.go:175 (os.Rename)
+docs/review/libs/go-filewatcher.md	watcher.go:184-196	lib-side cite (validateDirExists); shadowed by the new hub/internal/cli/watcher.go
+docs/review/libs/go-filewatcher.md	watcher.go:369	lib-side cite (Watch(ctx)); shadowed by the new hub/internal/cli/watcher.go
+docs/review/libs/go-health-dashboard.md	routes.go:280	lib-side cite (RegisterRoutes); shadowed by hub routes.go
+docs/review/libs/go-idempotency.md	cache.go:216-219	moved: queries.go:60-63 (queryLatestRecords)
+docs/review/libs/go-sse.md	events.go:333	moved: events.go:276 region (store.Append, post-extraction shift)
+docs/review/libs/go-sse.md	events.go:334	moved: events.go:277 (NewEventID append)
+docs/review/libs/templ-components.md	chips.templ:19-46	shifted: chips block now chips.templ:19-44 after templ fmt normalization

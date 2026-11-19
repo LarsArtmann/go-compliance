@@ -1,13 +1,13 @@
 # templ-components
 
-| Field                | Value                                                                                              |
-| -------------------- | -------------------------------------------------------------------------------------------------- |
-| Reviewed             | 2026-11-19                                                                                         |
-| Group                | B (realtime-dashboard stack)                                                                       |
-| Consumer module      | `hub` (`github.com/larsartmann/go-compliance/hub`) — imports confined to `hub/internal/dashboard`   |
-| Pins                 | `templ-components v1.27.0` + `/datastar v1.27.0` + `/icons v1.27.0` + `/utils v1.27.0` (all direct); `/display` and `/layout` imported in `.templ` (compile-time deps of the root module, no separate require); `/htmx v1.27.0` indirect (unused) |
-| Library version      | main tag `v1.27.0` (`git -C /home/lars/projects/templ-components describe --tags --abbrev=0` reports `charts/echarts/v1.27.0`, newest tag overall; newest `vX` line tag is `v1.27.0`); HEAD `d5702fc1 2026-11-17 chore: auto-commit`; tags newest-first: `charts/echarts/v1.27.0`, `datastar/v1.27.0`, `errorpage/v1.27.0`, `htmx/v1.27.0`, `icons/v1.27.0` |
-| Pin current?         | **Yes** — v1.27.0 is the newest main-line tag. HEAD is ahead of the tag (auto-commits + a DataStar 1.0.4 SDK runtime bump via `static v0.8.0` in `15d836b8`), i.e. a future tag will move the DataStar runtime; nothing released beyond the pin today. |
+| Field           | Value                                                                                                                                                                                                                                                                                                                                                       |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reviewed        | 2026-11-19                                                                                                                                                                                                                                                                                                                                                  |
+| Group           | B (realtime-dashboard stack)                                                                                                                                                                                                                                                                                                                                |
+| Consumer module | `hub` (`github.com/larsartmann/go-compliance/hub`) — imports confined to `hub/internal/dashboard`                                                                                                                                                                                                                                                           |
+| Pins            | `templ-components v1.27.0` + `/datastar v1.27.0` + `/icons v1.27.0` + `/utils v1.27.0` (all direct); `/display` and `/layout` imported in `.templ` (compile-time deps of the root module, no separate require); `/htmx v1.27.0` indirect (unused)                                                                                                           |
+| Library version | main tag `v1.27.0` (`git -C /home/lars/projects/templ-components describe --tags --abbrev=0` reports `charts/echarts/v1.27.0`, newest tag overall; newest `vX` line tag is `v1.27.0`); HEAD `d5702fc1 2026-11-17 chore: auto-commit`; tags newest-first: `charts/echarts/v1.27.0`, `datastar/v1.27.0`, `errorpage/v1.27.0`, `htmx/v1.27.0`, `icons/v1.27.0` |
+| Pin current?    | **Yes** — v1.27.0 is the newest main-line tag. HEAD is ahead of the tag (auto-commits + a DataStar 1.0.4 SDK runtime bump via `static v0.8.0` in `15d836b8`), i.e. a future tag will move the DataStar runtime; nothing released beyond the pin today.                                                                                                      |
 
 Library contract read before auditing: `/home/lars/.config/crush/skills/templ-components/SKILL.md`
 (138 components / 11 packages, props structs embedding `utils.BaseProps`, typed enums
@@ -16,7 +16,7 @@ guard tests, compiled-CSS rule, dark-mode `gray-*` + `dark:` conventions).
 
 ## Verdict: UNDERUSED-slight
 
-What the dashboard uses, it uses *well and deeply*: `display.Table` with the
+What the dashboard uses, it uses _well and deeply_: `display.Table` with the
 `LazyRows`/`BodyID`/compact-padding props turned into a DataStar patch target
 (`view.templ:84-93`), `display.RelativeTime` in the sophisticated two-mode split the
 repo pinned a regression test for (page-level `AutoRefresh` carrier vs bare
@@ -46,33 +46,33 @@ wire `errorpage`, and ship compiled CSS → ADOPTED; score then lands high-80s.
 
 ## Capability inventory
 
-| # | Capability | Status | Library evidence (path, at v1.27.0) | Consumer evidence (path:line) |
-|---|---|---|---|---|
-| 1 | Page shell (`layout.Base`: meta, skip-link, a11y, ThemeScript) | Fully | `layout/base.templ:228,271-272` | `view.templ:18-23` |
-| 2 | Content layout (`layout.Container`) | Fully | `layout/container.templ` | `view.templ:24` |
-| 3 | `display.PageHeader` | Fully | `display/page_header.templ` | `view.templ:26-29` |
-| 4 | `display.Grid` + `display.StatCard` (tones + icon slots) | Fully | `display/grid.templ`, `stat_card.templ` | `statcards.templ:13-38` |
-| 5 | `display.Table` incl. `LazyRows`, `BodyID`, compact `CellPadding`, `Striped`/`Hover` | Fully | `display/table.templ:26,74-83,155-156` | `view.templ:84-93` (BodyID feeds `DefaultRowsSelector`) |
-| 6 | Table sorting / clickable rows (`Sortable`+`Href` headers, `Row.Href`) | Partial | `display/table.templ:26-28,99-111` | `view.templ:84-93` sets neither; sort order is the fixed worst-first triage invariant (`cli/table.go:56-58` mirrors it) |
-| 7 | `display.Badge` (typed `BadgeType` enums) | Fully | `display/badge.templ` | `rows.templ:60-75` (`StateBadge`) |
-| 8 | `display.RelativeTime` (+ AutoRefresh singleton pattern) | Fully | `display/relative_time.templ` | `view.templ:39-42` (carrier), `rows.templ:30-44` (bare-attribute rows), regression `view_test.go:53-79` |
-| 9 | `/datastar` components (`LiveRegion`, `SDKScript`) | Fully | `datastar/live_region.templ`, `sdk_script.templ` | `view.templ:45-56`, `view.templ:66-73` |
-| 10 | `icons` (102 icons) | Fully | `icons/icon_paths.go` | `statcards.templ:18,24,30,36` (Server, ExclamationTriangle, Clock, Search) |
-| 11 | `utils` (`BaseProps`, `Class`, `utils/format`) | Fully | `utils/` | `view.templ:46`, `statcards.templ` (BaseProps everywhere); `utils/format` unused — no byte/duration rendering needs yet |
-| 12 | `forms.FilterChips` (+ `FilterToggleHref` query builder, `aria-current`) | Partial | `forms/filter_chips.templ:1-45` (zero-JS link chips) | `chips.templ:19-46` hand-rolls 5 chips, 3 class constants, `aria-pressed` logic |
-| 13 | Empty-state ladder (`EmptyState`/`SimpleEmptyState`/`DataState`) | Partial | `display/empty_state.templ`, `data_state.templ` | `view.templ:97-104` hand-rolls a `<td colspan=4>` empty row inside the tbody |
-| 14 | Dark-mode theme system (`ThemeScript` + `ThemeToggle`) | Partial | `layout/theme_toggle.templ`; `base.templ:182-191,271-272` | script shipped by Base (implicit use); **no `ThemeToggle` rendered** — dark mode follows OS preference only |
-| 15 | Theming pipeline (compiled CSS, `@theme` vars; "compiled-CSS rule" in SKILL) | **Misused** | SKILL.md Part 1 "Consumer essentials" + `references/consumer-guide.md` | `view.templ:74-77` loads `https://cdn.tailwindcss.com` (Play CDN, dev-only per Tailwind) + an inline `tailwind.config` script at runtime |
-| 16 | `errorpage` module (`ErrorPage`, `NotFound404`, `ErrorHandler`) | Missed | `errorpage/` (4 components + 6 constructors + `ErrorHandler`) | no import anywhere in `hub/`; serve mux serves `net/http` default 404/plain `http.Error` (`cli/serve.go` mux wiring, `dashboard/routes.go:53-61`) |
-| 17 | Stream-error surfacing (`datastar.SSEErrorHandling`, `htmx.GlobalErrorHandling`) | N/A | `datastar/sse_error_handling.templ` | deliberate alternative design: the `rendered X ago` carrier going stale IS the dead-stream signal (`view.templ:35-38`, pinned by test) |
-| 18 | Navigation suite (`Nav`, `SidebarNav`, `Breadcrumbs`, `Footer`) | N/A | `navigation/` | single-page dashboard |
-| 19 | Forms suite (26 components: `Form`, `Input`, `Select`, …) | N/A | `forms/` | no data entry on the dashboard |
-| 20 | Feedback suite (`Toast`, `Alert`, `Skeleton*`, `Spinner`, …) | N/A | `feedback/` | server renders full state; no async loading states to bridge |
-| 21 | Modal/overlay suite (`Modal`, `Drawer`, `Dropdown`, …) | N/A | `display/` | no overlays needed |
-| 22 | `DataTable` | N/A | `display/` | the fleet table is patch-driven via `LazyRows` tbody; ~280 rows need no pagination UI |
-| 23 | Charts (`Sparkline`, `BarChart`, …, `charts/echarts`) | N/A (revisit) | `display/sparkline.templ`, `charts/echarts/` | no time-series surface yet; the evidence cache (`hub/internal/cache/cache.go:35` `evidence_runs`) accumulates the history that would make a fail-rate sparkline meaningful — revisit when a history API lands |
-| 24 | `/htmx` module | N/A | `htmx/` | DataStar-only by design (correctly left indirect/unused; `view.templ:21` sets `HTMXVersion: ""`) |
-| 25 | `KanbanBoard`, `Carousel`, `CommandPalette`, … | N/A | `display/` | no matching use case |
+| #  | Capability                                                                           | Status        | Library evidence (path, at v1.27.0)                                    | Consumer evidence (path:line)                                                                                                                                                                                 |
+| -- | ------------------------------------------------------------------------------------ | ------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | Page shell (`layout.Base`: meta, skip-link, a11y, ThemeScript)                       | Fully         | `layout/base.templ:228,271-272`                                        | `view.templ:18-23`                                                                                                                                                                                            |
+| 2  | Content layout (`layout.Container`)                                                  | Fully         | `layout/container.templ`                                               | `view.templ:24`                                                                                                                                                                                               |
+| 3  | `display.PageHeader`                                                                 | Fully         | `display/page_header.templ`                                            | `view.templ:26-29`                                                                                                                                                                                            |
+| 4  | `display.Grid` + `display.StatCard` (tones + icon slots)                             | Fully         | `display/grid.templ`, `stat_card.templ`                                | `statcards.templ:13-38`                                                                                                                                                                                       |
+| 5  | `display.Table` incl. `LazyRows`, `BodyID`, compact `CellPadding`, `Striped`/`Hover` | Fully         | `display/table.templ:26,74-83,155-156`                                 | `view.templ:84-93` (BodyID feeds `DefaultRowsSelector`)                                                                                                                                                       |
+| 6  | Table sorting / clickable rows (`Sortable`+`Href` headers, `Row.Href`)               | Partial       | `display/table.templ:26-28,99-111`                                     | `view.templ:84-93` sets neither; sort order is the fixed worst-first triage invariant (`cli/table.go:56-58` mirrors it)                                                                                       |
+| 7  | `display.Badge` (typed `BadgeType` enums)                                            | Fully         | `display/badge.templ`                                                  | `rows.templ:60-75` (`StateBadge`)                                                                                                                                                                             |
+| 8  | `display.RelativeTime` (+ AutoRefresh singleton pattern)                             | Fully         | `display/relative_time.templ`                                          | `view.templ:39-42` (carrier), `rows.templ:30-44` (bare-attribute rows), regression `view_test.go:53-79`                                                                                                       |
+| 9  | `/datastar` components (`LiveRegion`, `SDKScript`)                                   | Fully         | `datastar/live_region.templ`, `sdk_script.templ`                       | `view.templ:45-56`, `view.templ:66-73`                                                                                                                                                                        |
+| 10 | `icons` (102 icons)                                                                  | Fully         | `icons/icon_paths.go`                                                  | `statcards.templ:18,24,30,36` (Server, ExclamationTriangle, Clock, Search)                                                                                                                                    |
+| 11 | `utils` (`BaseProps`, `Class`, `utils/format`)                                       | Fully         | `utils/`                                                               | `view.templ:46`, `statcards.templ` (BaseProps everywhere); `utils/format` unused — no byte/duration rendering needs yet                                                                                       |
+| 12 | `forms.FilterChips` (+ `FilterToggleHref` query builder, `aria-current`)             | Partial       | `forms/filter_chips.templ:1-45` (zero-JS link chips)                   | `chips.templ:19-46` hand-rolls 5 chips, 3 class constants, `aria-pressed` logic                                                                                                                               |
+| 13 | Empty-state ladder (`EmptyState`/`SimpleEmptyState`/`DataState`)                     | Partial       | `display/empty_state.templ`, `data_state.templ`                        | `view.templ:97-104` hand-rolls a `<td colspan=4>` empty row inside the tbody                                                                                                                                  |
+| 14 | Dark-mode theme system (`ThemeScript` + `ThemeToggle`)                               | Partial       | `layout/theme_toggle.templ`; `base.templ:182-191,271-272`              | script shipped by Base (implicit use); **no `ThemeToggle` rendered** — dark mode follows OS preference only                                                                                                   |
+| 15 | Theming pipeline (compiled CSS, `@theme` vars; "compiled-CSS rule" in SKILL)         | **Misused**   | SKILL.md Part 1 "Consumer essentials" + `references/consumer-guide.md` | `view.templ:74-77` loads `https://cdn.tailwindcss.com` (Play CDN, dev-only per Tailwind) + an inline `tailwind.config` script at runtime                                                                      |
+| 16 | `errorpage` module (`ErrorPage`, `NotFound404`, `ErrorHandler`)                      | Missed        | `errorpage/` (4 components + 6 constructors + `ErrorHandler`)          | no import anywhere in `hub/`; serve mux serves `net/http` default 404/plain `http.Error` (`cli/serve.go` mux wiring, `dashboard/routes.go:53-61`)                                                             |
+| 17 | Stream-error surfacing (`datastar.SSEErrorHandling`, `htmx.GlobalErrorHandling`)     | N/A           | `datastar/sse_error_handling.templ`                                    | deliberate alternative design: the `rendered X ago` carrier going stale IS the dead-stream signal (`view.templ:35-38`, pinned by test)                                                                        |
+| 18 | Navigation suite (`Nav`, `SidebarNav`, `Breadcrumbs`, `Footer`)                      | N/A           | `navigation/`                                                          | single-page dashboard                                                                                                                                                                                         |
+| 19 | Forms suite (26 components: `Form`, `Input`, `Select`, …)                            | N/A           | `forms/`                                                               | no data entry on the dashboard                                                                                                                                                                                |
+| 20 | Feedback suite (`Toast`, `Alert`, `Skeleton*`, `Spinner`, …)                         | N/A           | `feedback/`                                                            | server renders full state; no async loading states to bridge                                                                                                                                                  |
+| 21 | Modal/overlay suite (`Modal`, `Drawer`, `Dropdown`, …)                               | N/A           | `display/`                                                             | no overlays needed                                                                                                                                                                                            |
+| 22 | `DataTable`                                                                          | N/A           | `display/`                                                             | the fleet table is patch-driven via `LazyRows` tbody; ~280 rows need no pagination UI                                                                                                                         |
+| 23 | Charts (`Sparkline`, `BarChart`, …, `charts/echarts`)                                | N/A (revisit) | `display/sparkline.templ`, `charts/echarts/`                           | no time-series surface yet; the evidence cache (`hub/internal/cache/cache.go:35` `evidence_runs`) accumulates the history that would make a fail-rate sparkline meaningful — revisit when a history API lands |
+| 24 | `/htmx` module                                                                       | N/A           | `htmx/`                                                                | DataStar-only by design (correctly left indirect/unused; `view.templ:21` sets `HTMXVersion: ""`)                                                                                                              |
+| 25 | `KanbanBoard`, `Carousel`, `CommandPalette`, …                                       | N/A           | `display/`                                                             | no matching use case                                                                                                                                                                                          |
 
 ## Gap analysis
 
@@ -137,12 +137,12 @@ string, and library-owned selected/unselected styling
 the DataStar `$stateFilter` signal (`data-on-click`, `data-class` ternaries), plus
 three hand-maintained class constants and `aria-pressed` logic. The no-JS path
 already exists in the consumer (`?state=` query, `routes.go:88-92`) — which is
-*exactly* the mode `forms.FilterChips` embodies natively.
+_exactly_ the mode `forms.FilterChips` embodies natively.
 
 **Impact:** moderate fleet cost, low local cost. The signal-driven interactivity
 (set-filter-without-reload) is a real requirement `forms.FilterChips` does not
-serve — so this is not a pure duplicate — but the chip *styling, ARIA, and
-selected-state logic* are duplicated, and any fleet chip restyle will miss this
+serve — so this is not a pure duplicate — but the chip _styling, ARIA, and
+selected-state logic_ are duplicated, and any fleet chip restyle will miss this
 repo. The gap is bidirectional: the library lacks a DataStar-signal chip variant
 that 26 go-datastar-consuming projects would reuse.
 
@@ -237,7 +237,7 @@ omission is a recorded decision rather than an unknown.
 ## Fleet leverage
 
 **Expand (selectively).** 40 consumers per STACK.md; this repo demonstrates the
-library's hardest pattern (components *inside* an SSE patch stream — patchable
+library's hardest pattern (components _inside_ an SSE patch stream — patchable
 `BodyID` tbody, script-free re-rendered rows) which is exactly the reference
 other fleet dashboards should copy; `view_test.go`'s regression pin is the kind
 of consumer-side guard that should be upstreamed into docs. The expansions with
@@ -293,3 +293,9 @@ cd hub && GOWORK=off go list -m all | grep templ-components
 ```
 
 All file:line citations spot-checked against the working tree on 2026-11-19.
+
+## Citation drift addendum (2026-11-19 post-audit wave)
+
+`chips.templ:19-46` shifted to `chips.templ:19-44` after the templ fmt
+normalization (see `.citations-baseline`; verified by
+`scripts/check-citations.sh`).

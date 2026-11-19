@@ -1,11 +1,11 @@
 # go-idempotency
 
-| Field            | Value                                                                                                                                                                                                                                                                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Reviewed         | 2026-11-19                                                                                                                                                                                                                                                                                                                        |
-| Group            | C (library-utilization audit, HTTP/wire-protocol family)                                                                                                                                                                                                                                                                          |
-| Consumer modules | core — **absent**; hub — **absent** (not in either `go.mod`, direct or indirect)                                                                                                                                                                                                                                                   |
-| Library version  | newest tag overall `idemtest/v0.1.1` (sub-module); **main-module tags**: `v0.6.0` (newest), then v0.5.0, v0.4.0, v0.3.2, v0.3.1, v0.3.0, v0.2.0, v0.1.2, v0.1.1, v0.1.0 (complete list, `git tag \| grep -v idemtest`) — so the main module sits at ~v0.6.x. Last commit `80c3129 2026-11-18 "chore: auto-commit 3 changed file(s) (heuristic)"` |
+| Field            | Value                                                                                                                                                                                                                                                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reviewed         | 2026-11-19                                                                                                                                                                                                                                                                                                                                            |
+| Group            | C (library-utilization audit, HTTP/wire-protocol family)                                                                                                                                                                                                                                                                                              |
+| Consumer modules | core — **absent**; hub — **absent** (not in either `go.mod`, direct or indirect)                                                                                                                                                                                                                                                                      |
+| Library version  | newest tag overall `idemtest/v0.1.1` (sub-module); **main-module tags**: `v0.6.0` (newest), then v0.5.0, v0.4.0, v0.3.2, v0.3.1, v0.3.0, v0.2.0, v0.1.2, v0.1.1, v0.1.0 (complete list, `git tag \| grep -v idemtest`) — so the main module sits at ~v0.6.x. Last commit `80c3129 2026-11-18 "chore: auto-commit 3 changed file(s) (heuristic)"`      |
 | Modules          | root `github.com/larsartmann/go-idempotency` (Store interface, MemoryStore — deprecated, dev/test only; SDK philosophy: no production backends shipped); `github.com/larsartmann/go-idempotency/idemtest` @ v0.1.1 (contract test suite). `middleware/` is a package of the root module (HTTP + Command wrappers). Only runtime dep: go-error-family. |
 
 ## What write surface does the hub actually expose? (verified, not assumed)
@@ -13,7 +13,7 @@
 **None over HTTP.** Every registered route is GET (rg over all `mux.Handle*`
 calls in the hub: only `hub/internal/dashboard/routes.go:58-60` and
 `hub/internal/cli/serve.go:83`; the discovery client's POST at
-`hub/internal/discovery/client.go:110` is *outbound*, not served). Writes flow
+`hub/internal/discovery/client.go:110` is _outbound_, not served). Writes flow
 through two non-HTTP paths:
 
 1. **The EvidenceWriter port** (`reporter.go:48-50` in core): reporters call
@@ -38,12 +38,12 @@ through two non-HTTP paths:
   "out-of-order records cannot corrupt the view", cache.go:98-100). A
   duplicated INSERT yields two identical rows of which exactly one (the
   newest) is ever read. Harmless by design; the only cost is row bloat.
-- **HTTP middleware reach**: even if one *wanted* dedup, `middleware.HTTP`
+- **HTTP middleware reach**: even if one _wanted_ dedup, `middleware.HTTP`
   keys on a request `Idempotency-Key` header (middleware/http.go:30) — there
   is no HTTP handler through which evidence arrives, so the middleware has
   literally nothing to wrap.
 - **Duplicate-submission semantics**: go-idempotency exists to make at-least-
-  once *side effects* (charge, emit event, send email) at-most-once. Evidence
+  once _side effects_ (charge, emit event, send email) at-most-once. Evidence
   recording has no side effect beyond a state upsert keyed by repo+time; a
   replay neither double-charges nor diverges the view. The risk class does not
   exist on this surface.
@@ -73,14 +73,14 @@ names the primitive), verified with the `idemtest` contract suite
 
 Bands: 85-100 excellent · 70-84 good · 50-69 fair · <50 poor.
 
-| Capability                            | Status                     | Library evidence (path)                      | Consumer evidence (path:line)                                                                                                    |
-| ------------------------------------- | -------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| At-most-once processing of commands   | Covered by design — 1      | README "How it works" (`CheckAndRecord`)     | writes are timestamp-LWW state upserts: file merge ignores non-newer results (reporter.go:59-62,168-170); SQL reads newest-only (cache.go:216-219) |
-| HTTP Idempotency-Key middleware       | N/A                        | `middleware/http.go:30`                      | zero HTTP write endpoints exist to wrap (`hub/internal/cli/serve.go:75-83`, all GET)                                             |
-| Command-wrapper dedup (`middleware.NewCommand`) | N/A               | `middleware/middleware.go:50`                | no command dispatch surface in the consumer (adapters write directly)                                                            |
-| Atomic key store interface            | N/A                        | `store.go` (`Store`)                         | no keys to store — nothing deduplicates because nothing double-executes                                                          |
-| Contract test suite for custom stores | N/A                        | `idemtest/` module                           | no Store implementation exists to test                                                                                            |
-| Concurrency correctness (atomic CheckAndRecord) | Covered elsewhere — 1 | README "atomic" contract          | the equivalent race is already closed differently: fleet file lock (reporter.go:152-156), SQLite single-writer + busy-retry (go-sqlitestore), OnWrite hook serialization (cache.go:91-99) |
+| Capability                                      | Status                | Library evidence (path)                  | Consumer evidence (path:line)                                                                                                                                                             |
+| ----------------------------------------------- | --------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| At-most-once processing of commands             | Covered by design — 1 | README "How it works" (`CheckAndRecord`) | writes are timestamp-LWW state upserts: file merge ignores non-newer results (reporter.go:59-62,168-170); SQL reads newest-only (cache.go:216-219)                                        |
+| HTTP Idempotency-Key middleware                 | N/A                   | `middleware/http.go:30`                  | zero HTTP write endpoints exist to wrap (`hub/internal/cli/serve.go:75-83`, all GET)                                                                                                      |
+| Command-wrapper dedup (`middleware.NewCommand`) | N/A                   | `middleware/middleware.go:50`            | no command dispatch surface in the consumer (adapters write directly)                                                                                                                     |
+| Atomic key store interface                      | N/A                   | `store.go` (`Store`)                     | no keys to store — nothing deduplicates because nothing double-executes                                                                                                                   |
+| Contract test suite for custom stores           | N/A                   | `idemtest/` module                       | no Store implementation exists to test                                                                                                                                                    |
+| Concurrency correctness (atomic CheckAndRecord) | Covered elsewhere — 1 | README "atomic" contract                 | the equivalent race is already closed differently: fleet file lock (reporter.go:152-156), SQLite single-writer + busy-retry (go-sqlitestore), OnWrite hook serialization (cache.go:91-99) |
 
 Inputs: N=6, A=3 (1+1+1), Σ=3.0 → **score = round(100×3.0/3) = 100
 (excellent)** as a counterfactual: every need in the library's domain is
@@ -119,8 +119,9 @@ mux.Handle("POST /v1/evidence", idemMiddleware.HTTP(store, 10*time.Minute, inges
 Not pinned. Library healthy and active: main module v0.6.0 with a steady tag
 history back to v0.1.0, last commit 2026-11-18, `MemoryStore` deprecated with
 a stated future-major removal — a consumer adopting the SDK shape (Store impl
-+ middleware) is insulated from that deprecation by construction. No currency
-risk while absent.
+
+- middleware) is insulated from that deprecation by construction. No currency
+  risk while absent.
 
 ## Fleet leverage
 
@@ -130,7 +131,7 @@ compliance family specifically, the leverage argument only activates if hubs
 start accepting network writes: at that point a shared SQLite `Store` impl
 could live next to go-sqlitestore and every fleet service with a write API
 would reuse it — that would be genuine plumbing-once. Today, adopting here
-would be fleet *anti*-leverage: a dep + a backend implementation guarding a
+would be fleet _anti_-leverage: a dep + a backend implementation guarding a
 risk the domain model already structurally excludes, which every future reader
 must understand and justify. Honest both directions: the library is good at
 its job; this consumer's job is not its job.
@@ -171,3 +172,9 @@ cache.go:91-138 and 216-219 read (OnWrite hook, append-only INSERT, newest-
 per-repo query); serve.go:74-102 read (route inventory). The "POST /v1/discover
 is outbound" distinction verified at discovery/client.go:110-118 (client-side
 `http.NewRequestWithContext`).
+
+## Citation drift addendum (2026-11-19 post-audit wave)
+
+`cache.go:216-219` (queryLatestRecords) moved to
+`hub/internal/cache/queries.go:60-63` in the cache split (see
+`.citations-baseline`; verified by `scripts/check-citations.sh`).

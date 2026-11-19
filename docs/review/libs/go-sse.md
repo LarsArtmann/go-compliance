@@ -1,18 +1,18 @@
 # go-sse
 
-| Field                | Value                                                                                              |
-| -------------------- | -------------------------------------------------------------------------------------------------- |
-| Reviewed             | 2026-11-19                                                                                         |
-| Group                | B (realtime-dashboard stack)                                                                       |
-| Consumer module      | `hub` (`github.com/larsartmann/go-compliance/hub`) — core module does not depend on go-sse          |
-| Pins                 | `github.com/larsartmann/go-sse v0.6.2` (direct); `go-sse/ssetest v0.5.0` (direct, tests); `go-sse/sseparse v0.2.1` (indirect) |
-| Library version      | root `v0.7.0` (`git -C /home/lars/projects/go-sse describe --tags --abbrev=0`); HEAD `a1b4674 2026-11-17`; tags newest-first: `v0.7.0`, `ssetest/v0.5.0`, `sseparse/v0.2.1`, `v0.6.2`, `sseparse/v0.2.0` |
-| Pin current?         | **No** for the root module (v0.6.2 → v0.7.0, additive only). **Yes** for ssetest (v0.5.0 is the newest ssetest tag) and sseparse (v0.2.1 newest). |
+| Field           | Value                                                                                                                                                                                                    |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reviewed        | 2026-11-19                                                                                                                                                                                               |
+| Group           | B (realtime-dashboard stack)                                                                                                                                                                             |
+| Consumer module | `hub` (`github.com/larsartmann/go-compliance/hub`) — core module does not depend on go-sse                                                                                                               |
+| Pins            | `github.com/larsartmann/go-sse v0.6.2` (direct); `go-sse/ssetest v0.5.0` (direct, tests); `go-sse/sseparse v0.2.1` (indirect)                                                                            |
+| Library version | root `v0.7.0` (`git -C /home/lars/projects/go-sse describe --tags --abbrev=0`); HEAD `a1b4674 2026-11-17`; tags newest-first: `v0.7.0`, `ssetest/v0.5.0`, `sseparse/v0.2.1`, `v0.6.2`, `sseparse/v0.2.0` |
+| Pin current?    | **No** for the root module (v0.6.2 → v0.7.0, additive only). **Yes** for ssetest (v0.5.0 is the newest ssetest tag) and sseparse (v0.2.1 newest).                                                        |
 
 ## The ssetest "skew" question (asked by the brief)
 
 Not a smell. The three modules version on **independent semver lines** (`vX.Y.Z` vs
-`ssetest/vX.Y.Z` vs `sseparse/vX.Y.Z`). ssetest v0.5.0 (2026-10-11) *postdates* root
+`ssetest/vX.Y.Z` vs `sseparse/vX.Y.Z`). ssetest v0.5.0 (2026-10-11) _postdates_ root
 v0.6.2 (2026-10-03) and its go.mod requires exactly `go-sse v0.6.2` — the hub's root
 pin. The hub's combination `{root v0.6.2, ssetest v0.5.0, sseparse v0.2.1}` is the
 correct per-module latest-of-line at the v0.6.2 generation. The only drift is that
@@ -50,28 +50,28 @@ reaching for `sseparse`.
 
 ## Capability inventory
 
-| # | Capability | Status | Library evidence (path) | Consumer evidence (path:line) |
-|---|---|---|---|---|
-| 1 | SSE stream serving lifecycle (`NewStream`/`Send`/`Close`/`Context`) | Fully | `go-sse/stream.go` (`Stream` type) | `hub/internal/events/events.go:217-218`, `hub/internal/dashboard/dashboard.go:86-87` |
-| 2 | Comment heartbeat keep-alive (`Stream.Heartbeat`) | Fully | `go-sse/stream.go` (`Heartbeat`); `WriteHeartbeat` | `events.go:244`, `dashboard.go:96` (15 s in both) |
-| 3 | Branded event IDs (`EventID`, `NewEventID`, `ParseEventID`) | Fully | `go-sse/event.go`; branded `brandid.ID` | `events.go:256`, `events.go:333`, `store.go:53-64` |
-| 4 | Last-Event-ID request extraction (`LastEventIDFromRequest`) | Fully | `go-sse/stream.go` / `event.go` | `events.go:220` |
-| 5 | Replay via `EventStore` + `sse.Replay` | Fully | `go-sse/replay.go`; `EventStore` iface | `events.go:221-224`; `store.go:23-41` implements the interface |
-| 6 | `retry:` field advisement (`WriteRetry`) | Missed | `go-sse/stream.go` (`WriteRetry` doc: reconnect cadence) | no call site — neither handler sends `retry` |
-| 7 | Typed fan-out (`Broadcaster[T]` Subscribe/Broadcast/Unsubscribe) | Fully | `go-sse/broadcaster.go`, `fanout.go` | `events.go:126-129`, `events.go:269-270`, `events.go:334` |
-| 8 | Drop observability (`WithOnDrop` → `Dropped()`) | Fully | `go-sse/fanout.go` (`WithOnDrop`) | `events.go:127`, `events.go:276` |
-| 9 | Backpressure sizing (`WithBufferSize`, `DefaultSubscriberBuffer`) | Fully | `go-sse/fanout.go`; const added in v0.7.0 | `events.go:30,100,128` (buffer 64 = the default, made explicit) |
-| 10 | Graceful shutdown (`Broadcaster.Shutdown(ctx)`) | Fully | `go-sse/fanout.go` | `events.go:282` |
-| 11 | `SubscribeFilter` predicate subscriptions | N/A | `go-sse/broadcaster.go` | one event type for all subscribers; no per-subscriber view exists |
-| 12 | `BroadcastMany` batching | N/A | `go-sse/broadcaster.go` | hub publishes one event per refresh; no batch producer |
-| 13 | Lifecycle callbacks (`OnSubscribe`/`OnUnsubscribe`/`Stream.OnDisconnect`) | N/A | `go-sse/broadcaster.go`, `stream.go` | subscriber count is polled via `SubscriberCount` (`events.go:279`) — sufficient for the health check |
-| 14 | `Broadcaster.Health()` lifecycle snapshot | N/A | `go-sse/fanout.go` (`BroadcasterHealth`) | shutdown correctness is covered by `Shutdown(ctx)` error return; no lifecycle dashboard exists |
-| 15 | Keyed data lines (`KeyedLines`/`JoinLines`/`WriteKeyedLines`) | N/A | `go-sse/stream.go` docs cite DataStar wire | go-datastar owns patch serialization (`hub/internal/dashboard/dashboard.go:233`) — correct layering |
-| 16 | Low-level wire writers (`WriteEvent`/`SetHeaders`) | N/A | `go-sse/stream.go` | `Stream` covers the hub; no custom HTTP scaffolding |
-| 17 | ssetest `Collect*` against real handlers | Fully | `ssetest/collect.go` | `events_test.go:127,146-148,207` |
-| 18 | ssetest `Require*` assertions + request options | Fully | `ssetest/assert.go`, `options.go` | `events_test.go:131-136,152-153,208-210` |
-| 19 | sseparse client-side stream parsing | **Missed** | `sseparse/reader.go` (`NewStreamReader`, `ReadNEvents`, `WithMaxLineBytes`); README "Parse SSE from any io.Reader" | `hub/internal/discovery/client.go:184-201` hand-rolls `bufio.Scanner` + `data:` prefix matching |
-| 20 | sseparse WPT conformance corpus (`Corpus()`) | N/A | `sseparse/corpus.go` | library-authoring tool; no parser is written here (see row 19) |
+| #  | Capability                                                                | Status     | Library evidence (path)                                                                                            | Consumer evidence (path:line)                                                                        |
+| -- | ------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| 1  | SSE stream serving lifecycle (`NewStream`/`Send`/`Close`/`Context`)       | Fully      | `go-sse/stream.go` (`Stream` type)                                                                                 | `hub/internal/events/events.go:217-218`, `hub/internal/dashboard/dashboard.go:86-87`                 |
+| 2  | Comment heartbeat keep-alive (`Stream.Heartbeat`)                         | Fully      | `go-sse/stream.go` (`Heartbeat`); `WriteHeartbeat`                                                                 | `events.go:244`, `dashboard.go:96` (15 s in both)                                                    |
+| 3  | Branded event IDs (`EventID`, `NewEventID`, `ParseEventID`)               | Fully      | `go-sse/event.go`; branded `brandid.ID`                                                                            | `events.go:256`, `events.go:333`, `store.go:53-64`                                                   |
+| 4  | Last-Event-ID request extraction (`LastEventIDFromRequest`)               | Fully      | `go-sse/stream.go` / `event.go`                                                                                    | `events.go:220`                                                                                      |
+| 5  | Replay via `EventStore` + `sse.Replay`                                    | Fully      | `go-sse/replay.go`; `EventStore` iface                                                                             | `events.go:221-224`; `store.go:23-41` implements the interface                                       |
+| 6  | `retry:` field advisement (`WriteRetry`)                                  | Missed     | `go-sse/stream.go` (`WriteRetry` doc: reconnect cadence)                                                           | no call site — neither handler sends `retry`                                                         |
+| 7  | Typed fan-out (`Broadcaster[T]` Subscribe/Broadcast/Unsubscribe)          | Fully      | `go-sse/broadcaster.go`, `fanout.go`                                                                               | `events.go:126-129`, `events.go:269-270`, `events.go:334`                                            |
+| 8  | Drop observability (`WithOnDrop` → `Dropped()`)                           | Fully      | `go-sse/fanout.go` (`WithOnDrop`)                                                                                  | `events.go:127`, `events.go:276`                                                                     |
+| 9  | Backpressure sizing (`WithBufferSize`, `DefaultSubscriberBuffer`)         | Fully      | `go-sse/fanout.go`; const added in v0.7.0                                                                          | `events.go:30,100,128` (buffer 64 = the default, made explicit)                                      |
+| 10 | Graceful shutdown (`Broadcaster.Shutdown(ctx)`)                           | Fully      | `go-sse/fanout.go`                                                                                                 | `events.go:282`                                                                                      |
+| 11 | `SubscribeFilter` predicate subscriptions                                 | N/A        | `go-sse/broadcaster.go`                                                                                            | one event type for all subscribers; no per-subscriber view exists                                    |
+| 12 | `BroadcastMany` batching                                                  | N/A        | `go-sse/broadcaster.go`                                                                                            | hub publishes one event per refresh; no batch producer                                               |
+| 13 | Lifecycle callbacks (`OnSubscribe`/`OnUnsubscribe`/`Stream.OnDisconnect`) | N/A        | `go-sse/broadcaster.go`, `stream.go`                                                                               | subscriber count is polled via `SubscriberCount` (`events.go:279`) — sufficient for the health check |
+| 14 | `Broadcaster.Health()` lifecycle snapshot                                 | N/A        | `go-sse/fanout.go` (`BroadcasterHealth`)                                                                           | shutdown correctness is covered by `Shutdown(ctx)` error return; no lifecycle dashboard exists       |
+| 15 | Keyed data lines (`KeyedLines`/`JoinLines`/`WriteKeyedLines`)             | N/A        | `go-sse/stream.go` docs cite DataStar wire                                                                         | go-datastar owns patch serialization (`hub/internal/dashboard/dashboard.go:233`) — correct layering  |
+| 16 | Low-level wire writers (`WriteEvent`/`SetHeaders`)                        | N/A        | `go-sse/stream.go`                                                                                                 | `Stream` covers the hub; no custom HTTP scaffolding                                                  |
+| 17 | ssetest `Collect*` against real handlers                                  | Fully      | `ssetest/collect.go`                                                                                               | `events_test.go:127,146-148,207`                                                                     |
+| 18 | ssetest `Require*` assertions + request options                           | Fully      | `ssetest/assert.go`, `options.go`                                                                                  | `events_test.go:131-136,152-153,208-210`                                                             |
+| 19 | sseparse client-side stream parsing                                       | **Missed** | `sseparse/reader.go` (`NewStreamReader`, `ReadNEvents`, `WithMaxLineBytes`); README "Parse SSE from any io.Reader" | `hub/internal/discovery/client.go:184-201` hand-rolls `bufio.Scanner` + `data:` prefix matching      |
+| 20 | sseparse WPT conformance corpus (`Corpus()`)                              | N/A        | `sseparse/corpus.go`                                                                                               | library-authoring tool; no parser is written here (see row 19)                                       |
 
 ## Gap analysis
 
@@ -96,14 +96,14 @@ library parser:
 2. Multi-line `data:` frames are parsed line-by-line: a JSON payload the daemon
    splits across `data:` lines fails `json.Unmarshal` per line and is dropped
    (the `continue` at `client.go:200-201`) — the event vanishes instead of erroring.
-3. The SSE framing rules (CR handling, `data` vs `data:` vs `data: ` spacing,
+3. The SSE framing rules (CR handling, `data` vs `data:` vs `data:` spacing,
    comment lines that merely contain "data:") are re-approximated instead of
    inherited from the conformance-tested parser.
 
 **Impact:** the discovery watch is the liveness input to the whole never-covered
 feature; a silently swallowed read error delays re-derivation until the refresher's
 5-minute safety net (AGENTS.md "Live Architecture (M27)") — degraded, not broken,
-which is exactly the kind of bug that survives. Fleet-level: every SSE *consumer*
+which is exactly the kind of bug that survives. Fleet-level: every SSE _consumer_
 Lars writes re-decides this parse; consolidating on sseparse here sets the pattern.
 
 **Sketch** (`hub/internal/discovery/client.go`):
@@ -150,7 +150,7 @@ how long to wait before reconnecting (per spec, sent once and persisted).
 
 **Consumer does:** neither `events.go:215-263` nor `dashboard.go:84-109` sends it.
 The dashboard's reconnect behavior is instead governed by templ-components'
-`datastar.RetryAlways` on the LiveRegion (`view.templ:53`) — the *client* decides.
+`datastar.RetryAlways` on the LiveRegion (`view.templ:53`) — the _client_ decides.
 A server `retry:` of e.g. 2000 ms would also bound the JSON `/events` clients'
 default (~3 s browser default, implementation-defined).
 
@@ -191,7 +191,7 @@ the next daemon-talking consumer. Cost: one small PR, zero new module-graph edge
 
 1. **Replace the `/v1/watch` hand-parse with `sseparse`** (row 19) — high impact
    (correctness of the liveness input, kills the gopls warning), high ease
-   (~20 lines, dep already in graph). 
+   (~20 lines, dep already in graph).
 2. **Bump root pin v0.6.2 → v0.7.0** — low direct impact, trivial ease; unblocks
    the go-datastar v0.7.0 lockstep train without a mixed-generation graph.
 3. **Defer to `sse.DefaultSubscriberBuffer`** in `events.go:30,118` post-bump —
@@ -230,3 +230,9 @@ rg -n 'Scanner|data:|scanner' hub/internal/discovery/client.go   # the hand-roll
 Spot-checks performed on every file:line cited above against the working tree;
 line numbers refer to the files as of 2026-11-19 (auto-commit daemon may shift
 them by a line or two on re-read).
+
+## Citation drift addendum (2026-11-19 post-audit wave)
+
+`events.go:333` / `events.go:334` shifted to `events.go:276-277` after
+the ringStore deletion and Handler extraction (see
+`.citations-baseline`; verified by `scripts/check-citations.sh`).
