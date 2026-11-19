@@ -81,8 +81,8 @@ reaching for `sseparse`.
 a zero-dependency WHATWG § 9.2.6 parser: multi-line `data:` reassembly, BOM/lone-CR
 handling, `id:`/`retry:` capture, bounded line lengths via `WithMaxLineBytes`
 (`sseparse/reader.go`; `sseparse/README.md`). Already in the hub's module graph
-(v0.2.1, indirect via ssetest) — adopting it is a require-line promotion, not a new
-dependency.
+(v0.2.1, indirect via go-daemon per `go mod why`) — adopting it is a require-line
+promotion, not a new dependency.
 
 **Consumer does:** `hub/internal/discovery/client.go:184-201` — `bufio.NewScanner`
 with a hand-rolled 64 KiB/1 MiB buffer, `strings.HasPrefix(line, "data:")`, per-line
