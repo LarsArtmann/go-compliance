@@ -81,7 +81,12 @@ policy loosening — currently policy-banned), go-atomic-write (same).
 
 Also watched (outside the lib audit): ssetest — the pin sits at the v0.5.0
 tag because go-sse v0.7.0 publishes no ssetest; revisit the pin the day a
-tag newer than v0.5.0 ships (14-43 §f37).
+tag newer than v0.5.0 ships (14-43 §f37). Cross-repo upstream fix
+(owner-gated push): the go-nix-helpers FOD double-`cd` bug
+(`autoDepFodAttrs.modBuildPhase` re-cd's into an already-cd'd phase —
+bites every `modRoot != "."` + private-deps consumer; the one-line fix
+would let this flake drop its manual `buildGoModule` block;
+07-19 §d1/§e).
 
 ## Fleet adoption waves (raw, from the 2026-11-19 utilization audit)
 
@@ -90,8 +95,27 @@ backlog/TODO when a second consumer confirms: go-daemon `Server.Start`
 adoption (socket-steal hazard in every hand-rolled unix-socket service);
 cmdguard `AssertDescribeContract` at its next tag; go-output `--format`
 on cmdguard-based CLIs (formats already in those graphs); go-health
-`health.Off` idiom for unconfigured deps. Owner decisions pending: fleet
+`health.Off` idiom for unconfigured deps; the `// art-dupl:accept`
+directive convention carried into sibling repos' next dedup audits
+(go-etag pinned-by-count precedent). Owner decisions pending: fleet
 SSE-parser canonical owner (`daemon.ParseSSEData` vs `go-sse/sseparse`);
 mandate for consumer sessions filing upstream TODOs in library repos
-(cmdguard Nd duration codec, go-datastar MarshalSignals determinism,
-templ-components signal-mode FilterChips).
+(cmdguard Nd duration codec, cmdguard/lint published-go.mod
+replace-directive bug, go-datastar MarshalSignals determinism,
+templ-components signal-mode FilterChips, a-h/templ LSP embedlit false
+positive); **go-humanize adopt/suppress/accept** and **samber/lo
+adopt-or-suppress** policy (together the only thing keeping
+`buildflow --build-mode=full` from a green findings gate — 6
+error-severity findings + ~25 withheld rewrites); **core v0.1.1 tag
+timing** (v0.1.0 predates the Wave 1-3 core splits; the hub `replace`
+drop executes ~15m after the tag); firefox permission for agent sessions
+(index.html screenshot).
+
+## Dashboard/UI raw ideas (2026-11-19 self-review)
+
+Demand-gated, keep-raw: a per-bundle diff-size budget for the
+`app.min.css` + `library-classes.txt` churn on templ-components bumps
+(catches accidental explosions the byte-freshness gate cannot); a visual
+smoke (screenshot diff) for unstyled-class regressions; an explicit
+HEAD-request test for `/app.css` (the handler leans on net/http's
+implicit HEAD body suppression today).

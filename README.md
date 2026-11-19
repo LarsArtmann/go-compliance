@@ -53,6 +53,19 @@ application/json` clients.
 Or run the packaged service: `compliance-hub serve --source file --file
 compliance.json` (also `--source buildflow`, `--source cache --db path`).
 
+### Run it
+
+```bash
+nix run .#compliance-hub -- serve --source file --file compliance.json
+```
+
+Or from the devShell (Go toolchain + pinned templ generator):
+
+```bash
+nix develop -c bash -c 'cd hub && GOWORK=off go run ./cmd/compliance-hub \
+  serve --source file --file compliance.json'
+```
+
 ### Health surface (packaged service)
 
 `serve` exposes the standard probe routes for systemd, Kubernetes, or a
@@ -89,7 +102,9 @@ Verify live: `compliance-hub report --db /nonexistent/x.db; echo $?` → `75`.
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs per-module
 build+test and lint (golangci-lint pinned to the devShell version), dprint,
-actionlint, stack-drift-check, docs-gates, and `nix flake check`.
+actionlint, stack-drift-check, docs-gates, `nix flake check`, the art-dupl
+clone gate, a templ fmt gate, the report citation gate, a cmdguard usage
+gate, and the dashboard CSS freshness gate.
 
 The hub module and the flake build need one private dependency
 (`github.com/LarsArtmann/go-daemon`). CI reads it via a repository secret:
@@ -102,8 +117,8 @@ The hub module and the flake build need one private dependency
 ## Documentation
 
 - [Integrating a project in one line](docs/guides/integrate.md)
-- [Library utilization reports](docs/review/libs/index.html) — 20 audited
-  dependencies, verdicts and flip triggers (citations mechanically
-  verified by `scripts/check-citations.sh`)
+- [Library utilization reports](docs/review/libs/index.html) — 22 audited
+  dependencies (the full direct dep graph), verdicts and flip triggers
+  (citations mechanically verified by `scripts/check-citations.sh`)
 - [STACK.md](STACK.md) — foundation decision record (enforced by
   stack-drift-check)

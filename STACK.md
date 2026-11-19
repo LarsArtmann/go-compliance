@@ -152,3 +152,15 @@ decision.
   watcher also feeds a non-critical `evidence-watch` health check
   (`watcher.Healthy`, warn-not-fail like discovery). Pinned by
   `watcher_internal_test.go` (cross-process write → refresh ≤ 2s).
+- 2026-11-19 — **Health-surface verdicts g1/g2/g3 + boot contract recorded**
+  (asked by the 20-02 samber-do review, settled same day in the integrity-first
+  execution pass; previously lived only in AGENTS.md): g1 — refresh
+  staleness degrades `/readyz` to **warn, stays 200**, threshold 10 min
+  (2× the safety net; a stale view is degraded truth, not service loss);
+  g2 — an **empty published fleet IS ready** (nil rows before the first
+  publish vs non-nil empty fleet is the load-bearing `Hub.Rows()` contract);
+  g3 — lint posture is **real fixes + nolint-with-reason, NO baseline file**
+  (both modules hold 0 findings). Boot contract: `serve` **exits** when the
+  boot refresh fails; systemd `Restart=on-failure` owns the retry —
+  tolerant-boot declined (a broken evidence source pages the operator, it
+  does not boot a green 503 process).
