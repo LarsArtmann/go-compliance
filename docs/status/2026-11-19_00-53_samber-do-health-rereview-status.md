@@ -66,7 +66,7 @@ _Ranked; inherited items carry their source. Verdicts inline where I could settl
 1. Core suite `-race` parity: run `GOWORK=off go test -race -count=1 ./...` at root + fix the AGENTS.md commands block to include it. (5m, Low)
 2. README health thresholds: loosen prose or extend the `/readyz` payload contract test to pin 128 MiB / 10 min so README drift fails CI. (10m, Low)
 3. Add "devShell build" to the standing verification ritual (23-40 §f5 — gate token-matched it green, it was never tracked). (5m, Low)
-4. `nix flake check --all-systems` once, record aarch64 status. (10m, Low)
+~~4. `nix flake check --all-systems` once, record aarch64 status. (10m, Low)~~ done — nix flake check --all-systems exit 0 (x86_64 + aarch64, 6 checks; 16-12 §a2)
 5. Audit the 23-40 report's ~22 token-"matched" open items semantically; strike or route each. (30m, Med)
 6. Exit-code discipline: add the redirect shape (or helper) to AGENTS.md commands as policy. (5m, Low)
 7. Goroutine-window on probe-construction failure: one clarifying comment in serve.go or a ROADMAP conditional; never a code change today. (5m, Low)
