@@ -16,10 +16,14 @@ CLI). Coordinates: `go.work`; per-module work uses `GOWORK=off`.
 # Per module (ALWAYS GOWORK=off; the workspace hides replace-directive drift)
 cd hub && GOWORK=off go build ./... && GOWORK=off go vet ./...
 cd hub && GOWORK=off go test -race -count=1 ./...
+GOWORK=off go test -race -count=1 ./...      # core: -race parity with hub (CI runs both)
 golangci-lint run ./...                       # core (root .golangci.yml)
 cd hub && golangci-lint run -c ../.golangci.yml ./...
+cd hub && GOWORK=off go tool templ fmt -fail ./internal/dashboard/   # templ formatting gate (CI-enforced; no -check flag exists)
 nix flake check                                # both modules, sandboxed
 nix build .#compliance-hub                     # the server binary
+nix develop -c bash -c 'cd hub && GOWORK=off go build ./...'   # devShell hub build (the CI parity path)
+compliance-hub report --db /nonexistent/x.db 2>/dev/null; echo $?   # exit-code contract probe: expect 75 (transient IO); always redirect stderr + echo $? when probing exit codes
 cd hub && go tool templ generate ./internal/dashboard/   # after ANY .templ edit; MUST run from hub/ (tool directive lives in hub/go.mod) — from the root it silently rewrites the embedded templ.Error FileName paths (hub/ prefix churn) instead of failing
 ```
 
