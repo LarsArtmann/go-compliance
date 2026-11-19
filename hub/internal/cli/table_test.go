@@ -2,6 +2,7 @@ package cli_test
 
 import (
 	"context"
+	"encoding/json/v2"
 	"os"
 	"path/filepath"
 	"strings"
@@ -132,6 +133,54 @@ var _ = Describe("fleet table", func() {
 			Expect(columnStarts(plain[i])).To(Equal(reference),
 				"row %d misaligned against header:\n%s\n%s", i, plain[0], plain[i])
 		}
+	})
+
+	renderFormat := func(format string) string {
+		Expect(cli.Run(context.Background(),
+			[]string{"table", "--file", writeFixture(map[string]int{"error": 2, "warning": 1}), "--format", format},
+			&out, &errW)).To(Succeed())
+
+		return out.String()
+	}
+
+	It("--format csv renders comma-separated rows with full repo names", func() {
+		rendered := renderFormat("csv")
+
+		Expect(rendered).To(HavePrefix("REPO,STATE,ERR,WARN"))
+		Expect(rendered).To(ContainSubstring("\nfailing-repo,failing,2,1"))
+		Expect(rendered).To(ContainSubstring("a-very-long-repository-name-exceeding-the-cell"),
+			"machine formats must not truncate repo names")
+	})
+
+	It("--format json round-trips as decodable rows", func() {
+		rendered := renderFormat("json")
+
+		var rows []map[string]string
+		Expect(json.Unmarshal([]byte(rendered), &rows)).To(Succeed())
+		Expect(rows).To(HaveLen(3))
+		Expect(rows[0]["REPO"]).To(Equal("failing-repo"))
+		Expect(rows[0]["STATE"]).To(Equal("failing"))
+		Expect(rows[0]["ERR"]).To(Equal("2"))
+	})
+
+	It("--format markdown renders a titled pipe table", func() {
+		rendered := renderFormat("markdown")
+
+		Expect(rendered).To(ContainSubstring("# Fleet compliance"))
+		Expect(rendered).To(ContainSubstring("| REPO"))
+		Expect(rendered).To(ContainSubstring("| failing-repo"))
+	})
+
+	It("--format tsv and html stay ANSI-free", func() {
+		for _, format := range []string{"tsv", "html"} {
+			Expect(renderFormat(format)).NotTo(ContainSubstring("\x1b["), "format %s", format)
+		}
+	})
+
+	It("rejects an unsupported --format with a validation error", func() {
+		err := cli.Run(context.Background(),
+			[]string{"table", "--file", writeFixture(nil), "--format", "dot"}, &out, &errW)
+		Expect(err).To(MatchError(compliance.ErrValidation))
 	})
 })
 

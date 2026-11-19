@@ -109,6 +109,109 @@ func runTable(out, _ io.Writer) func(context.Context, *Config, TableFlags) error
 	}
 }
 
+// supportedTableFormats is the registry-backed set table.go can render:
+// one entry per imported go-output sub-module's self-registered formats.
+var supportedTableFormats = map[output.Format]struct{}{
+	output.FormatTable:     {},
+	output.FormatJSON:      {},
+	output.FormatJSONL:     {},
+	output.FormatYAML:      {},
+	output.FormatTOML:      {},
+	output.FormatCSV:       {},
+	output.FormatTSV:       {},
+	output.FormatMarkdown:  {},
+	output.FormatHTML:      {},
+	output.FormatXML:       {},
+	output.FormatAsciiDoc:  {},
+}
+
+// parseTableFormat validates the --format flag against the formats the
+// imported registry actually serves (cmdguard's values tag guards the CLI;
+// this guards embedders calling runTable directly).
+func parseTableFormat(raw string) (output.Format, error) {
+	format, err := output.ParseFormat(raw)
+	if err != nil {
+		return "", compliance.NewValidationError(
+			"invalid --format value %q (supported: table, json, jsonl, yaml, toml, csv, tsv, markdown, html, xml, asciidoc)",
+			raw,
+		)
+	}
+
+	if _, ok := supportedTableFormats[format]; !ok {
+		return "", compliance.NewValidationError(
+			"--format %q is not wired into the fleet table (supported: table, json, jsonl, yaml, toml, csv, tsv, markdown, html, xml, asciidoc)",
+			raw,
+		)
+	}
+
+	return format, nil
+}
+
+// renderTableData renders the fleet table through go-output's RenderTable
+// registry for machine consumption: full repo names (no truncation), RFC
+// 3339 timestamps, plain cells (no ANSI), same columns and worst-first
+// order as the styled view.
+func renderTableData(
+	out io.Writer, format output.Format, evidence []compliance.RepoEvidence,
+	since time.Time, staleAfter time.Duration,
+) error {
+	report := compliance.BuildV1Report(evidence, since, staleAfter, Version, time.Now())
+
+	severitiesByRepo := make(map[string]map[string]int, len(evidence))
+	for _, record := range evidence {
+		severitiesByRepo[record.Repo.Get()] = record.FindingSeverities
+	}
+
+	data := output.NewTable(tableHeaders)
+
+	for _, row := range report.Repos {
+		rate := strconv.FormatFloat(row.FailRate*100, 'f', 0, 64) + "%"
+		errs, warns, infos, total := plainSeverityCells(severitiesByRepo[row.Repo])
+
+		lastRun := compliance.ParseWireTime(row.LastRunAt)
+		lastRunCell := "-"
+		if !lastRun.IsZero() {
+			lastRunCell = lastRun.UTC().Format(time.RFC3339)
+		}
+
+		data.AddRow([]string{
+			row.Repo, row.State, errs, warns, infos, total,
+			strconv.FormatInt(row.Runs, 10), strconv.FormatInt(row.Failures, 10), rate,
+			row.LastRunVerdict, lastRunCell,
+		})
+	}
+
+	return output.RenderTable(data, format, output.RenderOptions{
+		Title:     "Fleet compliance",
+		Writer:    out,
+		ColorMode: output.ColorModeNever,
+	})
+}
+
+// plainSeverityCells is severityCells without color: raw counts, "-" for
+// empty severities, identical totals.
+func plainSeverityCells(severities map[string]int) (string, string, string, string) {
+	cell := func(n int) string {
+		if n <= 0 {
+			return "-"
+		}
+
+		return strconv.Itoa(n)
+	}
+
+	total := 0
+	for _, n := range severities {
+		total += n
+	}
+
+	totalCell := "-"
+	if total > 0 {
+		totalCell = strconv.Itoa(total)
+	}
+
+	return cell(severities["error"]), cell(severities["warning"]), cell(severities["info"]), totalCell
+}
+
 // stateLabel colors the state cell: failing red, stale amber, compliant
 // green, never-covered gray-blue; unknown states render verbatim.
 func stateLabel(colors *colorService, state compliance.State) string {

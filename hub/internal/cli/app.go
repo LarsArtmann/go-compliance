@@ -42,8 +42,8 @@ func buildApp(out, errW io.Writer) (*v5.CLI[Config], error) {
 		return nil, err
 	}
 
-	tableCmd, err := v5.NewCommand("table", QueryFlags{}, runTable(out, errW),
-		v5.WithShort("Render the human fleet compliance table"),
+	tableCmd, err := v5.NewCommand("table", TableFlags{}, runTable(out, errW),
+		v5.WithShort("Render the fleet compliance table (styled TTY view, or --format for machine formats)"),
 	)
 	if err != nil {
 		return nil, err

@@ -16,6 +16,10 @@ require (
 	github.com/larsartmann/go-filewatcher/v2 v2.5.0
 	github.com/larsartmann/go-health v0.10.0
 	github.com/larsartmann/go-output v0.38.7
+	github.com/larsartmann/go-output/delimited v0.38.7
+	github.com/larsartmann/go-output/markdown v0.38.7
+	github.com/larsartmann/go-output/markup v0.38.7
+	github.com/larsartmann/go-output/serialization v0.38.7
 	github.com/larsartmann/go-output/table v0.38.7
 	github.com/larsartmann/go-sqlitestore v0.1.1
 	github.com/larsartmann/go-sse v0.7.0
@@ -76,13 +80,9 @@ require (
 	github.com/larsartmann/go-ndjson v0.0.1 // indirect
 	github.com/larsartmann/go-output/d2 v0.38.7 // indirect
 	github.com/larsartmann/go-output/daghtml v0.38.7 // indirect
-	github.com/larsartmann/go-output/delimited v0.38.7 // indirect
 	github.com/larsartmann/go-output/escape v0.38.7 // indirect
 	github.com/larsartmann/go-output/graph v0.38.7 // indirect
-	github.com/larsartmann/go-output/markdown v0.38.7 // indirect
-	github.com/larsartmann/go-output/markup v0.38.7 // indirect
 	github.com/larsartmann/go-output/plantuml v0.38.7 // indirect
-	github.com/larsartmann/go-output/serialization v0.38.7 // indirect
 	github.com/larsartmann/go-output/tree v0.38.7 // indirect
 	github.com/larsartmann/go-sse/sseparse v0.2.1 // indirect
 	github.com/larsartmann/samber-do-auditlog v0.12.3 // indirect
