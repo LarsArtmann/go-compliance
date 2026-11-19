@@ -23,7 +23,7 @@ Include what you can of: the affected version
 and your assessment of impact. You will get an acknowledgement within a
 week, and a fix or a mitigation plan before any public disclosure.
 
-## Security posture
+## Security Practices
 
 - **Bind posture is localhost-only by default** (`127.0.0.1:8477`; unix
   sockets are same-machine by construction). Binding a non-loopback address
