@@ -50,6 +50,7 @@ dependency cost; the UI-heavy stack lives where it is used.
 | DI container         | samber/do v2                               | cmdguard's container; go-health built for it vs manual wiring                                                                                                                                                                               | `samber-do-best-practices` skill                                | —                                                                       |
 | Fleet discovery      | project-discovery-daemon via plain HTTP    | zero-config fleet list + realtime watch (`POST /v1/discover`, SSE `GET /v1/watch`) over its unix socket vs importing project-discovery-sdk (private module → would force this repo private; the daemon exists to amortize the SDK pipeline) | daemon README                                                   | typed SDK events wanted → private submodule behind the Source interface |
 | Hub runtime          | ★ go-daemon                                | unix-socket + sd_notify/systemd building blocks (project-discovery-daemon precedent) vs bare main.go                                                                                                                                        | README                                                          | —                                                                       |
+| Evidence liveness    | ★ go-filewatcher/v2                        | dir-watch of the cache DB + WAL sidecars closes the 5-min cross-process staleness window to ~1-2s vs fsnotify hand-roll or polling (report `docs/review/libs/go-filewatcher.md`: NOT-ADOPTED-but-should, 0/6)                             | `docs/review/libs/go-filewatcher.md` + AGENTS.md                | —                                                                       |
 | Hub's own health     | ★ go-health                                | the hub is a service; fleet probe standard; federation precedent (22 consumers)                                                                                                                                                             | README                                                          | —                                                                       |
 | Logging              | slog + charm.land/log/v2                   | how-to-golang policy (logrus/zerolog banned)                                                                                                                                                                                                | how-to-golang                                                   | —                                                                       |
 | JSON                 | encoding/json/v2 (stdlib)                  | GA in Go 1.27; all third-party JSON libs banned (policy)                                                                                                                                                                                    | how-to-golang                                                   | —                                                                       |
@@ -138,3 +139,14 @@ decision.
   `http.Server` posture (docs/decisions verdict 2026-11-18); revisit only if a
   lifecycle ordering bug class reopens (flip trigger in
   docs/review/libs/go-daemon.md).
+- 2026-11-19 — **go-filewatcher/v2 v2.5.0 adopted** (post-audit T3, plan
+  `docs/planning/2026-11-19_07-55_*`): the utilization audit's one
+  NOT-ADOPTED-but-should verdict. `hub/internal/cli/watcher.go` dir-watches
+  the cache DB plus its `-wal`/`-shm` siblings (and the evidence file's
+  directory for `--source file`, catching atomic renames) and kicks the
+  refresher — cross-process SQLite writes go from a 5-minute safety-net
+  wait to ~1-2s, keeping the realtime promise honest. Public module (no
+  FLAKE_PAT impact). The 5-min safety net stays as the backstop; the
+  watcher also feeds a non-critical `evidence-watch` health check
+  (`watcher.Healthy`, warn-not-fail like discovery). Pinned by
+  `watcher_internal_test.go` (cross-process write → refresh ≤ 2s).

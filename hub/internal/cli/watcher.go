@@ -77,9 +77,10 @@ func watchEvidence(ctx context.Context, flags QueryFlags, refresh *refresher) *f
 // (source=cache). Directories are deduplicated; relative paths are made
 // absolute so the name filter matches against the watcher's absolute
 // event paths.
-func evidenceWatchTargets(flags QueryFlags) (dirs []string, names map[string]struct{}) {
-	names = map[string]struct{}{}
+func evidenceWatchTargets(flags QueryFlags) ([]string, map[string]struct{}) {
+	names := map[string]struct{}{}
 	seen := map[string]struct{}{}
+	dirs := []string(nil)
 
 	add := func(file string) {
 		if file == "" {

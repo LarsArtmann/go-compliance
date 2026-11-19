@@ -60,8 +60,8 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		}
 
 		// Filesystem triggers: cross-process evidence writes (WAL sidecars,
-			// atomic renames) kick the refresher within ~1-2s; the safety net
-			// stays as the backstop.
+		// atomic renames) kick the refresher within ~1-2s; the safety net
+		// stays as the backstop.
 		watcher := watchEvidence(ctx, flags.QueryFlags, refresher)
 
 		go refresher.Run(ctx)

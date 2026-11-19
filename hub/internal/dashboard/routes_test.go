@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	datastartest "github.com/larsartmann/go-datastar/datastartest"
 	"github.com/larsartmann/go-datastar"
+	datastartest "github.com/larsartmann/go-datastar/datastartest"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 

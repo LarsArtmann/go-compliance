@@ -150,3 +150,22 @@ rg -n 'json/v2' hub/internal/cache/cache.go                                 # :1
 ```
 
 All read-only commands executed 2026-11-19 with outputs as annotated; the optional inotifywait demo was not executed (inotifywait not installed on this machine) — the WAL-write-fires-`-wal`-events claim rests on SQLite's documented WAL commit path (frames appended via `pwrite(2)` to the `-wal` file) plus inotify's `IN_MODIFY` on `write(2)`-family syscalls, and on the lib's directory-watch delivering child events.
+
+---
+
+## Addendum 2026-11-19 (executed): adopted
+
+Post-audit Wave 2 (plan `docs/planning/2026-11-19_07-55_*`, T3) flipped this
+report's lone NOT-ADOPTED-but-should verdict: `hub/internal/cli/watcher.go`
+now dir-watches the cache DB + `-wal`/`-shm` siblings (and the evidence
+file's directory for `--source file`, catching atomic renames) and kicks the
+refresher — cross-process SQLite writes go from a 5-minute safety-net wait
+to ~1-2s. v2.5.0 (public, `/v2` module path — no FLAKE_PAT impact); STACK.md
+foundation row + decision-log entry added; the 5-min safety net stays as the
+backstop; `watcher.Healthy` feeds a non-critical `evidence-watch` health
+check. Pinned by `watcher_internal_test.go`: a write through a second,
+independent cache connection (the cross-process stand-in, invisible to
+OnWrite) refreshes the hub within the 2s budget, under `-race`. Used
+surface: `New`, `Watch`, `WithRecursive(false)`, `WithDebounce`,
+`WithFilter`, `Healthy`. Score moves 0/6 → ADOPTED; the report's flip
+trigger is discharged.
