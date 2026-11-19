@@ -88,6 +88,31 @@ var _ = Describe("bind address handling", func() {
 			DeferCleanup(func() { _ = listener.Close() })
 		})
 
+		It("refuses to steal a socket another hub is actively serving", func() {
+			listener, err := bindAddress(context.Background(), "unix:"+socketPath)
+			Expect(err).NotTo(HaveOccurred())
+			DeferCleanup(func() { _ = listener.Close() })
+
+			server := &http.Server{Handler: http.NotFoundHandler()}
+			go func() { _ = server.Serve(listener) }()
+			DeferCleanup(func() { _ = server.Close() })
+
+			// The first hub must be answering before the second one probes.
+			Eventually(func() int {
+				resp, err := unixDialClient(socketPath).Get("http://unix/healthz")
+				if err != nil {
+					return 0
+				}
+				defer func() { _ = resp.Body.Close() }()
+
+				return resp.StatusCode
+			}, "2s", "20ms").Should(Equal(http.StatusNotFound))
+
+			_, err = bindAddress(context.Background(), "unix:"+socketPath)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("refusing to steal"))
+		})
+
 		It("refuses a socket path whose directory cannot be created", func() {
 			filePath := filepath.Join(GinkgoTB().TempDir(), "occupied")
 			Expect(os.WriteFile(filePath, []byte("file"), 0o644)).To(Succeed())

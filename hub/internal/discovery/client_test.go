@@ -1,14 +1,18 @@
 package discovery_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json/v2"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -149,5 +153,107 @@ var _ = Describe("discovery client", func() {
 		Expect(completed[1].Repo.Get()).To(Equal("b"))
 		Expect(compliance.DeriveState(completed[1], time.Now(), compliance.DefaultStaleAfter)).
 			To(Equal(compliance.StateNeverCovered))
+	})
+})
+
+// syncBuffer serializes writes from the watch goroutine against reads from
+// the test goroutine (slog handlers may be called concurrently).
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *syncBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	return b.buf.Write(p)
+}
+
+func (b *syncBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	return b.buf.String()
+}
+
+var _ = Describe("discovery client SSE framing", func() {
+	startWatchServer := func(handler http.HandlerFunc) *unixTestServer {
+		mux := http.NewServeMux()
+		mux.HandleFunc("GET /v1/watch", handler)
+
+		return newUnixTestServer(mux)
+	}
+
+	It("reassembles multi-line data frames into one event", func() {
+		srv := startWatchServer(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/event-stream")
+			flusher := w.(http.Flusher)
+
+			// Pretty-printed JSON split across data: lines — the spec joins
+			// them with "\n" before payload decoding.
+			fmt.Fprint(w, "data: {\n")
+			fmt.Fprint(w, "data:   \"type\": \"WatchProjectAdded\",\n")
+			fmt.Fprint(w, "data:   \"timestamp\": \"2026-11-17T20:00:00Z\",\n")
+			fmt.Fprint(w, "data:   \"path\": \"/p/pretty-repo\"\n")
+			fmt.Fprint(w, "data: }\n\n")
+			flusher.Flush()
+
+			<-r.Context().Done()
+		})
+		DeferCleanup(srv.close)
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		eventCh, err := discovery.New(srv.socket).Watch(ctx)
+		Expect(err).NotTo(HaveOccurred())
+
+		var event discovery.Event
+		Eventually(eventCh, "2s", "10ms").Should(Receive(&event))
+		Expect(event.Type).To(Equal("WatchProjectAdded"))
+		Expect(event.Path).To(Equal("/p/pretty-repo"))
+
+		cancel()
+	})
+
+	It("surfaces stream failures instead of faking a clean end", func() {
+		srv := startWatchServer(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/event-stream")
+			flusher := w.(http.Flusher)
+
+			// One data line over the 1 MiB cap: the parse must fail loudly,
+			// not truncate the frame and carry on.
+			fmt.Fprint(w, "data: ")
+			_, _ = w.Write(bytes.Repeat([]byte("x"), 1536*1024))
+			fmt.Fprint(w, "\n\n")
+			flusher.Flush()
+
+			<-r.Context().Done()
+		})
+		DeferCleanup(srv.close)
+
+		logs := &syncBuffer{}
+		previous := slog.Default()
+		slog.SetDefault(slog.New(slog.NewTextHandler(logs, nil)))
+		DeferCleanup(func() { slog.SetDefault(previous) })
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		eventCh, err := discovery.New(srv.socket).Watch(ctx)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(func() bool {
+			select {
+			case event, ok := <-eventCh:
+				if ok {
+					Fail(fmt.Sprintf("no event may be delivered from an over-cap frame, got %#v", event))
+				}
+			default:
+			}
+
+			return strings.Contains(logs.String(), "discovery watch stream failed")
+		}, "2s", "10ms").Should(BeTrue())
 	})
 })
