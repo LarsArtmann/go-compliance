@@ -116,7 +116,11 @@ channel (cap 1, coalescing), 500ms debounce, 5-minute safety-net ticker
 (covers cross-process SQLite writes — the OnWrite hook only sees THIS
 process's writes; documented limitation), discovery `/v1/watch` with 30s
 backoff. `/v1/compliance` serves the refresher's snapshot (503 before the
-first successful refresh).
+first successful refresh). The watch stream is framed by
+`daemon.ParseSSEData` (WHATWG: multi-line data joins, over-cap lines fail
+loudly; discovery/client.go), and unix binds are probe-first (bind.go
+`removeUnownedSocket` + `daemon.IsSocketAlive`): a second hub NEVER steals
+a live sibling's socket — it fails with "refusing to steal".
 
 Boot contract (verdict recorded 2026-11-18): `serve` EXITS when the
 boot refresh fails — no tolerant boot. A failed first query means the

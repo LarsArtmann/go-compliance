@@ -5,13 +5,17 @@ import (
 	"context"
 	"os"
 
-	v5 "github.com/larsartmann/cmdguard/v5/pkg/cmdguard/v5"
+	errorfamily "github.com/larsartmann/go-error-family"
 
 	"github.com/larsartmann/go-compliance/hub/internal/cli"
 )
 
 func main() {
-	os.Exit(v5.ExitCode(run(context.Background(), os.Args[1:])))
+	// errorfamily.ExitCode (not cmdguard's): it classifies compliance errors
+	// through their errorfamily integration — transient cache failures exit
+	// 75 (EX_TEMPFAIL), validation 64/65, internal 70 — so systemd restart
+	// semantics and operator muscle memory get the fleet-standard codes.
+	os.Exit(errorfamily.ExitCode(run(context.Background(), os.Args[1:])))
 }
 
 func run(ctx context.Context, args []string) error {

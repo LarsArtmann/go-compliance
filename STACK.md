@@ -129,3 +129,12 @@ decision.
   indirect block only because tidy hasn't run since the import landed.
   Escape hatch if the hub must become publicly buildable: publish go-daemon,
   or extract the sd_notify surface behind a tiny public shim.
+- 2026-11-19 — **go-daemon surface widened, deliberately minimal** (post-audit
+  T1+T2): `discovery/client.go` now uses `daemon.ParseSSEData` (WHATWG framing)
+  and `bind.go` uses `daemon.IsSocketAlive` for probe-first stale-socket cleanup
+  (a live sibling's socket is refused, never stolen). Full `Server.Start`
+  adoption was considered and declined: serve.go's hand-rolled lifecycle keeps
+  the exact sd_notify/watchdog ordering pinned by the M27 tests and the minimal
+  `http.Server` posture (docs/decisions verdict 2026-11-18); revisit only if a
+  lifecycle ordering bug class reopens (flip trigger in
+  docs/review/libs/go-daemon.md).

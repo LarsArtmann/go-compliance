@@ -23,11 +23,17 @@ const (
 	socketFilePerm = 0o660
 	// shutdownGracePeriod bounds graceful HTTP drain after ctx cancels.
 	shutdownGracePeriod = 5 * time.Second
+	// probeHealthPath is the endpoint used to detect a live hub before
+	// removing an existing socket file: any HTTP answer (any status) means
+	// another process still owns the socket.
+	probeHealthPath = "/healthz"
 )
 
 // bindAddress resolves the --addr flag into a listener. Unix-socket
 // addresses ("unix:/path.sock") create their directory, remove a stale
-// socket file before binding, and restrict permissions to owner+group.
+// socket file before binding (probe-first: a socket some other hub is
+// actively serving is refused, never stolen), and restrict permissions to
+// owner+group.
 func bindAddress(ctx context.Context, address string) (net.Listener, error) {
 	if !strings.HasPrefix(address, unixAddrPrefix) {
 		listener, err := (&net.ListenConfig{}).Listen(ctx, "tcp", address)
@@ -43,8 +49,8 @@ func bindAddress(ctx context.Context, address string) (net.Listener, error) {
 		return nil, fmt.Errorf("create socket directory %s: %w", filepath.Dir(socketPath), err)
 	}
 
-	if err := os.Remove(socketPath); err != nil && !errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("remove stale socket %s: %w", socketPath, err)
+	if err := removeUnownedSocket(ctx, socketPath); err != nil {
+		return nil, err
 	}
 
 	listener, err := (&net.ListenConfig{}).Listen(ctx, "unix", socketPath)
@@ -59,6 +65,29 @@ func bindAddress(ctx context.Context, address string) (net.Listener, error) {
 	}
 
 	return listener, nil
+}
+
+// removeUnownedSocket deletes an existing socket file only when nothing is
+// answering on it (go-daemon CleanStaleSocket semantics): a leftover file
+// from a crashed run goes away, a live sibling hub makes the bind fail
+// loudly instead of silently killing the sibling's socket path.
+func removeUnownedSocket(ctx context.Context, socketPath string) error {
+	if _, statErr := os.Stat(socketPath); statErr != nil {
+		return nil
+	}
+
+	if daemon.IsSocketAlive(ctx, socketPath, probeHealthPath) {
+		return fmt.Errorf(
+			"another listener is answering on %s: refusing to steal its socket (stop it first)",
+			socketPath,
+		)
+	}
+
+	if err := os.Remove(socketPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("remove stale socket %s: %w", socketPath, err)
+	}
+
+	return nil
 }
 
 // isLoopbackBind reports whether the address binds a loopback interface

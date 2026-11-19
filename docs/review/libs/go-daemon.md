@@ -142,3 +142,28 @@ sed -n '212,234p' /home/lars/projects/go-daemon/socket.go   # Lifecycle ordering
 # flake pin sites
 rg -n 'go-daemon|postPatchExtra' /home/lars/projects/go-compliance/flake.nix | head -6       # 19-20, 35, …, 146-147
 ```
+
+---
+
+## Addendum 2026-11-19 (executed): opportunities 1+2 landed
+
+Post-audit Wave 1 (plan `docs/planning/2026-11-19_07-55_*`, T1+T2) adopted the
+two highest-ranked opportunities:
+
+- **`ParseSSEData`** now frames `/v1/watch` in `discovery/client.go` —
+  multi-line `data:` frames reassemble, over-cap lines fail loudly (logged,
+  never truncated), read errors surface instead of masquerading as clean EOF.
+  Pinned by two new specs (multi-line reassembly, over-cap failure) in
+  `client_test.go`.
+- **`IsSocketAlive` probe-first cleanup** in `bind.go`
+  (`removeUnownedSocket`): a second `serve` against a live hub's socket now
+  fails with "refusing to steal its socket" instead of silently killing the
+  first instance. Repro-first test in `bind_internal_test.go`.
+- **Full `Server.Start` adoption declined** (recorded in STACK.md decision
+  log): the hand-rolled lifecycle keeps the M27-pinned sd_notify ordering and
+  the minimal `http.Server`; the hand-roll is no longer *strictly weaker* now
+  that the steal bug is fixed.
+- Score inputs change: "Stale-socket liveness probe" and "ParseSSEData" rows
+  move from Missed Opportunity to USED; verdict moves toward ADOPTED
+  (38 → ~55 counterfactual). `NewHTTPClientNoTimeout` remains unused (rank-3
+  opportunity) — flip trigger unchanged.
