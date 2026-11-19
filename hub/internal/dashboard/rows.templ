@@ -60,14 +60,16 @@ templ FleetRow(row events.RepoRow) {
 // StateBadge maps a compliance state onto its semantic badge.
 templ StateBadge(state compliance.State) {
 	{{ badgeType := display.BadgeNeutral }}
-	{{ switch state {
-	case compliance.StateFailing:
-		badgeType = display.BadgeError
-	case compliance.StateStale:
-		badgeType = display.BadgeWarning
-	case compliance.StateCompliant:
-		badgeType = display.BadgeSuccess
-	} }}
+	{{
+		switch state {
+		case compliance.StateFailing:
+			badgeType = display.BadgeError
+		case compliance.StateStale:
+			badgeType = display.BadgeWarning
+		case compliance.StateCompliant:
+			badgeType = display.BadgeSuccess
+		}
+	}}
 	@display.Badge(display.BadgeProps{
 		Text: state.String(),
 		Type: badgeType,

@@ -33,7 +33,9 @@ jobs:
           go-version-file: go.mod
           cache-dependency-path: go.sum
       - run: GOWORK=off go build ./...
-      - run: GOWORK=off go test -count=1 ./...
+      # -race parity with the local gate: core is dependency-light but the
+      # branded types and fold are shared fleet contract code.
+      - run: GOWORK=off go test -race -count=1 ./...
 
   hub:
     name: build+test (hub)
@@ -54,7 +56,7 @@ jobs:
       - run: GOWORK=off go build ./...
         if: env.FLAKE_PAT != ''
         working-directory: hub
-      - run: GOWORK=off go test -count=1 ./...
+      - run: GOWORK=off go test -race -count=1 ./...
         if: env.FLAKE_PAT != ''
         working-directory: hub
 
@@ -122,6 +124,21 @@ jobs:
       - name: Install actionlint 1.7.12 (devShell parity)
         run: bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
       - run: actionlint
+
+  templ-fmt:
+    name: templ fmt gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: hub/go.mod
+          cache-dependency-path: hub/go.sum
+      # The generator is pinned by the hub tool directive (v0.3.1100): the
+      # same binary formats locally and in CI (AGENTS.md templ errata).
+      - run: GOWORK=off go tool templ fmt -fail ./internal/dashboard/
+        working-directory: hub
 
   stack-drift:
     name: stack drift check
