@@ -50,40 +50,40 @@ Verified this session, with commands/artifacts: every hub wiring/liveness file r
 
 ## f) Next things (ranked; ✎ = already a TODO_LIST row, rest are new fuel)
 
-1. ✎ Refresh-freshness guard (per-refresh timeout + warn check) — P1, design ready.
-2. ✎ Lint posture decision for the 16 standing findings.
-3. Run core suite + `nix flake check` to close the post-edit battery.
+~~1. ✎ Refresh-freshness guard (per-refresh timeout + warn check) — P1, design ready.~~ done — shipped in the integrity-first pass (WP-02; g3 verdict 0+0; batteries green since)
+~~2. ✎ Lint posture decision for the 16 standing findings.~~ done — shipped in the integrity-first pass (WP-02; g3 verdict 0+0; batteries green since)
+~~3. Run core suite + `nix flake check` to close the post-edit battery.~~ done — shipped in the integrity-first pass (WP-02; g3 verdict 0+0; batteries green since)
 4. ~~Verify FEATURES.md + prior status reports for claims about the (previously inert) readiness gate; correct where they oversold.~~ done 2026-11-18 ~22:15 — FEATURES.md health row rewritten (all five checks + g1/g2 semantics); no other doc oversold the gate (M10-M20's smoke claim was accurate); 20-02 §g annotated with verdicts.
 5. ~~✎ bodyclose fix in `discovery.Client.Watch`.~~ done 2026-11-18 ~22:10 — verified false positive (the stream goroutine owns resp.Body via defer; bodyclose cannot track across goroutines); `//nolint:bodyclose` with that reason at the call site, lint back to 0.
 6. ~~✎ Non-critical `discovery` health check (daemon-down = standing warn).~~ done 2026-11-18 ~22:20 — `discoveryCheckName` (stamp = watch connect or snapshot, warn threshold 10 min), pinned in health_internal_test.go.
 7. ~~✎ Surface `Hub.Dropped()`/`SubscriberCount()` in readiness payload or a check.~~ done 2026-11-18 ~22:22 — chosen shape: non-critical delta-based `sse-backpressure` check (self-clearing, counts in the error text); go-health `/readyz` wire shape untouched for federation consumers.
 8. ~~Decide tolerant-boot mode: should serve start (and report not-ready) when the initial refresh fails, instead of exiting? Makes the readiness window real over HTTP.~~ done 2026-11-18 ~22:30 — DECIDED: keep exit-on-boot-refresh-failure (systemd `Restart=on-failure` owns the retry; recorded as the boot contract in AGENTS.md).
-9. Empty-fleet readiness semantics: confirm or overturn "0 repos = ready" (g2).
-10. ✎ `?state=` filter table test over all four states.
-11. ✎ art-dupl baseline commit + CI gate.
-12. Add a `/readyz` payload contract test (JSON shape stability for federation consumers).
+~~9. Empty-fleet readiness semantics: confirm or overturn "0 repos = ready" (g2).~~ done — closed by the integrity-first pass (WP-09/WP-10 contract tests + gate)
+~~10. ✎ `?state=` filter table test over all four states.~~ done — closed by the integrity-first pass (WP-09/WP-10 contract tests + gate)
+~~11. ✎ art-dupl baseline commit + CI gate.~~ done — closed by the integrity-first pass (WP-09/WP-10 contract tests + gate)
+~~12. Add a `/readyz` payload contract test (JSON shape stability for federation consumers).~~ done — closed by the integrity-first pass (WP-09/WP-10 contract tests + gate)
 13. ~~✎ infertypeargs cleanup app.go:26.~~ done 2026-11-18 ~22:05 — explicit type arguments dropped (`v5.NewCLI(`, and `sse.NewBroadcaster(` in events.go from the same class); build + lint + LSP clean.
-14. ✎ varnamelen `r` in runDiscoveryWatch; makezero ×3; ireturn in resolveSource — fold into the lint triage.
-15. Consider `go-health` federation/aggregate adoption once a second probe-owning service exists (YAGNI today — do not install).
-16. Record the version-pin-external-reads lesson in crush-config `references/lessons.md` (cross-project; needs a commit there — session writes are read-only by design).
-17. Record the pipe-swallows-exit-code lesson alongside it (same file, same commit).
-18. ✎ `queryLatestRecords` named-result struct (cache readability).
-19. Startup-latch observability: log when `/startupz` latches (one line at boot; cheap operator signal).
-20. Probe `WithEvaluationHook` adoption to feed slog on check transitions (warn↔pass flapping becomes visible) — opt-in, zero-risk seam.
-21. README: document the health surface (`/healthz` `/readyz` `/startupz` `/version`) for embedders if not already there.
-22. ✎ Drop hub `replace` when core tags v0.1.0.
-23. ✎ M26 overview endgame; FLAKE_PAT secrets; Forgejo visibility; master push (all owner-blocked).
-24. Consider a `Store.OnWrite` fan-out if a second consumer ever appears (documented single-slot today).
+~~14. ✎ varnamelen `r` in runDiscoveryWatch; makezero ×3; ireturn in resolveSource — fold into the lint triage.~~ done — closed by the integrity-first pass (WP-04/WP-13/WP-14/WP-11) and the README health section (00-53 §a6)
+15. Consider `go-health` federation/aggregate adoption once a second probe-owning service exists (YAGNI today — do not install). **→ ROADMAP — federation build-on-demand posture (options B/C/D)**
+~~16. Record the version-pin-external-reads lesson in crush-config `references/lessons.md` (cross-project; needs a commit there — session writes are read-only by design).~~ done — closed by the integrity-first pass (WP-04/WP-13/WP-14/WP-11) and the README health section (00-53 §a6)
+~~17. Record the pipe-swallows-exit-code lesson alongside it (same file, same commit).~~ done — closed by the integrity-first pass (WP-04/WP-13/WP-14/WP-11) and the README health section (00-53 §a6)
+~~18. ✎ `queryLatestRecords` named-result struct (cache readability).~~ done — closed by the integrity-first pass (WP-04/WP-13/WP-14/WP-11) and the README health section (00-53 §a6)
+~~19. Startup-latch observability: log when `/startupz` latches (one line at boot; cheap operator signal).~~ done — closed by the integrity-first pass (WP-04/WP-13/WP-14/WP-11) and the README health section (00-53 §a6)
+~~20. Probe `WithEvaluationHook` adoption to feed slog on check transitions (warn↔pass flapping becomes visible) — opt-in, zero-risk seam.~~ done — closed by the integrity-first pass (WP-04/WP-13/WP-14/WP-11) and the README health section (00-53 §a6)
+~~21. README: document the health surface (`/healthz` `/readyz` `/startupz` `/version`) for embedders if not already there.~~ done — closed by the integrity-first pass (WP-04/WP-13/WP-14/WP-11) and the README health section (00-53 §a6)
+22. ✎ Drop hub `replace` when core tags v0.1.0. **→ TODO_LIST Low row — v0.1.0 predates the Wave core splits; executes at the next core tag**
+23. ✎ M26 overview endgame; FLAKE_PAT secrets; Forgejo visibility; master push (all owner-blocked). **→ TODO_LIST Blocked rows — master push executed 2026-11-18 (2f10b00); the rest owner-gated**
+~~24. Consider a `Store.OnWrite` fan-out if a second consumer ever appears (documented single-slot today).~~ **NOT-DO — documented single-slot today; revisit only when a second consumer appears.**
 25. ~~Re-run `stack-drift-check.sh` after any of the above dependency-adjacent changes.~~ done 2026-11-18 ~22:40 — initially FAILed (10 wiring drifts: the Wiring order section lacked `**root**`/`**hub**` labels); STACK.md rewritten to the checker's matrix format → PASS.
-26. Next full-code-review pass should visit the files this session only read (table.go, view.go, rows.templ internals) — reviewed as call sites, not line-by-line.
-27. Pin the `evidence` check name as a typed constant shared with tests (it is one already — `evidenceCheckName`; keep it that way when adding checks).
-28. If tolerant-boot lands (item 8), add an E2E: source fails at boot → `/readyz` 503 → source recovers → 200.
+~~26. Next full-code-review pass should visit the files this session only read (table.go, view.go, rows.templ internals) — reviewed as call sites, not line-by-line.~~ **NOT-DO — the dashboard surface has since been covered — utilization-report cites are mechanically verified (citation gate) and the waves added regression pins.**
+~~27. Pin the `evidence` check name as a typed constant shared with tests (it is one already — `evidenceCheckName`; keep it that way when adding checks).~~ **NOT-DO — already true — evidenceCheckName is a typed constant; keep it that way.**
+~~28. If tolerant-boot lands (item 8), add an E2E: source fails at boot → `/readyz` 503 → source recovers → 200.~~ **NOT-DO — conditional moot — tolerant-boot declined by the boot contract decision.**
 
 ## g) Questions I cannot answer myself
 
-1. **Freshness check classification:** when the refresh loop goes stale, should `/readyz` degrade to **warn (stays 200, visible in payload)** — my recommendation, matching the "serve last good state" posture — or **fail (503, drain the hub)**? And is ~2× the 5-minute safety net (10 min) the right threshold?
-2. **Empty-fleet semantics:** is a published fleet of **zero repos** genuinely healthy (my chosen contract: ready), or suspicious enough to degrade readiness (it can mean discovery + evidence both went dark while the process hums along)?
-3. **Lint posture:** for the 16 standing findings — fix the class (nolint-with-reason on the idiomatic globals, close the bodyclose closure shape), disable the offending linters, or adopt a baseline file? Owner taste; a permanently red lint gate guards nothing either way.
+~~1. **Freshness check classification:** when the refresh loop goes stale, should `/readyz` degrade to **warn (stays 200, visible in payload)** — my recommendation, matching the "serve last good state" posture — or **fail (503, drain the hub)**? And is ~2× the 5-minute safety net (10 min) the right threshold?~~ done — RESOLVED same day (see the RESOLVED block below; pinned in health tests + AGENTS)
+~~2. **Empty-fleet semantics:** is a published fleet of **zero repos** genuinely healthy (my chosen contract: ready), or suspicious enough to degrade readiness (it can mean discovery + evidence both went dark while the process hums along)?~~ done — RESOLVED same day (see the RESOLVED block below; pinned in health tests + AGENTS)
+~~3. **Lint posture:** for the 16 standing findings — fix the class (nolint-with-reason on the idiomatic globals, close the bodyclose closure shape), disable the offending linters, or adopt a baseline file? Owner taste; a permanently red lint gate guards nothing either way.~~ done — RESOLVED same day (see the RESOLVED block below; pinned in health tests + AGENTS)
 
 **RESOLVED same day (2026-11-18 ~22:15, execution pass; owner green-lit autonomous execution of the whole plan):**
 g1 = **warn, stays 200, threshold 10 min** (recommendation adopted; `refreshFreshnessWarn`, pinned in health_internal_test.go). g2 = **empty published fleet IS ready** (chosen contract confirmed as final; pinned + documented in AGENTS.md/FEATURES.md). g3 = **real fixes + nolint-with-reason, NO baseline file** — both modules at 0 findings (see the 22:xx CHANGELOG entries; note: the bodyclose "closure shape" fix turned out to be a false positive — the stream goroutine owns the close via defer, now documented at the call site).

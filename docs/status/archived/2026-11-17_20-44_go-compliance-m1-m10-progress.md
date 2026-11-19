@@ -227,7 +227,7 @@ before moving on, honest reporting of everything that broke along the way.
 10. ~~M12/F056: ScriptHandler serving DataStar JS~~ done — dashboard ScriptHandler serves the pinned bundle
 11. ~~M12/F057: datastartest E2E assertions~~ done — datastartest assertions live in dashboard + cli E2E tests
 ~~12. M13/F058: templ setup + layout via templ-components (go:generate, tool~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
-    directive, commit generated files)
+directive, commit generated files)
 ~~13. M13/F059: fleet table component (repo/state/severity columns)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~14. M13/F060: badges + stat cards~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~15. M13/F061: detail row expansion (worst steps)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
@@ -241,7 +241,7 @@ before moving on, honest reporting of everything that broke along the way.
 ~~23. M15/F068: go-health probe registration~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~24. M15/F069: sd_notify wiring via go-daemon~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~25. M15/F070: systemd unit file + docs~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
-    ~~26. M15/F071: smoke: serve + curl /health~~ done at 2026-11-19: serve smoke exists — dynamic port, /healthz + full route sweep with hardening-header assertions (hub/internal/cli/app_test.go:96-150)
+~~26. M15/F071: smoke: serve + curl /health~~ done at 2026-11-19: serve smoke exists — dynamic port, /healthz + full route sweep with hardening-header assertions (hub/internal/cli/app_test.go:96-150)
 ~~26. M27/F107: re-derive on store writes (hook)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~27. M27/F108: debounce + coalesce events~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~28. M27/F109: E2E: evidence change → browser event~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
@@ -258,7 +258,7 @@ before moving on, honest reporting of everything that broke along the way.
 ~~39. M18/F082–F085: flake.nix skeleton + devShell + packages + `nix flake~~ done — shipped (M18); tree-verified (15-00 audit)
     check` green
 ~~40. M19/F086–F089: CI build/test/lint per module, drift-check, docs gates,~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
-    Forgejo+GitHub runner validity
+Forgejo+GitHub runner validity
 ~~41. M21/F094–F096: examples/reporter, one-line integration guide, screenshots~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~42. M22/F097–F098: benchmarks (fold+derive at 300 repos) + baseline file~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~43. M23/F099–F100: BuildFlow TODO_LIST pointer row + STACK.md errata check~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
@@ -268,7 +268,7 @@ before moving on, honest reporting of everything that broke along the way.
 47. ~~Fix queryLatestRunCounts N+1 before M27 (e1)~~ done — queryLatestRecords single correlated-subquery query hub/internal/cache/cache.go
 ~~48. Relax the 341-repo fixture pin before the next fixture refresh (e7)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~49. Final: whole-repo build+test+lint+docs audit vs plan, then release~~ done — final pass complete (15-00); core v0.1.0 tagged 77881b3; the hub replace-drop rides the TODO row
-    procedure (drop hub's replace directive, tag core v0.1.0 first)
+procedure (drop hub's replace directive, tag core v0.1.0 first)
 
 ---
 
@@ -278,12 +278,12 @@ before moving on, honest reporting of everything that broke along the way.
    in the Forgejo UI? Push-to-create used the server default and there is no
    API token/tea CLI to check or flip it (anonymous API 404s even for known
    repos). Needs one manual click by the owner.
-~~2. **g1 — hub auth/bind posture**: localhost-only is the safe default (and~~ done — bind posture decided (docs/decisions/bind-posture.md); the auth layer is parked as a v2-era design question
+   ~~2. **g1 — hub auth/bind posture**: localhost-only is the safe default (and~~ done — bind posture decided (docs/decisions/bind-posture.md); the auth layer is parked as a v2-era design question
    is what ships). Should the hub ever bind the LAN (plain HTTP? unix socket
    - reverse proxy? auth token?), and if so which mechanism is the fleet
      standard? Blocks M20's unix-socket mode value and any remote dashboard
      use.
-3. **g2 — overview endgame**: replace overview's compliance views with the **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
+2. **g2 — overview endgame**: replace overview's compliance views with the **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
    hub (embed via RegisterRoutes + migration sketch), or keep overview as
    the consumer and the hub as a parallel producer forever? Blocks M26;
    until answered both dashboards will drift features independently.

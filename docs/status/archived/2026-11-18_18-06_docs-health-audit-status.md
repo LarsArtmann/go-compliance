@@ -183,59 +183,59 @@ impact-ordered; real items beat padding._
 3. ~~DOMAIN_LANGUAGE.md row-by-row verify~~ done 2026-11-18 ~22:40 — every core-term row's file/symbol anchor verified against the tree; one drift fixed (EvidenceWriter: reporter.go, not source.go); evidence in the 20-29 plan execution.
 4. Annotate 13-31 §f 2–7 (unblocks archive) **→ TODO_LIST Low row**
 5. Reconcile 42-vs-40 annotate count **→ TODO_LIST Low row**
-6. Resolve the acceptance-policy question (g1 below) → unblocks the
+   ~~6. Resolve the acceptance-policy question (g1 below) → unblocks the~~ done — DECIDED both-layered (WP-10); strike+archive executed (T13)
    art-dupl baseline/CI-gate TODO row.
-7. Scope the ~10 §f stragglers (g2 below): rows, ROADMAP, or explicit
+   ~~7. Scope the ~10 §f stragglers (g2 below): rows, ROADMAP, or explicit~~ done — T18 semantic audit struck/routed the stragglers (15-50 §a10)
    Won't-implement.
-8. Archive sweep: strike 13-31 §f 2–7 ~~→ `check-rows --strict` + `bare-rows` over the 7 candidates~~ — the STRIKE half is done (2026-11-18 ~22:42, 13-31 §f2–f7 annotated; see those rows); the report-move remainder is carried as its own TODO_LIST Low row to execute when the cadence count approaches its threshold.
-9. Push master (BLOCKED row) → then watch CI, especially the FLAKE_PAT
+6. Archive sweep: strike 13-31 §f 2–7 ~~→ `check-rows --strict` + `bare-rows` over the 7 candidates~~ — the STRIKE half is done (2026-11-18 ~22:42, 13-31 §f2–f7 annotated; see those rows); the report-move remainder is carried as its own TODO_LIST Low row to execute when the cadence count approaches its threshold.
+7. Push master (BLOCKED row) → then watch CI, especially the FLAKE_PAT **→ TODO_LIST Blocked row — owner-only**
    hub/flake jobs on their first real run.
-10. FLAKE_PAT secrets on GitHub + Forgejo (BLOCKED row).
-11. Forgejo visibility click (BLOCKED row).
-12. M26 overview endgame (BLOCKED row, g2-standing).
-13. Release train: version-check script → tag core v0.1.0 → drop hub
+8. FLAKE_PAT secrets on GitHub + Forgejo (BLOCKED row). **→ TODO_LIST Blocked row — owner-only**
+9. Forgejo visibility click (BLOCKED row). **→ TODO_LIST Blocked row — owner-only**
+10. M26 overview endgame (BLOCKED row, g2-standing). **→ TODO_LIST Blocked row — owner-only**
+11. Release train: version-check script → tag core v0.1.0 → drop hub **→ TODO_LIST Low row — core v0.1.0 tagged (77881b3); hub replace-drop + hub tag + ldflags version ride the replace-drop TODO row**
     `replace` (TODO_LIST row) → tag hub; also set hub `cli.Version` via
     ldflags (the "two sources of producer version" debt from the M1–M10
     report §e4).
-14. `queryRows` error-path test (17-49 f22 — pinned only by construction).
-15. f12: document one-directive-vs-whole-group suppression semantics in
+12. `queryRows` error-path test (17-49 f22 — pinned only by construction). **→ TODO_LIST Low row — queryRows error-path test (minted 2026-11-19)**
+    ~~15. f12: document one-directive-vs-whole-group suppression semantics in~~ done — AGENTS dedup section records whole-group suppression (2026-11-19)
     AGENTS.md's dedup section (empirically observed, not understood).
-16. f13: explicit templ dedup audit (`art-dupl --only templ`).
-17. f20: standing dedup-audit ratchet (expected group count) in AGENTS.md.
-18. f27: fold the single-homes policy pointers into DOMAIN_LANGUAGE.md
+    ~~16. f13: explicit templ dedup audit (`art-dupl --only templ`).~~ **NOT-DO — whole-tree -t 1 --type-aware audit already covers .templ sources.**
+    ~~17. f20: standing dedup-audit ratchet (expected group count) in AGENTS.md.~~ **NOT-DO — superseded by the committed .art-dupl-baseline.json ratchet (WP-10).**
+    ~~18. f27: fold the single-homes policy pointers into DOMAIN_LANGUAGE.md~~ done — DOMAIN_LANGUAGE Fold row names the single home (2026-11-19)
     where domain-shaped.
-19. f28: confirm the fleet pre-commit catches vendorHash drift BEFORE
+    ~~19. f28: confirm the fleet pre-commit catches vendorHash drift BEFORE~~ **NOT-DO — CI flake-check + the documented bootstrap ritual cover it.**
     commit, not only in CI.
-20. f10: reconcile the hub finding-count drift 17→16 between buildflow
+    ~~20. f10: reconcile the hub finding-count drift 17→16 between buildflow~~ **NOT-DO — obsolete at lint 0 (g3 verdict).**
     runs (cache nuance or flaky gate).
-21. f23: one `buildflow` full-mode run post-session for the complete gate
+    ~~21. f23: one `buildflow` full-mode run post-session for the complete gate~~ done — the 23-40 full buildflow run
     picture including coverage.
-22. f29/f30: carry the `// art-dupl:accept` convention + gate decision to
+13. f29/f30: carry the `// art-dupl:accept` convention + gate decision to **→ ROADMAP fleet line — accept-directive convention into sibling audits**
     sibling repos' next audits (fleet-wide only after g1).
-23. ROADMAP graduation: when any dedup/tooling idea becomes a task, move it
+    ~~23. ROADMAP graduation: when any dedup/tooling idea becomes a task, move it~~ done — DECIDED both-layered (WP-10); strike+archive executed (T13)
     per the ROADMAP header rule (and re-audit directives after that
     feature work — 17-49 f16).
-24. Next docs-health pass scores against THIS report as baseline (as-found
+    ~~24. Next docs-health pass scores against THIS report as baseline (as-found~~ **NOT-DO — process note — this pass is the scoring session (see the inline health report).**
     Accuracy 6.25 / Fitness 8.5; the post-fix tree would score higher —
     that is the reference line, not a claim of current virtue).
 
 ## g) Questions I cannot figure out myself
 
-1. **Acceptance policy for intentional clones (carried from 17-49 §g2, now
-   actionable):** per-site `// art-dupl:accept` directives (current) or a
-   committed `.art-dupl-baseline.json` + `art-dupl check` CI/pre-commit
-   gate (mechanical, hash-pinned)? go-compliance-specific and fleet-wide
-   answers both welcome; the TODO row needs the verdict.
-2. **Scope of the ~10 art-dupl §f stragglers** (count-drift reconcile,
-   directive-semantics doc, templ audit, AGENTS ratchet, DOMAIN_LANGUAGE
-   fold, pre-commit vendorHash check, buildflow full mode, sibling-repo
-   adoption…): row them now, park them in ROADMAP as brainstorm, or
-   explicitly Won't-implement? They are gate-green today only by fuzzy
-   match, which is honesty debt.
-3. **Archive timing:** strike 13-31 §f 2–7 and archive the 7 resolved
-   reports NOW (closes the corpus this pass touched), or let them age
-   toward the 21-day cadence threshold? Either is defensible; I will not
-   move seven historical files without a word.
+~~1. **Acceptance policy for intentional clones (carried from 17-49 §g2, now~~ done — DECIDED both-layered / resolved via the §f verdicts above / this pass archives the resolved corpus
+actionable):** per-site `// art-dupl:accept` directives (current) or a
+committed `.art-dupl-baseline.json` + `art-dupl check` CI/pre-commit
+gate (mechanical, hash-pinned)? go-compliance-specific and fleet-wide
+answers both welcome; the TODO row needs the verdict.
+~~2. **Scope of the ~10 art-dupl §f stragglers** (count-drift reconcile,~~ done — DECIDED both-layered / resolved via the §f verdicts above / this pass archives the resolved corpus
+directive-semantics doc, templ audit, AGENTS ratchet, DOMAIN_LANGUAGE
+fold, pre-commit vendorHash check, buildflow full mode, sibling-repo
+adoption…): row them now, park them in ROADMAP as brainstorm, or
+explicitly Won't-implement? They are gate-green today only by fuzzy
+match, which is honesty debt.
+~~3. **Archive timing:** strike 13-31 §f 2–7 and archive the 7 resolved~~ done — DECIDED both-layered / resolved via the §f verdicts above / this pass archives the resolved corpus
+reports NOW (closes the corpus this pass touched), or let them age
+toward the 21-day cadence threshold? Either is defensible; I will not
+move seven historical files without a word.
 
 ---
 

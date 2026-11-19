@@ -72,33 +72,33 @@ choices were not validated against the tag vocabulary.
 ## b) PARTIALLY DONE
 
 ~~1. **Wiring step 1 only** — module initialized, but `go get` of~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
-   go-branded-id + go-error-family deferred until first real code (a go.mod
-   require without importing code would be tidied away).
+go-branded-id + go-error-family deferred until first real code (a go.mod
+require without importing code would be tidied away).
 ~~2. **STACK.md enforcement is manual** — drift check exits 0 today, but~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
-   nothing (pre-commit hook / flake check) re-runs it; the skill calls this
-   "a decorative document" without enforcement in the hygiene loop.
+nothing (pre-commit hook / flake check) re-runs it; the skill calls this
+"a decorative document" without enforcement in the hygiene loop.
 ~~3. **Module split is decided but singular on disk** — core module exists;~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
-   the `hub` module is a STACK.md plan, not a directory.
+the `hub` module is a STACK.md plan, not a directory.
 ~~4. **Report/decision propagation** — the verdict + link exists in~~ done — closed by M23/F099: BuildFlow carries the extraction pointer (final-pass verified)
-   go-compliance/STACK.md's decision log, but BuildFlow's TODO_LIST/docs
-   carry no pointer (a future session could re-derive the whole evaluation).
+go-compliance/STACK.md's decision log, but BuildFlow's TODO_LIST/docs
+carry no pointer (a future session could re-derive the whole evaluation).
 
 ## c) NOT STARTED (STACK.md wiring steps 2–8)
 
 ~~1. State model port: `DeriveComplianceState` → generalized (+ `never-covered`)~~ done — shipped (M1-M19); tree-verified (15-00 audit)
 ~~2. Evidence fold + aggregation types port~~ done — shipped (M1-M19); tree-verified (15-00 audit)
 ~~3. v1 wire types, byte-exact, + golden tests (BuildFlow producer side AND~~ done — shipped (M1-M19); tree-verified (15-00 audit)
-   overview decoder side)
+overview decoder side)
 ~~4. `Source` adapter interface + one-liner reporter SDK~~ done — shipped (M1-M19); tree-verified (15-00 audit)
 ~~5. BuildFlow adapter (piped v1 JSON file / CLI-spawn "auto" mode)~~ done — shipped (M1-M19); tree-verified (15-00 audit)
 ~~6. Discovery daemon HTTP client → never-covered derivation~~ done — shipped (M1-M19); tree-verified (15-00 audit)
 ~~7. Hub module: cmdguard CLI (`serve|report|table`), go-output tables,~~ done — shipped (M1-M19); tree-verified (15-00 audit)
-   go-sqlitestore evidence cache
+go-sqlitestore evidence cache
 ~~8. Realtime: go-sse broadcaster + go-datastar patches + templ-components~~ done — shipped (M1-M19); tree-verified (15-00 audit)
-   WebUI (severity-grouped repo tables, filter chips, live badges)
+WebUI (severity-grouped repo tables, filter chips, live badges)
 ~~9. go-health self-probe; go-daemon sd_notify; systemd unit~~ done — shipped (M1-M19); tree-verified (15-00 audit)
 ~~10. flake.nix via go-nix-helpers; LICENSE/AUTHORS; CI; ginkgo bootstrap;~~ done — shipped (M1-M19); tree-verified (15-00 audit)
-    TODO_LIST/FEATURES/DOMAIN_LANGUAGE/CHANGELOG for the repo
+TODO_LIST/FEATURES/DOMAIN_LANGUAGE/CHANGELOG for the repo
 
 ## d) TOTALLY FUCKED UP (process deviations; all low-damage, none silently wrong)
 
@@ -211,16 +211,16 @@ peer consumer [owner Q2] (S)
 ## g) Questions I can NOT figure out myself
 
 ~~1. **Hub security posture:** localhost-bind with no auth, unix-socket-only,~~ done — bind posture decided + implemented (docs/decisions/bind-posture.md); the auth layer is parked as a v2-era design question
-   or authenticated LAN exposure? The fleet table names private repos and
-   their failure evidence — anything wider than loopback needs an auth
-   story, and cqrs-htmx usermgmt was deliberately excluded from the stack.
+or authenticated LAN exposure? The fleet table names private repos and
+their failure evidence — anything wider than loopback needs an auth
+story, and cqrs-htmx usermgmt was deliberately excluded from the stack.
 2. **Overview endgame:** should the hub's WebUI eventually REPLACE
-   overview's compliance views (overview becomes a pure general dashboard),
-   or must both stay first-class forever? This decides how much UI
-   investment goes hub-side vs. contract-only.
+overview's compliance views (overview becomes a pure general dashboard),
+or must both stay first-class forever? This decides how much UI
+investment goes hub-side vs. contract-only.
 3. **Publish path:** create the GitHub repo and push go-compliance now
-   (public from day one — LICENSE first), or keep it local until the core
-   port + golden tests land?
+(public from day one — LICENSE first), or keep it local until the core
+port + golden tests land?
 
 ---
 

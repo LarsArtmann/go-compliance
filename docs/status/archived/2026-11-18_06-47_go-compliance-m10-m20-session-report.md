@@ -283,13 +283,13 @@ report's items harvested into TODO_LIST.
 ## g) QUESTIONS (cannot resolve myself)
 
 ~~1. **g1 — hub auth/bind endgame:** is socket/localhost the PERMANENT~~ done — bind posture decided (docs/decisions/bind-posture.md); auth parked as a v2-era design question
-   posture (no auth ever, tunnel for remote), or should an auth layer be
-   planned? M20's warning strictness and M26 both lean on this.
+posture (no auth ever, tunnel for remote), or should an auth layer be
+planned? M20's warning strictness and M26 both lean on this.
 2. **g2 — overview endgame:** replace or coexist? Blocks M26 (migration **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
-   sketch vs interop note emphasis).
+sketch vs interop note emphasis).
 3. **Forgejo visibility:** `lars/go-compliance` still needs your manual **→ TODO_LIST Blocked row — Forgejo visibility, owner-only UI click**
-   UI click to go public (no API token exists). Say the word and I'll
-   assume it stays private for now.
+UI click to go public (no API token exists). Say the word and I'll
+assume it stays private for now.
 
 ---
 

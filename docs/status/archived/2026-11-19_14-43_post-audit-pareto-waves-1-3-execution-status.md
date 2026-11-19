@@ -53,7 +53,7 @@ a live discovery daemon; browser rendering of the dashboard.
    `ringStore` DELETED → `datastar.MemoryStore` (events/store.go and its
    internal test removed, replay suite green); hub vendorHash bootstrapped
    at the package site (converged first paste).
-~~5. **T3 (3.1–3.7) go-filewatcher/v2 v2.5.0 ADOPTED** (public `/v2` module —~~ done at 2026-11-19: dir-watch on WAL sidecars + evidence renames wired into the refresher; evidence-watch readiness check; cross-process spec under -race (completed in the Wave-3 window, see report §a)
+   ~~5. **T3 (3.1–3.7) go-filewatcher/v2 v2.5.0 ADOPTED** (public `/v2` module —~~ done at 2026-11-19: dir-watch on WAL sidecars + evidence renames wired into the refresher; evidence-watch readiness check; cross-process spec under -race (completed in the Wave-3 window, see report §a)
    no FLAKE_PAT impact): `cli/watcher.go` dir-watches `<db>`,`-wal`,`-shm`
    (and the evidence file's dir for `--source file` — atomic renames land
    there); cross-process SQLite writes now refresh in ~1–2s instead of the
@@ -170,76 +170,76 @@ embedlit fix, view_test regression + patch-size check), T15 (go-branded-id
 
 ## f) Top things to get done next (ordered; harvest input for TODO_LIST/ROADMAP)
 
-1. `templ fmt` write + regenerate `view_templ.go` + commit both (unblocks
-   the new CI gate; bundle T9.5's embedlit hint fix in the same templ pass).
-2. vendorHash bootstrap at BOTH flake sites + `nix flake check` (after #1).
-3. SECURITY.md: add an explicit response-time sentence (kills the last
-   securitymd warning).
-4. T11.3: pin README health thresholds in the readiness contract test
-   (`refreshFreshnessWarn == 10m`, `discoveryStaleWarn == 10m`).
+~~1. `templ fmt` write + regenerate `view_templ.go` + commit both (unblocks~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+the new CI gate; bundle T9.5's embedlit hint fix in the same templ pass).
+~~2. vendorHash bootstrap at BOTH flake sites + `nix flake check` (after #1).~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~3. SECURITY.md: add an explicit response-time sentence (kills the last~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+securitymd warning).
+~~4. T11.3: pin README health thresholds in the readiness contract test~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+(`refreshFreshnessWarn == 10m`, `discoveryStaleWarn == 10m`).
 ~~5. T11.4: serve.go goroutine-window clarifying comment.~~ done at 2026-11-19: the launch-before-fallible-wiring rationale comment landed in serve.go
-6. AGENTS.md rows: exit-code policy line (12.3), devShell build in the
-   verification ritual (12.4), core `-race` command row (11.1 remainder).
-7. `buildflow -s go-structure-linter` re-run (confirm the -race finding
-   cleared by the ci.yml change).
-8. art-dupl re-audit after the three file splits; verify the moved
-   `art-dupl:accept` directive still sits within 5 lines above its clone
-   in queries.go; regenerate the baseline only if new clones are
-   deliberate.
-9. T10.1–10.3: citation-check script over all 20 reports (+ this
-   session's addenda); fix/annotate stale citations.
-10. T10.4: index.html screenshot (needs firefox permission) + footer link.
-11. T10.5: AGENTS.md go-daemon tag-watch line.
-12. T12.2: link `docs/review/libs/` from the README docs section.
-13. T8.1: cmdguard-lint CI job (verify rule availability first).
-14. T8.2: check whether the next cmdguard tag ships `AssertDescribeContract`.
-15. T8.3: upstream Nd-duration-codec TODO (BLOCKED on OG.5).
-16. T9.1: `errorpage` for Go-default 404s.
-    ~~17. T9.2: `layout.ThemeToggle`.~~ done at 2026-11-19: ThemeToggle + ThemeScript shipped in the compiled-CSS pass (view.templ; pinned by routes_test "links the compiled stylesheet versioned and stays off the Tailwind Play CDN")
-17. T9.3–9.4: Play CDN → compiled CSS pipeline + CSP-safety verification.
-18. T9.6: view_test regression + patch-size check (rows stay script-free).
-19. T15.1a/b: go-branded-id utilization report.
-20. T15.2a/b: go-sqlitestore utilization report.
-21. T18.1: lychee verdict on the 4 path-excluded files.
-22. T18.2–18.4: semantic audit of the 22 token-matched items (3 batches).
+~~6. AGENTS.md rows: exit-code policy line (12.3), devShell build in the~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+verification ritual (12.4), core `-race` command row (11.1 remainder).
+~~7. `buildflow -s go-structure-linter` re-run (confirm the -race finding~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+cleared by the ci.yml change).
+~~8. art-dupl re-audit after the three file splits; verify the moved~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+`art-dupl:accept` directive still sits within 5 lines above its clone
+in queries.go; regenerate the baseline only if new clones are
+deliberate.
+~~9. T10.1–10.3: citation-check script over all 20 reports (+ this~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+session's addenda); fix/annotate stale citations.
+10. T10.4: index.html screenshot (needs firefox permission) + footer link. **→ TODO_LIST Low row — screenshot needs firefox permission**
+~~11. T10.5: AGENTS.md go-daemon tag-watch line.~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~12. T12.2: link `docs/review/libs/` from the README docs section.~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~13. T8.1: cmdguard-lint CI job (verify rule availability first).~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~14. T8.2: check whether the next cmdguard tag ships `AssertDescribeContract`.~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+15. T8.3: upstream Nd-duration-codec TODO (BLOCKED on OG.5). **→ ROADMAP owner decisions — upstream-TODO mandate**
+~~16. T9.1: `errorpage` for Go-default 404s.~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~17. T9.2: `layout.ThemeToggle`.~~ done at 2026-11-19: ThemeToggle + ThemeScript shipped in the compiled-CSS pass (view.templ; pinned by routes_test "links the compiled stylesheet versioned and stays off the Tailwind Play CDN")
+~~17. T9.3–9.4: Play CDN → compiled CSS pipeline + CSP-safety verification.~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~18. T9.6: view_test regression + patch-size check (rows stay script-free).~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~19. T15.1a/b: go-branded-id utilization report.~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~20. T15.2a/b: go-sqlitestore utilization report.~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~21. T18.1: lychee verdict on the 4 path-excluded files.~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~22. T18.2–18.4: semantic audit of the 22 token-matched items (3 batches).~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
 ~~23. T13.1: archive sweep (git mv aged reports + manifest).~~ done at 2026-11-19: archive sweep — 2 fully-resolved reports git-mv-ed + archived/README.md manifest; docs-gates cadence green at 13 unarchived
-24. T13.2: docs-gates re-run clean (kills the 2 docs-gates findings).
+~~24. T13.2: docs-gates re-run clean (kills the 2 docs-gates findings).~~ done — docs-gates green after the sweep
 ~~25. T17.1: `buildflow --profile-io` run on the io-history anomaly.~~ done at 2026-11-19: --profile-io run; anomaly explained via io_metrics (files_hashed tracks tree churn; 43 was the post-refactor run, 16 the quiet-run median) — NOT-DO verdict recorded at 23-40 f30
-26. T17.2: route the anomaly finding (fix or ROADMAP).
-27. T14.1: `nix flake check --all-systems` once; record aarch64 status.
-28. T14.2: final full gate (build/vet/lint/tests both modules + buildflow,
-    findings gate modulo owner-gated rows).
-29. Owner: go-humanize + samber/lo policy verdict (§g Q1).
-30. Owner: FLAKE_PAT secrets on both runner hosts (OG.1) — hub/flake CI
-    jobs still skip.
-31. Owner: fleet SSE-parser canonical owner (OG.4, §g Q2).
-32. Owner: cross-repo upstream mandate (OG.5, §g Q3).
-33. Owner: M26 g2 endgame; repo visibility; VACUUM (buildflow preflight
-    re-warned: state DB 1.04 GB); cache-DB delete (OG.3).
-34. Owner: T21 go signal (core v0.1.0 release pass).
-35. dprint check re-run (files edited after the buildflow pass).
-    ~~37. ssetest pin: revisit when a ssetest tag newer than v0.5.0 ships.~~ resolved: routed to ROADMAP "Conditions watched" (ssetest flip trigger row, 2026-11-19)
-36. TODO_LIST harvest: mark the plan rows T1/T2/T4/T5/T3/T7 (+T6 partial)
-    per this report.
-37. go-daemon report rank-3 opportunity (`NewHTTPClientNoTimeout` for the
-    watch stream) stays open — flip trigger unchanged.
-38. Watch the cross-process watcher spec on CI for timing flakiness (2s
-    budget; loosen only with evidence).
+~~26. T17.2: route the anomaly finding (fix or ROADMAP).~~ done — NOT-DO recorded at 23-40 §f30
+~~27. T14.1: `nix flake check --all-systems` once; record aarch64 status.~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~28. T14.2: final full gate (build/vet/lint/tests both modules + buildflow,~~ done — nix flake check --all-systems exit 0 (x86_64 + aarch64)
+findings gate modulo owner-gated rows).
+29. Owner: go-humanize + samber/lo policy verdict (§g Q1). **→ ROADMAP owner decisions**
+30. Owner: FLAKE_PAT secrets on both runner hosts (OG.1) — hub/flake CI **→ TODO_LIST Blocked rows — owner-only**
+jobs still skip.
+31. Owner: fleet SSE-parser canonical owner (OG.4, §g Q2). **→ ROADMAP owner decisions**
+32. Owner: cross-repo upstream mandate (OG.5, §g Q3). **→ ROADMAP owner decisions**
+33. Owner: M26 g2 endgame; repo visibility; VACUUM (buildflow preflight **→ TODO_LIST Blocked rows — owner-only**
+re-warned: state DB 1.04 GB); cache-DB delete (OG.3).
+~~34. Owner: T21 go signal (core v0.1.0 release pass).~~ done — core v0.1.0 shipped (77881b3, 2026-11-19)
+~~35. dprint check re-run (files edited after the buildflow pass).~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+~~37. ssetest pin: revisit when a ssetest tag newer than v0.5.0 ships.~~ resolved: routed to ROADMAP "Conditions watched" (ssetest flip trigger row, 2026-11-19)
+~~36. TODO_LIST harvest: mark the plan rows T1/T2/T4/T5/T3/T7 (+T6 partial)~~ done — executed in the Wave-3/4 sessions (15-50/16-12 reports pin the evidence)
+per this report.
+~~37. go-daemon report rank-3 opportunity (`NewHTTPClientNoTimeout` for the~~ **NOT-DO — deliberate — the watch stream uses NewHTTPClientNoTimeout (unix socket + watch backoff); flip trigger lives in go-daemon.md.**
+watch stream) stays open — flip trigger unchanged.
+38. Watch the cross-process watcher spec on CI for timing flakiness (2s **→ TODO_LIST Low row — CI first-run watch (minted 2026-11-19)**
+budget; loosen only with evidence).
 
 ## g) Questions I can NOT answer myself
 
-1. **go-humanize (6 error findings) + samber/lo policy** (re-ask of the
+1. **go-humanize (6 error findings) + samber/lo policy** (re-ask of the **→ ROADMAP owner decisions — carried policy/owner question**
    2026-11-18 23-40 §g2 verdict, now concrete): adopt `go-humanize` as a
    real dependency for CLI relative-time formatting (needs a STACK row and
    the `RelTime` swap in health.go/table.go + 3 core sites), suppress the
    linter pattern set, or accept-with-reason? This is now the single
    largest blocker to a green buildflow findings gate.
-2. **Fleet SSE-parser canonical owner** (OG.4, re-ask with new evidence):
+2. **Fleet SSE-parser canonical owner** (OG.4, re-ask with new evidence): **→ ROADMAP owner decisions — carried policy/owner question**
    Wave 1 made `daemon.ParseSSEData` this repo's consumer choice (zero new
    deps). Should go-daemon own fleet SSE framing (go-sse/sseparse defers
    to it), or the reverse? Decides where any upstream consolidation work
    is filed.
-3. **Upstream-TODO mandate** (OG.5, re-ask): may I file the audited
+3. **Upstream-TODO mandate** (OG.5, re-ask): may I file the audited **→ ROADMAP owner decisions — carried policy/owner question**
    upstream TODOs in their repos (cmdguard Nd duration codec; go-datastar
    MarshalSignals determinism; templ-components FilterChips + the
    view.templ embedlit hint), or keep withholding all upstream writes?

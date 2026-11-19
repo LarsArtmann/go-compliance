@@ -84,18 +84,18 @@ error, see §d3) and one nix nondeterminism is unresolved (§d4).
 ## b) PARTIALLY DONE
 
 ~~1. **M18 flake bootstrap** — postPatchExtra ✓, attempt-1 hash ✓, pasted ✓;~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-   attempt 2 flip-flopped (§d4). Core-module vendorHash (`sha256-BBBB…`
-   placeholder) not started. `nix flake check` not run. M18 closeout
-   (TODO_LIST/FEATURES/CHANGELOG updates) not done.
+attempt 2 flip-flopped (§d4). Core-module vendorHash (`sha256-BBBB…`
+placeholder) not started. `nix flake check` not run. M18 closeout
+(TODO_LIST/FEATURES/CHANGELOG updates) not done.
 ~~2. **M19 CI** — research + config + core-to-zero done; hub fixes applied but~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-   UNVERIFIED; `.github/workflows/ci.yml` not written; `bind_internal_test.go`
-   call sites stale (3 compile errors); remaining hub findings untouched
-   (discovery client: bodyclose, err113 ×2, mnd 1024; routes.go SplitSeq ×2;
-   table_test offBy1; table_internal_test ginkgolinter + sloglint
-   DiscardHandler; routes_test stale nolint; app_test noctx; flags.go tagalign
-   ×8 + embedded-field order; events.go:228 contextcheck).
+UNVERIFIED; `.github/workflows/ci.yml` not written; `bind_internal_test.go`
+call sites stale (3 compile errors); remaining hub findings untouched
+(discovery client: bodyclose, err113 ×2, mnd 1024; routes.go SplitSeq ×2;
+table_test offBy1; table_internal_test ginkgolinter + sloglint
+DiscardHandler; routes_test stale nolint; app_test noctx; flags.go tagalign
+×8 + embedded-field order; events.go:228 contextcheck).
 ~~3. **Quality debt "golangci config"** — cleared for core; hub verdict pending~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-   the re-run.
+the re-run.
 
 ## c) NOT STARTED (this session)
 
@@ -170,77 +170,77 @@ error, see §d3) and one nix nondeterminism is unresolved (§d4).
 1. ~~Update the 3 `bindAddress` call sites in `bind_internal_test.go`~~ done — bind_internal_test.go call sites ctx-threaded
    ~~(ctx-threaded signature).~~
 2. ~~Run hub tests; fix any fallout from the session's hub edits.~~ done — hub suites green
-~~3. Re-run hub lint; fix remaining findings: discovery client bodyclose~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+   ~~3. Re-run hub lint; fix remaining findings: discovery client bodyclose~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
    (:155), err113 ×2 (sentinel errors), mnd 1024 (read buffer const).
-4. ~~routes.go SplitSeq ×2 (modernize stringsseq).~~ done — routes.go SplitSeq
-5. ~~table_test.go:73 gocritic offBy1 (Index()+1).~~ done — table_test.go offBy1 guard
-6. ~~table_internal_test.go: colors var → package-scope fixture pattern;~~ done — table_internal_test.go package-scope fixture + slog.DiscardHandler
+3. ~~routes.go SplitSeq ×2 (modernize stringsseq).~~ done — routes.go SplitSeq
+4. ~~table_test.go:73 gocritic offBy1 (Index()+1).~~ done — table_test.go offBy1 guard
+5. ~~table_internal_test.go: colors var → package-scope fixture pattern;~~ done — table_internal_test.go package-scope fixture + slog.DiscardHandler
    ~~sloglint → `slog.DiscardHandler`.~~
-~~7. routes_test.go:47 remove stale `//nolint:bodyclose`.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-8. ~~app_test.go:229 noctx → `net.ListenConfig`.~~ done — app_test.go net.ListenConfig
-~~9. flags.go: tagalign ×8 + embedded-field-before-regular order~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+   ~~7. routes_test.go:47 remove stale `//nolint:bodyclose`.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+6. ~~app_test.go:229 noctx → `net.ListenConfig`.~~ done — app_test.go net.ListenConfig
+   ~~9. flags.go: tagalign ×8 + embedded-field-before-regular order~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
    (`golangci-lint fmt` likely fixes alignment).
-10. ~~events.go:228 contextcheck (r.Context or documented nolint).~~ done — events.go contextcheck nolint with reason
-~~11. Hub lint → 0, hub tests green, `-count=1` both modules.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~12. Write `.github/workflows/ci.yml`: per-module build+test (GOWORK=off),~~ done — ci.yml live (per-module build+test, lint, dprint, drift-check, docs-gates, flake-check jobs)
-    lint job pinned golangci-lint v2.15.0, dprint job, stack-drift-check job,
-    docs-gates job; PAT-auth step guarded on secret presence (ci-auth
-    pattern); Forgejo+GitHub-valid constructs only.
-~~13. `actionlint` the workflow (devShell has 1.7.12).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~14. Document FLAKE_PAT secret requirement (README CI note + AGENTS.md).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+7. ~~events.go:228 contextcheck (r.Context or documented nolint).~~ done — events.go contextcheck nolint with reason
+   ~~11. Hub lint → 0, hub tests green, `-count=1` both modules.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+   ~~12. Write `.github/workflows/ci.yml`: per-module build+test (GOWORK=off),~~ done — ci.yml live (per-module build+test, lint, dprint, drift-check, docs-gates, flake-check jobs)
+   lint job pinned golangci-lint v2.15.0, dprint job, stack-drift-check job,
+   docs-gates job; PAT-auth step guarded on secret presence (ci-auth
+   pattern); Forgejo+GitHub-valid constructs only.
+   ~~13. `actionlint` the workflow (devShell has 1.7.12).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+   ~~14. Document FLAKE_PAT secret requirement (README CI note + AGENTS.md).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
 
 **M18 finish:**
 
 ~~15. Root-cause the vendorHash flip: build same rev twice, diff FOD vendor~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-    trees; likely prepared-source version/path leakage into modules.txt.
+trees; likely prepared-source version/path leakage into modules.txt.
 ~~16. Fix per root cause (possibly go-nix-helpers upstream — ties to §g1).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
 ~~17. Complete hub vendorHash; bootstrap core `checks.core-build` hash~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-    (`sha256-BBBB…`).
+(`sha256-BBBB…`).
 ~~18. `nix flake check` green; re-run both module suites.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
 19. M18 closeout: TODO_LIST rows removed, FEATURES infra rows flipped,
-    CHANGELOG entry; mark M18 completed in todos.
+CHANGELOG entry; mark M18 completed in todos.
 
 **Then the remaining plan (M21–M27, quality debts, final pass):**
 
 20. ~~M21/F094: `examples/reporter/main.go` using `compliance.Record`.~~ done — examples/reporter/main.go
-~~21. M21/F095: `docs/guides/integrate.md` — one line per project.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~22. M21/F096: README screenshots (terminal table + WebUI from fixture).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~23. M22/F097: benchmark fold+derive at 300 repos.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~24. M22/F098: commit baseline under `benchmarks/`.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~25. M23/F099: BuildFlow repo TODO_LIST pointer row + link.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~26. M23/F100: STACK.md errata pass (templ pin note, go-sqlitestore row).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~27. M24/F101: `docs/decisions/` v2 wire design doc (diff vs v1).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~28. M24/F102: compat policy — v1 emittable forever.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~29. M25/F103: federation research (hub ↔ go-health-dashboard).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-30. ~~M25/F104: `docs/notes/federation-interop.md`.~~ done — docs/notes/federation-interop.md
-~~31. M27/F107: fix `queryLatestRunCounts` N+1 (cache.go:221, single window~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~21. M21/F095: `docs/guides/integrate.md` — one line per project.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~22. M21/F096: README screenshots (terminal table + WebUI from fixture).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~23. M22/F097: benchmark fold+derive at 300 repos.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~24. M22/F098: commit baseline under `benchmarks/`.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~25. M23/F099: BuildFlow repo TODO_LIST pointer row + link.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~26. M23/F100: STACK.md errata pass (templ pin note, go-sqlitestore row).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~27. M24/F101: `docs/decisions/` v2 wire design doc (diff vs v1).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~28. M24/F102: compat policy — v1 emittable forever.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~29. M25/F103: federation research (hub ↔ go-health-dashboard).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+21. ~~M25/F104: `docs/notes/federation-interop.md`.~~ done — docs/notes/federation-interop.md
+    ~~31. M27/F107: fix `queryLatestRunCounts` N+1 (cache.go:221, single window~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
     query).
-~~32. M27/F108: store write-hook → `hub.PublishRefresh`; discovery~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~32. M27/F108: store write-hook → `hub.PublishRefresh`; discovery~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
     `/v1/watch` + `Client.Watch` with debounce/coalesce.
-~~33. M27/F109: E2E evidence-change → browser-event test (datastartest).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~34. Quality: `go test -race ./internal/...` (hub) green.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~35. Quality: shared `waitForSubscriber` test helper dedupe.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~36. Quality: RelativeTime patch-purity check.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~37. Quality: AGENTS.md for this repo (hub conventions, lint policy incl.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~33. M27/F109: E2E evidence-change → browser-event test (datastartest).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~34. Quality: `go test -race ./internal/...` (hub) green.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~35. Quality: shared `waitForSubscriber` test helper dedupe.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~36. Quality: RelativeTime patch-purity check.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~37. Quality: AGENTS.md for this repo (hub conventions, lint policy incl.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
     §e5 trim rationale, verified API facts, ginkgo fixture pattern).
-~~38. Quality: .gitignore templ generated-file note.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-39. ~~Quality: fixture-refresh ritual doc (scripts/refresh-fixture.sh usage).~~ done — scripts/refresh-fixture.sh ritual header
-~~40. Final pass: per-module `GOWORK=off` build+test both modules.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-41. ~~Final pass: plan-vs-tree audit (every F001–F109 accounted).~~ done — audited 2026-11-18 — 106 verified / 3 owner-blocked (F075 Forgejo visibility, F105/F106 M26) / 0 missing
-42. ~~Final pass: docs-health HARVEST of THIS report's §f into TODO_LIST.md.~~ done — this harvest (2026-11-18 final pass)
-~~43. Final pass: CHANGELOG Unreleased section complete for the whole train.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~38. Quality: .gitignore templ generated-file note.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+22. ~~Quality: fixture-refresh ritual doc (scripts/refresh-fixture.sh usage).~~ done — scripts/refresh-fixture.sh ritual header
+    ~~40. Final pass: per-module `GOWORK=off` build+test both modules.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+23. ~~Final pass: plan-vs-tree audit (every F001–F109 accounted).~~ done — audited 2026-11-18 — 106 verified / 3 owner-blocked (F075 Forgejo visibility, F105/F106 M26) / 0 missing
+24. ~~Final pass: docs-health HARVEST of THIS report's §f into TODO_LIST.md.~~ done — this harvest (2026-11-18 final pass)
+    ~~43. Final pass: CHANGELOG Unreleased section complete for the whole train.~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
 
 **Longer/conditional:**
 
 44. M26 overview endgame decision + migration note (BLOCKED on g2). **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
 45. After go-nix-helpers FOD fix lands: simplify flake back onto the **→ ROADMAP cross-repo upstream line — go-nix-helpers FOD fix is owner-gated (push never done unasked)**
     go-standard module path (drop manual buildGoModule).
-~~46. CI drift-check job wiring for STACK.md (re-run after any new~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~46. CI drift-check job wiring for STACK.md (re-run after any new~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
     larsartmann/* require — plan rule 5).
-~~47. Consider `nix flake check` in CI (needs the PAT access-token route).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~48. Templ drift gate in CI (`templ generate` + `git diff --exit-code`).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
-~~49. Fixture drift gate in CI (`scripts/refresh-fixture.sh` + diff).~~ **NOT-DO — fixture drift gate not wired — the golden test pins the committed fixture bytes and the refresh ritual is deliberate (script header); flip when fixture churn becomes real.**
-~~50. Re-audit `.golangci.yml` after hub reaches 0: revisit dropped linters~~ **NOT-DO — lint holds 0 with the trimmed set since the g3 verdict; config upkeep folded into fleet lint-policy maintenance.**
+    ~~47. Consider `nix flake check` in CI (needs the PAT access-token route).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~48. Templ drift gate in CI (`templ generate` + `git diff --exit-code`).~~ done — shipped/closed by the M18-M25 closeout (13-31 archived) and the g3 lint verdict (0+0)
+    ~~49. Fixture drift gate in CI (`scripts/refresh-fixture.sh` + diff).~~ **NOT-DO — fixture drift gate not wired — the golden test pins the committed fixture bytes and the refresh ritual is deliberate (script header); flip when fixture churn becomes real.**
+    ~~50. Re-audit `.golangci.yml` after hub reaches 0: revisit dropped linters~~ **NOT-DO — lint holds 0 with the trimmed set since the g3 verdict; config upkeep folded into fleet lint-policy maintenance.**
     (dupl, wsl_v5, varnamelen…) — add back only with evidence.
 
 ## g) Questions for the owner (cannot be figured out from here)

@@ -107,34 +107,34 @@ was caught by the gate itself and repaired within the session.)
 
 ## f) Top things to get done next (ordered; harvest input for TODO_LIST/ROADMAP)
 
-1. Drop hub `replace` when the NEXT core tag ships (v0.1.0 exists but
+1. Drop hub `replace` when the NEXT core tag ships (v0.1.0 exists but **→ TODO_LIST rows — replace-drop / --sort-by / cmdguard next tag / screenshot / CI first-run watch**
    predates the Wave 1-3 core splits — filestore.go, toolchain line);
    TODO_LIST carries the sharpened row.
-2. Hub `table` `--sort-by` flag parity (pre-existing TODO row, untouched
+2. Hub `table` `--sort-by` flag parity (pre-existing TODO row, untouched **→ TODO_LIST rows — replace-drop / --sort-by / cmdguard next tag / screenshot / CI first-run watch**
    by the plan).
-3. cmdguard follow-ups at the next tag: `AssertDescribeContract` adoption
+3. cmdguard follow-ups at the next tag: `AssertDescribeContract` adoption **→ TODO_LIST rows — replace-drop / --sort-by / cmdguard next tag / screenshot / CI first-run watch**
    - the lint-module replace-directive upstream fix (BLOCKED row).
-4. Screenshot docs/review/libs/index.html (needs firefox permission or
+4. Screenshot docs/review/libs/index.html (needs firefox permission or **→ TODO_LIST rows — replace-drop / --sort-by / cmdguard next tag / screenshot / CI first-run watch**
    owner runs it; TODO row).
-5. CI observation window: the new css-freshness + citation-gate +
+5. CI observation window: the new css-freshness + citation-gate + **→ TODO_LIST rows — replace-drop / --sort-by / cmdguard next tag / screenshot / CI first-run watch**
    cmdguard-usage jobs have zero runs yet — watch the first push.
-6. docs/status archive cadence: 13 unarchived; close reports' §f
+   ~~6. docs/status archive cadence: 13 unarchived; close reports' §f~~ done — this pass archives the fully-resolved corpus
    remainders item-by-item as sessions touch them.
 
 ## g) Questions I can NOT answer myself
 
-1. **(carried, 23-40 §g2 / 14-43 §g Q1)** go-humanize adopt/suppress/accept
+1. **(carried, 23-40 §g2 / 14-43 §g Q1)** go-humanize adopt/suppress/accept **→ ROADMAP owner decisions — carried policy/timing question**
    — gates 6 error-severity buildflow findings; plus samber/lo policy.
-2. **(carried Q2)** fleet SSE-parser canonical owner: `daemon.ParseSSEData`
+2. **(carried Q2)** fleet SSE-parser canonical owner: `daemon.ParseSSEData` **→ ROADMAP owner decisions — carried policy/timing question**
    vs `go-sse/sseparse`.
-3. **(carried Q3)** upstream-TODO mandate: cmdguard Nd codec, go-datastar
+3. **(carried Q3)** upstream-TODO mandate: cmdguard Nd codec, go-datastar **→ ROADMAP owner decisions — carried policy/timing question**
    MarshalSignals determinism, templ-components FilterChips — now ALSO the
    cmdguard/lint published-go.mod replace-directive bug (breaks
    `go run @version`; CI works around via shallow clone).
-4. **(new)** firefox is permission-blocked in agent sessions — mark it
+4. **(new)** firefox is permission-blocked in agent sessions — mark it **→ TODO_LIST Low row — screenshot needs firefox permission**
    safe, or take the index screenshot yourself (T10.4).
-5. **(new)** v0.1.0 predates today's core tree — tag v0.1.1 (then the hub
+5. **(new)** v0.1.0 predates today's core tree — tag v0.1.1 (then the hub **→ ROADMAP owner decisions — carried policy/timing question**
    replace drop executes in ~15m), or direct when.
-6. **(carried OG)** FLAKE_PAT secrets; M26 g2 endgame; repo visibility;
+6. **(carried OG)** FLAKE_PAT secrets; M26 g2 endgame; repo visibility; **→ TODO_LIST Blocked rows — FLAKE_PAT, M26 g2, visibility, VACUUM/cache-DB**
    VACUUM + cache-DB deletion; T21 release pass go-signal remains
    satisfied by the existing tag unless you want a re-cut.

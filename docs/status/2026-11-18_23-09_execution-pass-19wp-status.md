@@ -61,16 +61,16 @@ verification. Verdicts were executed under the owner's blanket green light with 
 2. **WP-17 (owner desk)** — the two pushes were the only owner items executable from here. FLAKE_PAT (GitHub +
    Forgejo), Forgejo repo visibility, and M26 endgame remain untouched (they need UI/credential access or an
    owner decision, not work).
-~~3. **WP-12 (docs sweep)** — the ANNOTATE half is done; the archive `git mv` sweep (18-06 §8 remainder) became a~~ resolved: partial — the two fully-resolved reports archived with manifest (2026-11-19, docs/status/archived/README.md records the every-item-resolved rule); the other candidates still carry open items and archive as they close
+   ~~3. **WP-12 (docs sweep)** — the ANNOTATE half is done; the archive `git mv` sweep (18-06 §8 remainder) became a~~ resolved: partial — the two fully-resolved reports archived with manifest (2026-11-19, docs/status/archived/README.md records the every-item-resolved rule); the other candidates still carry open items and archive as they close
    new TODO row instead of being executed: cadence is 10/15, deliberately not urgent, and doing repo-history
    moves mid-session would have churned every path this report cites.
-4. **LSP hygiene** — gopls served stale diagnostics for health_internal_test.go/refresher_internal_test.go for
+3. **LSP hygiene** — gopls served stale diagnostics for health_internal_test.go/refresher_internal_test.go for
    most of the session (old signatures long after the compiler accepted the new ones). I restarted it once
    (early), it helped only briefly. I treated compiler+tests as ground truth — correct — but never fixed the
    LSP staleness itself (see §e2).
-5. **crush-config push** — lessons committed locally (`cc55a62`) but NOT pushed to the crush-config remote;
+4. **crush-config push** — lessons committed locally (`cc55a62`) but NOT pushed to the crush-config remote;
    the go-compliance push authorization does not obviously extend to a second repo's remote (see §g2).
-6. **CI proof of the new gate** — actionlint-green and locally repro'd, but the `dupl-gate` job has not run on
+5. **CI proof of the new gate** — actionlint-green and locally repro'd, but the `dupl-gate` job has not run on
    a real runner yet; the first real evidence arrives with the next CI trigger (needs FLAKE_PAT for the full
    matrix; the dupl job itself has no secret dependency).
 
@@ -176,24 +176,24 @@ verification. Verdicts were executed under the owner's blanket green light with 
 
 1. Run the `dupl-gate` proof on a real runner (next push triggers CI; verify the job goes green).
 2. `templ fmt ./internal/dashboard/` — check whether the committed `*.templ` are already canonical; then wire the CI step (new TODO row).
-~~3. Archive sweep part 1: run `check-rows --strict` + `bare-rows` over the 7 archive candidates (validates the hand-written strikes)~~ done at 2026-11-19: superseded by the annotate-writer ritual — the sweep archived the two fully-resolved reports with a manifest; the rest close item-by-item as their reports resolve.
-4. Fix `scanner.Err()` handling in `discovery.Client.Watch` (decide: slog on stream error, then end — currently silent).
-5. Extract the SSE-flood backpressure integration pin into an HTTP-level test (join WP-09's shape).
-6. Deduplicate the two now-parallel freshness/discovery check bodies in `buildHealthProbe` into one age-check factory (same shape, two call sites — borderline art-dupl; the baseline currently covers it).
-7. Add `/readyz` warn-reason to the dashboard page (the operator sees warn only via JSON today).
-8. Sweep `examples/reporter` + `docs/guides/integrate.md` for the new check names (embedder-facing docs should mention the five checks).
-9. Record the g1/g2/g3 verdicts in STACK.md's decision log (they are contract decisions, currently only AGENTS/CHANGELOG/20-02).
-10. Run the art-dupl `--show-suppressed` calibration pass (ROADMAP trigger: next dedup audit — cheap now while context is fresh).
-11. Consider `--min-tokens`/`-m hash` complement pass over the tree (same calibration family).
-12. Re-run the full battery after the daemon's next few commits land (the report's green is pinned at `2f10b00`).
-13. Add the `booted` helper's g2 contract to a doc-comment on `Hub.Rows()` (the load-bearing nil contract is documented in events.go, but the empty-fleet-is-READY consequence belongs at the health seam too — it is in AGENTS.md only).
-14. Benchmark re-run: fold/derive/pipeline after the latest edits (baselines/ are from the M27 era; the refresher gained atomic stores).
-15. Port the "two flake vendorHash sites" lesson to crush-config lessons.md (it is in AGENTS.md; it generalizes).
-16. Sweep README's CI section for the new dupl-gate job mention.
-17. `docs-health` HARVEST of this report's §f into TODO_LIST/ROADMAP (the skill mandates it; rows 2–8 and 24–27 below are the harvest candidates).
-18. Delete the stale `/tmp` gopls workspace state or restart LSP with a cleared cache (§e2 follow-through).
-19. Check `hub/internal/dashboard/view_test.go` still pins the single-AutoRefresh-carrier invariant after this session's test additions (unchanged files, but the invariant is adjacent to everything touched).
-20. Verify the fixture benchmark shape (341 repos) still matches after `latestRecords` refactor (`bench` targets queryLatestRecords indirectly via cache.QueryEvidence).
+   ~~3. Archive sweep part 1: run `check-rows --strict` + `bare-rows` over the 7 archive candidates (validates the hand-written strikes)~~ done at 2026-11-19: superseded by the annotate-writer ritual — the sweep archived the two fully-resolved reports with a manifest; the rest close item-by-item as their reports resolve.
+3. Fix `scanner.Err()` handling in `discovery.Client.Watch` (decide: slog on stream error, then end — currently silent).
+4. Extract the SSE-flood backpressure integration pin into an HTTP-level test (join WP-09's shape).
+5. Deduplicate the two now-parallel freshness/discovery check bodies in `buildHealthProbe` into one age-check factory (same shape, two call sites — borderline art-dupl; the baseline currently covers it).
+6. Add `/readyz` warn-reason to the dashboard page (the operator sees warn only via JSON today).
+7. Sweep `examples/reporter` + `docs/guides/integrate.md` for the new check names (embedder-facing docs should mention the five checks).
+8. Record the g1/g2/g3 verdicts in STACK.md's decision log (they are contract decisions, currently only AGENTS/CHANGELOG/20-02).
+9. Run the art-dupl `--show-suppressed` calibration pass (ROADMAP trigger: next dedup audit — cheap now while context is fresh).
+10. Consider `--min-tokens`/`-m hash` complement pass over the tree (same calibration family).
+11. Re-run the full battery after the daemon's next few commits land (the report's green is pinned at `2f10b00`).
+12. Add the `booted` helper's g2 contract to a doc-comment on `Hub.Rows()` (the load-bearing nil contract is documented in events.go, but the empty-fleet-is-READY consequence belongs at the health seam too — it is in AGENTS.md only).
+13. Benchmark re-run: fold/derive/pipeline after the latest edits (baselines/ are from the M27 era; the refresher gained atomic stores).
+14. Port the "two flake vendorHash sites" lesson to crush-config lessons.md (it is in AGENTS.md; it generalizes).
+15. Sweep README's CI section for the new dupl-gate job mention.
+16. `docs-health` HARVEST of this report's §f into TODO_LIST/ROADMAP (the skill mandates it; rows 2–8 and 24–27 below are the harvest candidates).
+17. Delete the stale `/tmp` gopls workspace state or restart LSP with a cleared cache (§e2 follow-through).
+18. Check `hub/internal/dashboard/view_test.go` still pins the single-AutoRefresh-carrier invariant after this session's test additions (unchanged files, but the invariant is adjacent to everything touched).
+19. Verify the fixture benchmark shape (341 repos) still matches after `latestRecords` refactor (`bench` targets queryLatestRecords indirectly via cache.QueryEvidence).
 
 **Decisions (owner taste, minutes each):**
 21. Tag v0.1.0 now? (the only irreversible act left; everything is staged — see §g1).
