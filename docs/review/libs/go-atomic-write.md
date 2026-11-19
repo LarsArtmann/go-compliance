@@ -26,7 +26,7 @@ The consumer's entire file-write surface is a single function: core's `writeFile
 | TOCTOU fingerprint verification (`WriteVerified` → `ErrConcurrentModification`) | Missed (different mechanism achieves the cooperating-writer guarantee) | `fingerprint.go:26,35`; `atomicwrite.go:65-90`; `commit.go:13` | `reporter.go:395-411` + `lock_unix.go` — sidecar `flock` exclusive lock held across read-merge-write (flock is cross-process) |
 | Cross-platform file locking | Missed (hand-rolled flock via syscall, build-tagged) | `commit.go:36` gofrs/flock (flock/LockFileEx) | `reporter.go:395`; `lock_unix.go` / `lock_other.go` build tags |
 | Streaming write (`WriteFunc*`) for large files | N/A — the v1 document is kilobytes (341 repos fixture ≈ 100 KiB class); `MarshalV1` produces `[]byte` anyway | `atomicwrite.go:125-166` | `reporter.go:181-190` |
-| `WriteIfChanged` (skip identical content) | N/A — every reporter write changes `generated_at` (reporter.go:257), so "unchanged" never occurs | `atomicwrite.go:91` | `reporter.go:222-258` `mergeRecord` |
+| `WriteIfChanged` (skip identical content) | N/A — every reporter write changes `generated_at` (reporter.go:248), so "unchanged" never occurs | `atomicwrite.go:91` | `reporter.go:222-258` `mergeRecord` |
 | Permission-correct creation (no chmod window) | N/A — consumer chmods the *temp* file before the atomic rename (target never visible with wrong mode); outcome equivalent to `WriteWithPerm` | `atomicwrite.go:42-63` | `reporter.go:380-383` |
 | Parent-dir autocreation | N/A — consumer creates dirs at the lock boundary already (`acquireFileLock` → `MkdirAll`, reporter.go:398) | `stage.go:35-43` (post-v0.6.2) | `reporter.go:398` |
 
@@ -38,7 +38,7 @@ What the lib offers: `writeAndSync` fsyncs the staged temp file (stage.go:88) an
 
 What the consumer does: `writeFileAtomic` (reporter.go:362–386) renames without either fsync. On ext4 (`data=ordered`), a crash shortly after rename can leave the target zero-length: the rename is journaled but the temp file's data blocks may not be.
 
-Impact: low, by design — the document is the *union of per-repo last runs*, every repo re-records on its next run (reporter.go Record contract), and `FileStore.read` treats a missing/empty file as "start fresh" (reporter.go:195-198). Worst case is a transient fleet-wide `never-covered` blip on the dashboard until reporters cycle, not data loss. Fleet-honest weighing: closing this via the lib costs core its two-dep policy (+xxhash, +gofrs/flock, +x/sys — the latter two already in the *hub* graph, but core must carry them itself); closing it *without* the lib costs two lines:
+Impact: low, by design — the document is the *union of per-repo last runs*, every repo re-records on its next run (reporter.go Record contract), and `FileStore.read` treats a missing/empty file as "start fresh" (reporter.go:186-199). Worst case is a transient fleet-wide `never-covered` blip on the dashboard until reporters cycle, not data loss. Fleet-honest weighing: closing this via the lib costs core its two-dep policy (+xxhash, +gofrs/flock, +x/sys — the latter two already in the *hub* graph, but core must carry them itself); closing it *without* the lib costs two lines:
 
 ```go
 // reporter.go, inside writeFileAtomic after temp.Close() and before os.Rename:
@@ -85,8 +85,8 @@ cd /home/lars/projects/go-compliance/hub && GOWORK=off go mod why github.com/lar
 rg -n 'atomicwrite' /home/lars/.cache/go-mod/github.com/larsartmann/samber-do-auditlog@v0.12.3/plugin.go   # :246 WriteFunc
 
 # Consumer write-surface completeness (the "every file-write site" sweep)
-cd /home/lars/projects/go-compliance && rg -n 'os\.WriteFile|os\.Create\(|os\.OpenFile|os\.CreateTemp' -g '!vendor/**' -g '!*_templ.go' .
-# → reporter.go:365 (temp), reporter.go:400 (lock file) — non-test, both inside FileStore; scripts/redactfixture writes stdout only
+cd /home/lars/projects/go-compliance && rg -n 'os\.WriteFile|os\.Create\(|os\.OpenFile|os\.CreateTemp' -g '!vendor/**' -g '!*_templ.go' -g '!*_test.go' -g '!docs/**' .
+# → reporter.go:365 (temp), reporter.go:400 (lock file) — the only non-test writes, both inside FileStore; scripts/redactfixture writes stdout only
 rg -n 'writeFileAtomic|acquireFileLock' reporter.go                                                    # :362, :395
 sed -n '355,411p' reporter.go                                                                          # the full hand-roll + lock
 

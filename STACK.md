@@ -70,7 +70,7 @@ Rules for this table:
 
 | Candidate                         | Reason                                                                                                                                                      |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| go-cqrs-lite (70) / cqrs-htmx     | evidence ingest is adapter writes with no command-side invariants; window views are plain SQL; realtime is SSE fan-out (YAGNI). Revisit: audit-grade replay |
+| go-cqrs-lite (104 modules) / cqrs-htmx (userless) | evidence ingest is adapter writes with no command-side invariants; window views are plain SQL; realtime is SSE fan-out; hub is single-operator/userless (YAGNI). Revisit: audit-grade replay |
 | go-composable-business-types (96) | DataPoint[T] bitemporal audit trail overkill: window aggregates + last-run evidence, not point-in-time business facts                                       |
 | go-aichat (ssehub)                | right primitive (SSE fan-out with replay), wrong module (AI-chat SDK); go-sse owns the transport directly                                                   |
 | project-discovery-sdk (87)        | private module + expensive pipeline; the daemon already amortizes it and speaks HTTP; keeps this repo public-capable                                        |
