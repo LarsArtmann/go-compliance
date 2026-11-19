@@ -70,6 +70,21 @@ Checks: `evidence` (critical gate), `cache-disk` (128 MiB floor, only with
 past 10 minutes), `sse-backpressure` (warn on new patch drops). Shutdown
 drains honestly: readiness flips to 503 before the listeners close.
 
+### Exit codes
+
+Failures exit with [go-error-family](https://github.com/LarsArtmann/go-error-family)
+BSD sysexits codes, not generic 1 — `systemd` restart policy and shell
+muscle memory can rely on them:
+
+| Code | Meaning                                                              |
+| ---- | -------------------------------------------------------------------- |
+| 0    | Success                                                             |
+| 1    | Rejection: invalid flags, bad window, malformed input — do not retry |
+| 69   | Infrastructure: internal wiring failure                             |
+| 75   | Transient: cache/IO unreachable — retry (e.g. `Restart=on-failure`)  |
+
+Verify live: `compliance-hub report --db /nonexistent/x.db; echo $?` → `75`.
+
 ## CI
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs per-module
