@@ -61,7 +61,7 @@ verification. Verdicts were executed under the owner's blanket green light with 
 2. **WP-17 (owner desk)** — the two pushes were the only owner items executable from here. FLAKE_PAT (GitHub +
    Forgejo), Forgejo repo visibility, and M26 endgame remain untouched (they need UI/credential access or an
    owner decision, not work).
-3. **WP-12 (docs sweep)** — the ANNOTATE half is done; the archive `git mv` sweep (18-06 §8 remainder) became a
+~~3. **WP-12 (docs sweep)** — the ANNOTATE half is done; the archive `git mv` sweep (18-06 §8 remainder) became a~~ resolved: partial — the two fully-resolved reports archived with manifest (2026-11-19, docs/status/archived/README.md records the every-item-resolved rule); the other candidates still carry open items and archive as they close
    new TODO row instead of being executed: cadence is 10/15, deliberately not urgent, and doing repo-history
    moves mid-session would have churned every path this report cites.
 4. **LSP hygiene** — gopls served stale diagnostics for health_internal_test.go/refresher_internal_test.go for
@@ -176,7 +176,7 @@ verification. Verdicts were executed under the owner's blanket green light with 
 
 1. Run the `dupl-gate` proof on a real runner (next push triggers CI; verify the job goes green).
 2. `templ fmt ./internal/dashboard/` — check whether the committed `*.templ` are already canonical; then wire the CI step (new TODO row).
-3. Archive sweep part 1: run `check-rows --strict` + `bare-rows` over the 7 archive candidates (validates the hand-written strikes).
+~~3. Archive sweep part 1: run `check-rows --strict` + `bare-rows` over the 7 archive candidates (validates the hand-written strikes)~~ done at 2026-11-19: superseded by the annotate-writer ritual — the sweep archived the two fully-resolved reports with a manifest; the rest close item-by-item as their reports resolve.
 4. Fix `scanner.Err()` handling in `discovery.Client.Watch` (decide: slog on stream error, then end — currently silent).
 5. Extract the SSE-flood backpressure integration pin into an HTTP-level test (join WP-09's shape).
 6. Deduplicate the two now-parallel freshness/discovery check bodies in `buildHealthProbe` into one age-check factory (same shape, two call sites — borderline art-dupl; the baseline currently covers it).

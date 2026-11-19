@@ -179,7 +179,7 @@ choices were not validated against the tag vocabulary.
 21. templ-components fleet table page (M)
 22. Filter chips + severity grouping (mirror go-health-dashboard UX) (M)
 23. `RegisterRoutes(mux)` embed surface (S)
-24. Auth/bind posture decision + implementation (S) [owner Q1]
+~~24. Auth/bind posture decision + implementation (S) [owner Q1]~~ resolved: bind posture decided + implemented (docs/decisions/bind-posture.md; SECURITY.md records the no-auth-yet posture as a practice) — the auth layer itself is a v2-wire-era design question parked in ROADMAP
 25. ~~go-health self-probe (S)~~ done — hub/internal/cli/health.go — go-health probe surface
 26. go-daemon sd_notify + systemd unit (S)
 27. JSON API endpoint emitting v1-compat contract (S)

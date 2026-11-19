@@ -191,7 +191,7 @@ Honest process stains, worst first:
 31. The `data-tc-relative`/RelativeTime contract is regression-pinned (good) —
     consider linking that test from templ-components.md's "hardest pattern done
     right" paragraph for future readers.
-32. docs/status archive sweep (pre-existing TODO) now has one MORE report to sweep.
+~~32. docs/status archive sweep (pre-existing TODO) now has one MORE report to sweep.~~ resolved: archive rule + manifest landed 2026-11-19 (docs/status/archived/README.md); this report archives once its own §f remainder closes
 
 **Fleet-level (from the audit's cross-repo view; for ROADMAP fuel):**
 

@@ -269,7 +269,7 @@ templ-components v1.27.0 (skill loaded before authoring):
 36. Patch purity check for RelativeTime (align with dashboard pattern).
 37. ~~.gitignore templ-commit note.~~ done — .gitignore templ-commit note
 38. ~~AGENTS.md: hub conventions learned this session.~~ done — AGENTS.md
-39. gofmt/format gate for .templ sources in CI (templ fmt check).
+~~39. gofmt/format gate for .templ sources in CI (templ fmt check).~~ done at 2026-11-19: `templ fmt -fail` CI gate job (templ-fmt; AGENTS.md row)
 
 **Release hygiene (6)**
 40. go mod tidy + GOWORK=off builds for both modules.

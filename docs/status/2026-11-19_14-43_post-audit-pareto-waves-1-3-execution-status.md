@@ -53,7 +53,7 @@ a live discovery daemon; browser rendering of the dashboard.
    `ringStore` DELETED → `datastar.MemoryStore` (events/store.go and its
    internal test removed, replay suite green); hub vendorHash bootstrapped
    at the package site (converged first paste).
-5. **T3 (3.1–3.7) go-filewatcher/v2 v2.5.0 ADOPTED** (public `/v2` module —
+~~5. **T3 (3.1–3.7) go-filewatcher/v2 v2.5.0 ADOPTED** (public `/v2` module —~~ done at 2026-11-19: dir-watch on WAL sidecars + evidence renames wired into the refresher; evidence-watch readiness check; cross-process spec under -race (completed in the Wave-3 window, see report §a)
    no FLAKE_PAT impact): `cli/watcher.go` dir-watches `<db>`,`-wal`,`-shm`
    (and the evidence file's dir for `--source file` — atomic renames land
    there); cross-process SQLite writes now refresh in ~1–2s instead of the
@@ -177,7 +177,7 @@ embedlit fix, view_test regression + patch-size check), T15 (go-branded-id
    securitymd warning).
 4. T11.3: pin README health thresholds in the readiness contract test
    (`refreshFreshnessWarn == 10m`, `discoveryStaleWarn == 10m`).
-5. T11.4: serve.go goroutine-window clarifying comment.
+~~5. T11.4: serve.go goroutine-window clarifying comment.~~ done at 2026-11-19: the launch-before-fallible-wiring rationale comment landed in serve.go
 6. AGENTS.md rows: exit-code policy line (12.3), devShell build in the
    verification ritual (12.4), core `-race` command row (11.1 remainder).
 7. `buildflow -s go-structure-linter` re-run (confirm the -race finding
@@ -202,9 +202,9 @@ embedlit fix, view_test regression + patch-size check), T15 (go-branded-id
 20. T15.2a/b: go-sqlitestore utilization report.
 21. T18.1: lychee verdict on the 4 path-excluded files.
 22. T18.2–18.4: semantic audit of the 22 token-matched items (3 batches).
-23. T13.1: archive sweep (git mv aged reports + manifest).
+~~23. T13.1: archive sweep (git mv aged reports + manifest).~~ done at 2026-11-19: archive sweep — 2 fully-resolved reports git-mv-ed + archived/README.md manifest; docs-gates cadence green at 13 unarchived
 24. T13.2: docs-gates re-run clean (kills the 2 docs-gates findings).
-25. T17.1: `buildflow --profile-io` run on the io-history anomaly.
+~~25. T17.1: `buildflow --profile-io` run on the io-history anomaly.~~ done at 2026-11-19: --profile-io run; anomaly explained via io_metrics (files_hashed tracks tree churn; 43 was the post-refactor run, 16 the quiet-run median) — NOT-DO verdict recorded at 23-40 f30
 26. T17.2: route the anomaly finding (fix or ROADMAP).
 27. T14.1: `nix flake check --all-systems` once; record aarch64 status.
 28. T14.2: final full gate (build/vet/lint/tests both modules + buildflow,
