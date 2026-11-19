@@ -25,8 +25,10 @@ The plan is a snapshot: this file is the living backlog.
 
 ## Medium Impact
 
-| Task | Status | Impact | Effort | Evidence |
-| ---- | ------ | ------ | ------ | -------- |
+| Task                                                                                                                             | Status    | Impact | Effort | Evidence                                    |
+| -------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------- |
+| Address GO-2026-6859 (net/http MaxBytesReader header race): bump Go toolchain as needed, re-run govulncheck, confirm 0 reachable | 🔴 `TODO` | Med    | 20m    | 23-40 §f10; re-appears every buildflow run  |
+| Create `SECURITY.md` (root, `.github/`, or `docs/` per the tool's lookup paths)                                                  | 🔴 `TODO` | Med    | 10m    | 23-40 §f6; error-severity finding every run |
 
 ## Low Impact
 
