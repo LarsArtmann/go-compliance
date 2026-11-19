@@ -4,7 +4,7 @@
 | ---------------- | -------------------------------------------------------------------------------------------------- |
 | Reviewed         | 2026-11-19 (T15 completion report — closes the audit's dep-graph coverage gap)                     |
 | Group            | T15 (post-audit completion; sole-author verification, same contract as the 5-group fleet run)      |
-| Consumer modules | core — **direct** (`go.mod` dep 1 of 2); hub — indirect via core                                    |
+| Consumer modules | core — **direct** (`go.mod` dep 1 of 2); hub — indirect via core                                   |
 | Library version  | `v0.7.1` (pinned; equals latest tag — current)                                                     |
 | Recent tags      | `v0.7.1`, `v0.7.0`, `v0.6.0`, …                                                                    |
 | Modules          | single module `github.com/larsartmann/go-branded-id` (generic `ID[B, V]` + codecs, no sub-modules) |
@@ -15,7 +15,7 @@
   is `branded.go` (30 lines): `RepoBrand`/`SourceBrand` with `Name()`
   ("Repo:go-finding" rendering), `RepoName = id.ID[RepoBrand, string]`,
   `SourceName = id.ID[SourceBrand, string]`, `NewRepoName`/`NewSourceName`
-  (`branded.go:14-40`).
+  (`branded.go:14-30`).
 - **The JSON codecs ARE the frozen v1 wire contract**: `MarshalV1` /
   `DecodeV1Report` serialize `RepoName` through the lib's JSON v1/v2
   implementations (`id_json_v1.go` / `id_json_v2.go`), including the

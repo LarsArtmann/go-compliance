@@ -299,3 +299,20 @@ All file:line citations spot-checked against the working tree on 2026-11-19.
 `chips.templ:19-46` shifted to `chips.templ:19-44` after the templ fmt
 normalization (see `.citations-baseline`; verified by
 `scripts/check-citations.sh`).
+
+## Executed addendum (2026-11-19 post-audit wave, plan T9)
+
+The report's flip triggers fired and were executed: `errorpage` is now the
+styled 404 for every unknown path (`notfound.templ` renders
+`errorpage.NotFound404` inside the dashboard shell; serve.go wires the
+catch-all, the page route owns the root exactly via `/{$}` so /anything
+falls through); `layout.ThemeToggle` + `layout.ThemeScript` ship dark mode
+(pre-paint class setter, nonce-ready); the Tailwind Play CDN and its inline
+`tailwind.config` block are GONE — replaced by a compiled CSS pipeline
+(`scripts/regen-ui.sh`: tracked library class inventory + content-hash
+versioned `/app.css` with ETag/304; CI `css-freshness` gate keeps the
+artifacts byte-fresh; the embedlit hint at view.templ:46 was adjudicated a
+templ-LSP false positive — Go forbids elided embedded-field literals, see
+the citation addendum). Verdict moves UNDERUSED → recovering: the flip
+triggers above are discharged; `forms.FilterChips` and the empty-state
+ladder remain the recorded next adoptions when their rows are next touched.

@@ -1,14 +1,14 @@
 # go-sqlitestore
 
-| Field            | Value                                                                                          |
-| ---------------- | ---------------------------------------------------------------------------------------------- |
-| Reviewed         | 2026-11-19 (T15 completion report — closes the audit's dep-graph coverage gap)                 |
-| Group            | T15 (post-audit completion; sole-author verification, same contract as the 5-group fleet run)  |
-| Consumer modules | hub — **direct** (`hub/go.mod`); core — absent (core keeps zero private deps, zero engines)    |
-| Library version  | `v0.1.1` (pinned; equals latest tag — current)                                                 |
-| Recent tags      | `v0.1.1`, `v0.1.0`                                                                             |
-| Modules          | single module `github.com/larsartmann/go-sqlitestore` (engine core: Open/DB, DSN, WAL, write   |
-|                  | mutex + SQLITE_BUSY retry, migrations)                                                          |
+| Field            | Value                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| Reviewed         | 2026-11-19 (T15 completion report — closes the audit's dep-graph coverage gap)                |
+| Group            | T15 (post-audit completion; sole-author verification, same contract as the 5-group fleet run) |
+| Consumer modules | hub — **direct** (`hub/go.mod`); core — absent (core keeps zero private deps, zero engines)   |
+| Library version  | `v0.1.1` (pinned; equals latest tag — current)                                                |
+| Recent tags      | `v0.1.1`, `v0.1.0`                                                                            |
+| Modules          | single module `github.com/larsartmann/go-sqlitestore` (engine core: Open/DB, DSN, WAL, write  |
+|                  | mutex + SQLITE_BUSY retry, migrations)                                                        |
 
 ## What the consumer uses (verified)
 
@@ -61,11 +61,11 @@
 ## Verdict — **ADOPTED**
 
 Utilization score **85** (4.25 of 5 weighted rows: the engine's whole
- raison-d'être — open-hardened SQLite + serialized writes + busy retry — is
- load-bearing in the hub's core loop; the unused surface is either composed
- away by `Open` or genuinely premature). This is what the
- "evidence store: engine core vs hand-rolled DSN" STACK row promised, held
- honest by the cross-process watcher test.
+raison-d'être — open-hardened SQLite + serialized writes + busy retry — is
+load-bearing in the hub's core loop; the unused surface is either composed
+away by `Open` or genuinely premature). This is what the
+"evidence store: engine core vs hand-rolled DSN" STACK row promised, held
+honest by the cross-process watcher test.
 
 **Flip triggers:** a second table or a column add (the migration helpers
 become load-bearing); multi-statement write transactions (WithWriteLock);

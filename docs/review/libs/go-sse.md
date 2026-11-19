@@ -25,7 +25,7 @@ The hub's SSE layer is a textbook consumption of the library: the typed
 (`hub/internal/events/events.go:126-129`), the documented `NewStream` + deferred
 `Close` + `Heartbeat` goroutine + `select`-on-context pattern in both handlers
 (`events.go:215-263`, `hub/internal/dashboard/dashboard.go:84-109`), branded
-`EventID`s minted at publish (`events.go:256`, `events.go:333`), and full
+`EventID` values minted at publish (`events.go:256`, `events.go:333`), and full
 Last-Event-ID replay through the `EventStore` extension point
 (`events.go:220-224` + `store.go`). The `EventStore` interface is consumed exactly
 as designed — the consumer supplies the ring, the library supplies `Replay`.

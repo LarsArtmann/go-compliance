@@ -57,7 +57,17 @@ replaces).
   `.templ`, run `go tool templ generate` and commit the `_templ.go` diff
   together. The `templ` package identifier is implicitly available in
   .templ files — do NOT import `github.com/a-h/templ` explicitly in a
-  .templ import block (the generated file redeclares it).
+  .templ import block (the generated file redeclares it). The templ LSP's
+  `embedlit` hint is a FALSE POSITIVE for props literals: Go forbids
+  elided embedded-field composite literal types (proven 2026-11-19), keep
+  the explicit `BaseProps: utils.BaseProps{...}` form.
+- **dashboard CSS**: compiled Tailwind artifact, NOT the Play CDN. After
+  touching any dashboard `.templ`, adopting a templ-components component,
+  or bumping the pin: `scripts/regen-ui.sh` (devShell's tailwindcss_4;
+  rebuilds `library-classes.txt` from go.mod truth + compiles
+  `app.min.css`) and commit the three artifacts together — the CI
+  `css-freshness` gate regenerates and diffs byte-fresh. New routes: serve
+  links `/app.css?v=<content-hash>` (immutable day cache).
 
 ## Dedup Audit (art-dupl)
 
