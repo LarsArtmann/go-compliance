@@ -79,27 +79,27 @@ holes undermine it.**
 
 Order = execution priority. Effort sums to ≈17 h of agent-executable work.
 
-| # | Package | Delivers (customer value) | Impact | Effort | Depends on | Tier |
-|---|---------|---------------------------|--------|--------|------------|------|
-| T1 | Discovery SSE parser → `daemon.ParseSSEData` + tests | Fleet membership truth; kills a gopls warning class | High | 60m | — | 1% |
-| T2 | Socket-safety: probe-first cleanup (`CleanStaleSocket` semantics or `Server.Start` lifecycle) + refusal test | No silent sibling kill; −90 LOC hand-roll | High | 90m | — | 1% |
-| T3 | go-filewatcher adoption (dir-watch WAL sidecars + evidence renames; STACK row; vendorHash ×2 sites) | Realtime promise kept: 5 min → ~1-2 s | High | 100m | T5 (one go.mod window) | 1% |
-| T4 | Exit-code contract (`errorfamily.ExitCode` in main.go) | Correct systemd restarts + operator signal | Med | 30m | — | 4% |
-| T5 | Version window: go-sse→v0.7.0, go-datastar→v0.7/v0.8 lockstep, `ScriptTagVersioned`, `ringStore`→`MemoryStore` | Kills 24h stale-JS window; −40 LOC dup | Med | 90m | — | 4% |
-| T6 | Security: GO-2026-6859 bump + govulncheck, SECURITY.md, nosniff wrap | 3 recurring CI findings die; browser surface hardened | Med | 60m | — | 20% |
-| T7 | CLI value: `--format` flag, `health.Off` for cache-disk | 16 output formats unlocked at zero deps | Med | 60m | — | 20% |
-| T10 | Audit infra: citation-check script + run over 20 reports; index screenshot | Future audits mechanically verified | Med | 60m | — | 20% |
-| T11 | Test/CI parity: core `-race`, templ fmt gate, README threshold pin, serve.go comment | Gates match reality; drift fails CI | Med | 45m | — | 20% |
-| T12 | Docs routing: flip-triggers→ROADMAP, review-libs link, AGENTS command rows | Findings findable; no entombment | Med | 30m | — | 20% |
-| T8 | cmdguard: lint CI gate + AssertDescribeContract (if tag) + upstream Nd TODO | Fleet CLI standard enforced | Med | 60m | — | rest |
-| T9 | templ-components: errorpage, ThemeToggle, Play CDN→compiled CSS, embedlit hint | CSP-safe prod UI; polished errors | Med | 100m | — | rest |
-| T15 | Utilization reports: go-branded-id, go-sqlitestore | Audit covers 100% of the dep graph | Low | 60m | — | rest |
-| T18 | lychee 4-file verdict + semantic audit of 22 token-matched items | Docs-gates green becomes trustworthy | Low | 60m | — | rest |
-| T13 | Docs hygiene: archive sweep + manifest | Cadence gate unblocks | Low | 30m | — | rest |
-| T14 | Verification ritual: `nix flake check --all-systems` + full final gate pass | Ship confidence; platform status known | Low | 30m | T1–T9 | rest |
-| T17 | io-history-ratchet anomaly (`--profile-io`) | Explains buildflow noise (43 vs 16) | Low | 30m | — | rest |
-| T21 | Core v0.1.0 release pass: checklist, drop hub `replace`, tidy, hash check (GATED on owner go) | Publishable core; simpler hub module | High | 30m | owner gate | gated |
-| OG | Owner gate: FLAKE_PAT, repo visibility, M26 g2, VACUUM, cache-DB delete, SSE-canonical-owner decision, upstream mandate | Unblocks CI, publishing, fleet convergence | High | owner time | — | blocked |
+| #   | Package                                                                                                                 | Delivers (customer value)                             | Impact | Effort     | Depends on             | Tier    |
+| --- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------ | ---------- | ---------------------- | ------- |
+| T1  | Discovery SSE parser → `daemon.ParseSSEData` + tests                                                                    | Fleet membership truth; kills a gopls warning class   | High   | 60m        | —                      | 1%      |
+| T2  | Socket-safety: probe-first cleanup (`CleanStaleSocket` semantics or `Server.Start` lifecycle) + refusal test            | No silent sibling kill; −90 LOC hand-roll             | High   | 90m        | —                      | 1%      |
+| T3  | go-filewatcher adoption (dir-watch WAL sidecars + evidence renames; STACK row; vendorHash ×2 sites)                     | Realtime promise kept: 5 min → ~1-2 s                 | High   | 100m       | T5 (one go.mod window) | 1%      |
+| T4  | Exit-code contract (`errorfamily.ExitCode` in main.go)                                                                  | Correct systemd restarts + operator signal            | Med    | 30m        | —                      | 4%      |
+| T5  | Version window: go-sse→v0.7.0, go-datastar→v0.7/v0.8 lockstep, `ScriptTagVersioned`, `ringStore`→`MemoryStore`          | Kills 24h stale-JS window; −40 LOC dup                | Med    | 90m        | —                      | 4%      |
+| T6  | Security: GO-2026-6859 bump + govulncheck, SECURITY.md, nosniff wrap                                                    | 3 recurring CI findings die; browser surface hardened | Med    | 60m        | —                      | 20%     |
+| T7  | CLI value: `--format` flag, `health.Off` for cache-disk                                                                 | 16 output formats unlocked at zero deps               | Med    | 60m        | —                      | 20%     |
+| T10 | Audit infra: citation-check script + run over 20 reports; index screenshot                                              | Future audits mechanically verified                   | Med    | 60m        | —                      | 20%     |
+| T11 | Test/CI parity: core `-race`, templ fmt gate, README threshold pin, serve.go comment                                    | Gates match reality; drift fails CI                   | Med    | 45m        | —                      | 20%     |
+| T12 | Docs routing: flip-triggers→ROADMAP, review-libs link, AGENTS command rows                                              | Findings findable; no entombment                      | Med    | 30m        | —                      | 20%     |
+| T8  | cmdguard: lint CI gate + AssertDescribeContract (if tag) + upstream Nd TODO                                             | Fleet CLI standard enforced                           | Med    | 60m        | —                      | rest    |
+| T9  | templ-components: errorpage, ThemeToggle, Play CDN→compiled CSS, embedlit hint                                          | CSP-safe prod UI; polished errors                     | Med    | 100m       | —                      | rest    |
+| T15 | Utilization reports: go-branded-id, go-sqlitestore                                                                      | Audit covers 100% of the dep graph                    | Low    | 60m        | —                      | rest    |
+| T18 | lychee 4-file verdict + semantic audit of 22 token-matched items                                                        | Docs-gates green becomes trustworthy                  | Low    | 60m        | —                      | rest    |
+| T13 | Docs hygiene: archive sweep + manifest                                                                                  | Cadence gate unblocks                                 | Low    | 30m        | —                      | rest    |
+| T14 | Verification ritual: `nix flake check --all-systems` + full final gate pass                                             | Ship confidence; platform status known                | Low    | 30m        | T1–T9                  | rest    |
+| T17 | io-history-ratchet anomaly (`--profile-io`)                                                                             | Explains buildflow noise (43 vs 16)                   | Low    | 30m        | —                      | rest    |
+| T21 | Core v0.1.0 release pass: checklist, drop hub `replace`, tidy, hash check (GATED on owner go)                           | Publishable core; simpler hub module                  | High   | 30m        | owner gate             | gated   |
+| OG  | Owner gate: FLAKE_PAT, repo visibility, M26 g2, VACUUM, cache-DB delete, SSE-canonical-owner decision, upstream mandate | Unblocks CI, publishing, fleet convergence            | High   | owner time | —                      | blocked |
 
 Not scheduled (kept RAW in ROADMAP): fleet-wide adoption waves (go-daemon
 `Server.Start`, cmdguard `AssertDescribeContract`, go-output `--format`,
@@ -112,82 +112,82 @@ Not scheduled (kept RAW in ROADMAP): fleet-wide adoption waves (go-daemon
 69 micro-tasks. IDs map to packages above; each ends with its package's gate
 (build+vet+lint+tests where code is touched — SEQUENTIAL test runs per AGENTS.md).
 
-| ID | Task | ≤ | Impact | Tier |
-|----|------|----|--------|------|
-| 1.1 | Swap discovery client scanner loop for `daemon.ParseSSEData`; drop hand-rolled buffers | 12m | High | 1% |
-| 1.2 | Tests: multi-line `data:` frames reassembled; read-error surfaces (no fake EOF) | 12m | High | 1% |
-| 1.3 | Verify gopls scanner warning gone; full gate green | 12m | High | 1% |
-| 2.1 | Test first: second bind against a live socket must FAIL (reproduces today's steal) | 12m | High | 1% |
-| 2.2 | Adopt probe-first stale-socket cleanup (go-daemon `CleanStaleSocket` semantics) | 12m | High | 1% |
-| 2.3 | Decide minimal-probe vs full `Server.Start` adoption; record in STACK/AGENTS | 12m | High | 1% |
-| 2.4 | Preserve sd_notify/watchdog ordering; `-race` suite green | 12m | High | 1% |
-| 2.5 | Update go-daemon.md report + AGENTS.md (adopted surface) | 12m | Med | 1% |
-| 3.1 | STACK.md foundation row + decision-log entry for go-filewatcher | 12m | Med | 1% |
-| 3.2 | Wire dir-watch (filter `<db>`,`-wal`,`-shm` + evidence dir) into refresher | 12m | High | 1% |
-| 3.3 | `Healthy()` → go-health check; safety net stays as backstop | 12m | High | 1% |
-| 3.4 | vendorHash bootstrap site 1 (`compliance-hub` package) | 12m | Med | 1% |
-| 3.5 | vendorHash bootstrap site 2 (CI devShell) + convergence confirm | 12m | Med | 1% |
-| 3.6 | Test: cross-process SQLite write → refresh ≤2 s (WAL sidecar event) | 12m | High | 1% |
-| 3.7 | `nix flake check`; shrink AGENTS.md "documented limitation" paragraph | 12m | Med | 1% |
-| 4.1 | `errorfamily.ExitCode(err)` in main.go + classification→exit test | 12m | Med | 4% |
-| 4.2 | Document exit codes (README or AGENTS table row) | 12m | Low | 4% |
-| 5.1 | Bump go-sse v0.7.0; hub suite green | 12m | Med | 4% |
-| 5.2 | Bump go-datastar v0.7.0 + static v0.8.0 lockstep; check templ-components constraint | 12m | Med | 4% |
-| 5.3 | Replace hand-rolled `/datastar.js` handler with `ScriptTagVersioned` (ETag/304) | 12m | Med | 4% |
-| 5.4 | Delete `ringStore`; use `datastar.MemoryStore`; replay tests green | 12m | Med | 4% |
-| 5.5 | Align datastartest/ssetest pins to the new minors | 12m | Low | 4% |
-| 5.6 | Per-module `go mod tidy`; vendorHash check (share window with T3) | 12m | Med | 4% |
-| 6.1 | Toolchain bump for GO-2026-6859; govulncheck 0 reachable | 12m | Med | 20% |
-| 6.2 | Write SECURITY.md (root/.github/docs lookup path) | 10m | Med | 20% |
-| 6.3 | nosniff middleware wrap in serve.go + header test | 12m | Med | 20% |
-| 6.4 | buildflow re-run: the three recurring findings gone | 12m | Med | 20% |
-| 7.1 | `--format` flag on fleet-table path (go-output RenderTable wiring) | 12m | Med | 20% |
-| 7.2 | Format tests: json/csv/markdown round-trips | 12m | Low | 20% |
-| 7.3 | `health.Off` for unconfigured cache-disk; readiness payload test | 12m | Med | 20% |
-| 7.4 | Wire `--format` into cmdguard output plumbing if the contract allows | 12m | Low | 20% |
-| 10.1 | Write citation-check script (extract file:line cites → verify existence/range) | 12m | Med | 20% |
-| 10.2 | Run script over all 20 reports; capture report | 12m | Med | 20% |
-| 10.3 | Fix/annotate every stale citation found | 12m | Med | 20% |
-| 10.4 | Screenshot index.html (needs firefox permission) → docs/assets; link from index | 12m | Low | 20% |
-| 10.5 | AGENTS.md: go-daemon tag-watch hook (report addendum at next tag) | 5m | Low | 20% |
-| 11.1 | Core module `-race -count=1` run + AGENTS.md commands row | 12m | Med | 20% |
-| 11.2 | `templ fmt` CI gate job | 12m | Low | 20% |
-| 11.3 | Pin README health thresholds in `/readyz` contract test | 12m | Med | 20% |
-| 11.4 | serve.go goroutine-window clarifying comment | 5m | Low | 20% |
-| 12.1 | Flip-triggers table (11 libs) → ROADMAP "conditions watched" | 12m | Med | 20% |
-| 12.2 | Link docs/review/libs from README docs section | 5m | Low | 20% |
-| 12.3 | AGENTS.md commands: exit-code policy line (redirect+echo) | 5m | Low | 20% |
-| 12.4 | AGENTS.md commands: devShell build in verification ritual | 5m | Low | 20% |
-| 8.1 | cmdguard-lint CI job (hub passes every rule today — gate it) | 12m | Med | rest |
-| 8.2 | Adopt `AssertDescribeContract` if next cmdguard tag ships it | 12m | Med | rest |
-| 8.3 | File upstream Nd-duration-codec TODO in cmdguard repo (needs mandate) | 12m | Med | rest |
-| 9.1 | `errorpage` for Go-default 404s | 12m | Med | rest |
-| 9.2 | `layout.ThemeToggle` | 12m | Low | rest |
-| 9.3 | Play CDN → compiled CSS pipeline (config) | 12m | Med | rest |
-| 9.4 | Verify CSP-safety of the compiled pipeline (no inline config block) | 12m | Med | rest |
-| 9.5 | Fix view.templ:46 embedlit hint | 5m | Low | rest |
-| 9.6 | view_test regression + patch-size check (rows stay script-free) | 12m | High | rest |
-| 15.1a | go-branded-id: read lib + consumer usage inventory | 12m | Low | rest |
-| 15.1b | go-branded-id: write utilization report | 12m | Low | rest |
-| 15.2a | go-sqlitestore: read lib + consumer usage inventory | 12m | Low | rest |
-| 15.2b | go-sqlitestore: write utilization report | 12m | Low | rest |
-| 18.1 | lychee: verdict on the 4 path-excluded files | 12m | Low | rest |
-| 18.2 | Semantic audit batch 1 (~8 of 22 token-matched items) | 12m | Low | rest |
-| 18.3 | Semantic audit batch 2 (~8) | 12m | Low | rest |
-| 18.4 | Semantic audit batch 3 (~6); strike or route each | 12m | Low | rest |
-| 13.1 | Archive sweep: `git mv` aged reports + archived README manifest | 12m | Low | rest |
-| 13.2 | docs-gates re-run clean after sweep | 12m | Low | rest |
-| 14.1 | `nix flake check --all-systems` once; record aarch64 status | 12m | Low | rest |
-| 14.2 | Final full gate pass both modules (build/vet/lint/tests) | 12m | Med | rest |
-| 17.1 | `buildflow --profile-io` run on the anomaly | 12m | Low | rest |
-| 17.2 | Route the io-history finding (fix or ROADMAP) | 5m | Low | rest |
-| 21.1 | Core v0.1.0 release checklist (go-release skill) | 12m | High | gated |
-| 21.2 | Drop hub `replace`, tidy both modules, vendorHash check | 12m | Med | gated |
-| OG.1 | Owner: create FLAKE_PAT secrets (GitHub+Forgejo) | 10m | High | blocked |
-| OG.2 | Owner: decide M26 overview endgame (g2) | — | Med | blocked |
-| OG.3 | Owner: repo visibility; VACUUM; cache-DB delete | — | Low | blocked |
-| OG.4 | Owner: fleet SSE-parser canonical owner (ParseSSEData vs sseparse) | — | High | blocked |
-| OG.5 | Owner: cross-repo upstream-TODO mandate | — | Med | blocked |
+| ID    | Task                                                                                   | ≤   | Impact | Tier    |
+| ----- | -------------------------------------------------------------------------------------- | --- | ------ | ------- |
+| 1.1   | Swap discovery client scanner loop for `daemon.ParseSSEData`; drop hand-rolled buffers | 12m | High   | 1%      |
+| 1.2   | Tests: multi-line `data:` frames reassembled; read-error surfaces (no fake EOF)        | 12m | High   | 1%      |
+| 1.3   | Verify gopls scanner warning gone; full gate green                                     | 12m | High   | 1%      |
+| 2.1   | Test first: second bind against a live socket must FAIL (reproduces today's steal)     | 12m | High   | 1%      |
+| 2.2   | Adopt probe-first stale-socket cleanup (go-daemon `CleanStaleSocket` semantics)        | 12m | High   | 1%      |
+| 2.3   | Decide minimal-probe vs full `Server.Start` adoption; record in STACK/AGENTS           | 12m | High   | 1%      |
+| 2.4   | Preserve sd_notify/watchdog ordering; `-race` suite green                              | 12m | High   | 1%      |
+| 2.5   | Update go-daemon.md report + AGENTS.md (adopted surface)                               | 12m | Med    | 1%      |
+| 3.1   | STACK.md foundation row + decision-log entry for go-filewatcher                        | 12m | Med    | 1%      |
+| 3.2   | Wire dir-watch (filter `<db>`,`-wal`,`-shm` + evidence dir) into refresher             | 12m | High   | 1%      |
+| 3.3   | `Healthy()` → go-health check; safety net stays as backstop                            | 12m | High   | 1%      |
+| 3.4   | vendorHash bootstrap site 1 (`compliance-hub` package)                                 | 12m | Med    | 1%      |
+| 3.5   | vendorHash bootstrap site 2 (CI devShell) + convergence confirm                        | 12m | Med    | 1%      |
+| 3.6   | Test: cross-process SQLite write → refresh ≤2 s (WAL sidecar event)                    | 12m | High   | 1%      |
+| 3.7   | `nix flake check`; shrink AGENTS.md "documented limitation" paragraph                  | 12m | Med    | 1%      |
+| 4.1   | `errorfamily.ExitCode(err)` in main.go + classification→exit test                      | 12m | Med    | 4%      |
+| 4.2   | Document exit codes (README or AGENTS table row)                                       | 12m | Low    | 4%      |
+| 5.1   | Bump go-sse v0.7.0; hub suite green                                                    | 12m | Med    | 4%      |
+| 5.2   | Bump go-datastar v0.7.0 + static v0.8.0 lockstep; check templ-components constraint    | 12m | Med    | 4%      |
+| 5.3   | Replace hand-rolled `/datastar.js` handler with `ScriptTagVersioned` (ETag/304)        | 12m | Med    | 4%      |
+| 5.4   | Delete `ringStore`; use `datastar.MemoryStore`; replay tests green                     | 12m | Med    | 4%      |
+| 5.5   | Align datastartest/ssetest pins to the new minors                                      | 12m | Low    | 4%      |
+| 5.6   | Per-module `go mod tidy`; vendorHash check (share window with T3)                      | 12m | Med    | 4%      |
+| 6.1   | Toolchain bump for GO-2026-6859; govulncheck 0 reachable                               | 12m | Med    | 20%     |
+| 6.2   | Write SECURITY.md (root/.github/docs lookup path)                                      | 10m | Med    | 20%     |
+| 6.3   | nosniff middleware wrap in serve.go + header test                                      | 12m | Med    | 20%     |
+| 6.4   | buildflow re-run: the three recurring findings gone                                    | 12m | Med    | 20%     |
+| 7.1   | `--format` flag on fleet-table path (go-output RenderTable wiring)                     | 12m | Med    | 20%     |
+| 7.2   | Format tests: json/csv/markdown round-trips                                            | 12m | Low    | 20%     |
+| 7.3   | `health.Off` for unconfigured cache-disk; readiness payload test                       | 12m | Med    | 20%     |
+| 7.4   | Wire `--format` into cmdguard output plumbing if the contract allows                   | 12m | Low    | 20%     |
+| 10.1  | Write citation-check script (extract file:line cites → verify existence/range)         | 12m | Med    | 20%     |
+| 10.2  | Run script over all 20 reports; capture report                                         | 12m | Med    | 20%     |
+| 10.3  | Fix/annotate every stale citation found                                                | 12m | Med    | 20%     |
+| 10.4  | Screenshot index.html (needs firefox permission) → docs/assets; link from index        | 12m | Low    | 20%     |
+| 10.5  | AGENTS.md: go-daemon tag-watch hook (report addendum at next tag)                      | 5m  | Low    | 20%     |
+| 11.1  | Core module `-race -count=1` run + AGENTS.md commands row                              | 12m | Med    | 20%     |
+| 11.2  | `templ fmt` CI gate job                                                                | 12m | Low    | 20%     |
+| 11.3  | Pin README health thresholds in `/readyz` contract test                                | 12m | Med    | 20%     |
+| 11.4  | serve.go goroutine-window clarifying comment                                           | 5m  | Low    | 20%     |
+| 12.1  | Flip-triggers table (11 libs) → ROADMAP "conditions watched"                           | 12m | Med    | 20%     |
+| 12.2  | Link docs/review/libs from README docs section                                         | 5m  | Low    | 20%     |
+| 12.3  | AGENTS.md commands: exit-code policy line (redirect+echo)                              | 5m  | Low    | 20%     |
+| 12.4  | AGENTS.md commands: devShell build in verification ritual                              | 5m  | Low    | 20%     |
+| 8.1   | cmdguard-lint CI job (hub passes every rule today — gate it)                           | 12m | Med    | rest    |
+| 8.2   | Adopt `AssertDescribeContract` if next cmdguard tag ships it                           | 12m | Med    | rest    |
+| 8.3   | File upstream Nd-duration-codec TODO in cmdguard repo (needs mandate)                  | 12m | Med    | rest    |
+| 9.1   | `errorpage` for Go-default 404s                                                        | 12m | Med    | rest    |
+| 9.2   | `layout.ThemeToggle`                                                                   | 12m | Low    | rest    |
+| 9.3   | Play CDN → compiled CSS pipeline (config)                                              | 12m | Med    | rest    |
+| 9.4   | Verify CSP-safety of the compiled pipeline (no inline config block)                    | 12m | Med    | rest    |
+| 9.5   | Fix view.templ:46 embedlit hint                                                        | 5m  | Low    | rest    |
+| 9.6   | view_test regression + patch-size check (rows stay script-free)                        | 12m | High   | rest    |
+| 15.1a | go-branded-id: read lib + consumer usage inventory                                     | 12m | Low    | rest    |
+| 15.1b | go-branded-id: write utilization report                                                | 12m | Low    | rest    |
+| 15.2a | go-sqlitestore: read lib + consumer usage inventory                                    | 12m | Low    | rest    |
+| 15.2b | go-sqlitestore: write utilization report                                               | 12m | Low    | rest    |
+| 18.1  | lychee: verdict on the 4 path-excluded files                                           | 12m | Low    | rest    |
+| 18.2  | Semantic audit batch 1 (~8 of 22 token-matched items)                                  | 12m | Low    | rest    |
+| 18.3  | Semantic audit batch 2 (~8)                                                            | 12m | Low    | rest    |
+| 18.4  | Semantic audit batch 3 (~6); strike or route each                                      | 12m | Low    | rest    |
+| 13.1  | Archive sweep: `git mv` aged reports + archived README manifest                        | 12m | Low    | rest    |
+| 13.2  | docs-gates re-run clean after sweep                                                    | 12m | Low    | rest    |
+| 14.1  | `nix flake check --all-systems` once; record aarch64 status                            | 12m | Low    | rest    |
+| 14.2  | Final full gate pass both modules (build/vet/lint/tests)                               | 12m | Med    | rest    |
+| 17.1  | `buildflow --profile-io` run on the anomaly                                            | 12m | Low    | rest    |
+| 17.2  | Route the io-history finding (fix or ROADMAP)                                          | 5m  | Low    | rest    |
+| 21.1  | Core v0.1.0 release checklist (go-release skill)                                       | 12m | High   | gated   |
+| 21.2  | Drop hub `replace`, tidy both modules, vendorHash check                                | 12m | Med    | gated   |
+| OG.1  | Owner: create FLAKE_PAT secrets (GitHub+Forgejo)                                       | 10m | High   | blocked |
+| OG.2  | Owner: decide M26 overview endgame (g2)                                                | —   | Med    | blocked |
+| OG.3  | Owner: repo visibility; VACUUM; cache-DB delete                                        | —   | Low    | blocked |
+| OG.4  | Owner: fleet SSE-parser canonical owner (ParseSSEData vs sseparse)                     | —   | High   | blocked |
+| OG.5  | Owner: cross-repo upstream-TODO mandate                                                | —   | Med    | blocked |
 
 ---
 

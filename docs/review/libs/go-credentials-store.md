@@ -72,3 +72,9 @@ All commands executed 2026-11-19; outputs as annotated (the absence hunts return
 `reporter.go:351-353` moved to `filestore.go:141-143` in the filestore
 split (see `.citations-baseline`; verified by
 `scripts/check-citations.sh`).
+
+## Citation drift addendum (2026-11-19 post-audit wave)
+
+`TODO_LIST.md:55` (the FLAKE_PAT owner row) shifted with the 2026-11-19
+TODO_LIST reconcile — the row now lives in the Blocked section near the
+tail (see `.citations-baseline`; verified by `scripts/check-citations.sh`).

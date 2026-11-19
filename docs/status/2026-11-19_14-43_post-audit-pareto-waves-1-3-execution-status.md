@@ -123,10 +123,11 @@ the planning session), T8 (cmdguard-lint CI gate, `AssertDescribeContract`
 availability check, upstream Nd TODO — blocked on OG.5), T9 (errorpage,
 ThemeToggle, Play CDN→compiled CSS + CSP verification, view.templ:46
 embedlit fix, view_test regression + patch-size check), T15 (go-branded-id
-+ go-sqlitestore utilization reports), T18 (lychee verdict on the 4
-path-excluded files + semantic audit of the 22 token-matched items), T13
-(archive sweep + docs-gates clean), T17 (`--profile-io` anomaly), T14
-(final ritual). **T21 and OG items remain owner-blocked** (unchanged).
+
+- go-sqlitestore utilization reports), T18 (lychee verdict on the 4
+  path-excluded files + semantic audit of the 22 token-matched items), T13
+  (archive sweep + docs-gates clean), T17 (`--profile-io` anomaly), T14
+  (final ritual). **T21 and OG items remain owner-blocked** (unchanged).
 
 ## d) TOTALLY FUCKED UP (known-broken RIGHT NOW)
 
@@ -194,35 +195,35 @@ path-excluded files + semantic audit of the 22 token-matched items), T13
 14. T8.2: check whether the next cmdguard tag ships `AssertDescribeContract`.
 15. T8.3: upstream Nd-duration-codec TODO (BLOCKED on OG.5).
 16. T9.1: `errorpage` for Go-default 404s.
-~~17. T9.2: `layout.ThemeToggle`.~~ done at 2026-11-19: ThemeToggle + ThemeScript shipped in the compiled-CSS pass (view.templ; pinned by routes_test "links the compiled stylesheet versioned and stays off the Tailwind Play CDN")
-18. T9.3–9.4: Play CDN → compiled CSS pipeline + CSP-safety verification.
-19. T9.6: view_test regression + patch-size check (rows stay script-free).
-20. T15.1a/b: go-branded-id utilization report.
-21. T15.2a/b: go-sqlitestore utilization report.
-22. T18.1: lychee verdict on the 4 path-excluded files.
-23. T18.2–18.4: semantic audit of the 22 token-matched items (3 batches).
-24. T13.1: archive sweep (git mv aged reports + manifest).
-25. T13.2: docs-gates re-run clean (kills the 2 docs-gates findings).
-26. T17.1: `buildflow --profile-io` run on the io-history anomaly.
-27. T17.2: route the anomaly finding (fix or ROADMAP).
-28. T14.1: `nix flake check --all-systems` once; record aarch64 status.
-29. T14.2: final full gate (build/vet/lint/tests both modules + buildflow,
+    ~~17. T9.2: `layout.ThemeToggle`.~~ done at 2026-11-19: ThemeToggle + ThemeScript shipped in the compiled-CSS pass (view.templ; pinned by routes_test "links the compiled stylesheet versioned and stays off the Tailwind Play CDN")
+17. T9.3–9.4: Play CDN → compiled CSS pipeline + CSP-safety verification.
+18. T9.6: view_test regression + patch-size check (rows stay script-free).
+19. T15.1a/b: go-branded-id utilization report.
+20. T15.2a/b: go-sqlitestore utilization report.
+21. T18.1: lychee verdict on the 4 path-excluded files.
+22. T18.2–18.4: semantic audit of the 22 token-matched items (3 batches).
+23. T13.1: archive sweep (git mv aged reports + manifest).
+24. T13.2: docs-gates re-run clean (kills the 2 docs-gates findings).
+25. T17.1: `buildflow --profile-io` run on the io-history anomaly.
+26. T17.2: route the anomaly finding (fix or ROADMAP).
+27. T14.1: `nix flake check --all-systems` once; record aarch64 status.
+28. T14.2: final full gate (build/vet/lint/tests both modules + buildflow,
     findings gate modulo owner-gated rows).
-30. Owner: go-humanize + samber/lo policy verdict (§g Q1).
-31. Owner: FLAKE_PAT secrets on both runner hosts (OG.1) — hub/flake CI
+29. Owner: go-humanize + samber/lo policy verdict (§g Q1).
+30. Owner: FLAKE_PAT secrets on both runner hosts (OG.1) — hub/flake CI
     jobs still skip.
-32. Owner: fleet SSE-parser canonical owner (OG.4, §g Q2).
-33. Owner: cross-repo upstream mandate (OG.5, §g Q3).
-34. Owner: M26 g2 endgame; repo visibility; VACUUM (buildflow preflight
+31. Owner: fleet SSE-parser canonical owner (OG.4, §g Q2).
+32. Owner: cross-repo upstream mandate (OG.5, §g Q3).
+33. Owner: M26 g2 endgame; repo visibility; VACUUM (buildflow preflight
     re-warned: state DB 1.04 GB); cache-DB delete (OG.3).
-35. Owner: T21 go signal (core v0.1.0 release pass).
-36. dprint check re-run (files edited after the buildflow pass).
-~~37. ssetest pin: revisit when a ssetest tag newer than v0.5.0 ships.~~ resolved: routed to ROADMAP "Conditions watched" (ssetest flip trigger row, 2026-11-19)
-38. TODO_LIST harvest: mark the plan rows T1/T2/T4/T5/T3/T7 (+T6 partial)
+34. Owner: T21 go signal (core v0.1.0 release pass).
+35. dprint check re-run (files edited after the buildflow pass).
+    ~~37. ssetest pin: revisit when a ssetest tag newer than v0.5.0 ships.~~ resolved: routed to ROADMAP "Conditions watched" (ssetest flip trigger row, 2026-11-19)
+36. TODO_LIST harvest: mark the plan rows T1/T2/T4/T5/T3/T7 (+T6 partial)
     per this report.
-39. go-daemon report rank-3 opportunity (`NewHTTPClientNoTimeout` for the
+37. go-daemon report rank-3 opportunity (`NewHTTPClientNoTimeout` for the
     watch stream) stays open — flip trigger unchanged.
-40. Watch the cross-process watcher spec on CI for timing flakiness (2s
+38. Watch the cross-process watcher spec on CI for timing flakiness (2s
     budget; loosen only with evidence).
 
 ## g) Questions I can NOT answer myself

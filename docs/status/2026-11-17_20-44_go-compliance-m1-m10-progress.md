@@ -236,33 +236,33 @@ before moving on, honest reporting of everything that broke along the way.
 23. M15/F068: go-health probe registration
 24. M15/F069: sd_notify wiring via go-daemon
 25. M15/F070: systemd unit file + docs
-~~26. M15/F071: smoke: serve + curl /health~~ done at 2026-11-19: serve smoke exists — dynamic port, /healthz + full route sweep with hardening-header assertions (hub/internal/cli/app_test.go:96-150)
-27. M27/F107: re-derive on store writes (hook)
-28. M27/F108: debounce + coalesce events
-29. M27/F109: E2E: evidence change → browser event
-30. M27: discovery /v1/watch → refresh trigger (client.Watch exists after d1–d3)
-31. M20/F090: decision doc docs/decisions/bind-posture.md
-32. M20/F091: bind flag + localhost default (flag exists; document+test)
-33. M20/F092: optional unix-socket listen mode
-34. M20/F093: test non-localhost bind requires explicit flag
-35. M17/F077: dprint.json + format check
-36. M17/F078: TODO_LIST.md seeded from the plan (HARVEST target)
-37. ~~M17/F079: FEATURES.md initial inventory~~ done — FEATURES.md
-38. ~~M17/F080: DOMAIN_LANGUAGE.md core terms~~ done — docs/DOMAIN_LANGUAGE.md
-39. M17/F081: CHANGELOG.md Unreleased section
-40. M18/F082–F085: flake.nix skeleton + devShell + packages + `nix flake
+    ~~26. M15/F071: smoke: serve + curl /health~~ done at 2026-11-19: serve smoke exists — dynamic port, /healthz + full route sweep with hardening-header assertions (hub/internal/cli/app_test.go:96-150)
+26. M27/F107: re-derive on store writes (hook)
+27. M27/F108: debounce + coalesce events
+28. M27/F109: E2E: evidence change → browser event
+29. M27: discovery /v1/watch → refresh trigger (client.Watch exists after d1–d3)
+30. M20/F090: decision doc docs/decisions/bind-posture.md
+31. M20/F091: bind flag + localhost default (flag exists; document+test)
+32. M20/F092: optional unix-socket listen mode
+33. M20/F093: test non-localhost bind requires explicit flag
+34. M17/F077: dprint.json + format check
+35. M17/F078: TODO_LIST.md seeded from the plan (HARVEST target)
+36. ~~M17/F079: FEATURES.md initial inventory~~ done — FEATURES.md
+37. ~~M17/F080: DOMAIN_LANGUAGE.md core terms~~ done — docs/DOMAIN_LANGUAGE.md
+38. M17/F081: CHANGELOG.md Unreleased section
+39. M18/F082–F085: flake.nix skeleton + devShell + packages + `nix flake
     check` green
-41. M19/F086–F089: CI build/test/lint per module, drift-check, docs gates,
+40. M19/F086–F089: CI build/test/lint per module, drift-check, docs gates,
     Forgejo+GitHub runner validity
-42. M21/F094–F096: examples/reporter, one-line integration guide, screenshots
-43. M22/F097–F098: benchmarks (fold+derive at 300 repos) + baseline file
-44. M23/F099–F100: BuildFlow TODO_LIST pointer row + STACK.md errata check
-45. M24/F101–F102: v2 API design doc + compat policy note
-46. M25/F103–F104: go-health-dashboard federation research + interop note
-47. M26/F105–F106: overview endgame note + migration sketch (blocked: g2)
-48. ~~Fix queryLatestRunCounts N+1 before M27 (e1)~~ done — queryLatestRecords single correlated-subquery query hub/internal/cache/cache.go
-49. Relax the 341-repo fixture pin before the next fixture refresh (e7)
-50. Final: whole-repo build+test+lint+docs audit vs plan, then release
+41. M21/F094–F096: examples/reporter, one-line integration guide, screenshots
+42. M22/F097–F098: benchmarks (fold+derive at 300 repos) + baseline file
+43. M23/F099–F100: BuildFlow TODO_LIST pointer row + STACK.md errata check
+44. M24/F101–F102: v2 API design doc + compat policy note
+45. M25/F103–F104: go-health-dashboard federation research + interop note
+46. M26/F105–F106: overview endgame note + migration sketch (blocked: g2)
+47. ~~Fix queryLatestRunCounts N+1 before M27 (e1)~~ done — queryLatestRecords single correlated-subquery query hub/internal/cache/cache.go
+48. Relax the 341-repo fixture pin before the next fixture refresh (e7)
+49. Final: whole-repo build+test+lint+docs audit vs plan, then release
     procedure (drop hub's replace directive, tag core v0.1.0 first)
 
 ---

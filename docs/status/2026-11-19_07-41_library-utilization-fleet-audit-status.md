@@ -73,7 +73,7 @@ routing, QC). Not a project-wide health check.
    citations rest on agent self-verification. One sampled report HAD a factual
    citation error — the base rate on the unsampled 14 is unknown.
 3. **Gate** — build/vet/lint green; test suites and `nix flake check` skipped with a
-  docs-only rationale (stated, not proven).
+   docs-only rationale (stated, not proven).
 4. **Verify-block completeness** — I shipped index.html with one verify line I had
    not yet executed; caught and executed it this morning. Same class of miss the
    skill explicitly warns about.

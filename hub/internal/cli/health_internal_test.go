@@ -161,6 +161,11 @@ var _ = Describe("README readiness thresholds", func() {
 		Expect(discoveryStaleWarn).To(Equal(10*time.Minute),
 			"README.md 'Checks' section promises a 10-minute stall warning")
 	})
+
+	It("pins the cache-disk free-space floor at 128 MiB", func() {
+		Expect(cacheDiskMinFreeBytes).To(Equal(128<<20),
+			"README.md 'Checks' section promises a 128 MiB floor for cache-disk")
+	})
 })
 
 var _ = Describe("health probe sse-backpressure check", func() {

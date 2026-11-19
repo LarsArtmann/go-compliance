@@ -128,10 +128,10 @@ _Environment hygiene:_
 27. Rebuild BuildFlow from current HEAD (`nix build . && nix run .#reinstall`), then `type -a buildflow` to rule out the `~/go/bin` shadow (BuildFlow#81).
 28. Re-run `buildflow doctor` after the reinstall (binary-freshness + 19 checks).
 29. Run `buildflow format` once so cached formatter verdicts re-verify under the drifted tool fingerprint.
-~~30. Investigate the io-history-ratchet anomaly (43 files hashed vs median 16) with `--profile-io`.~~ NOT-DO: explained via io_metrics (buildflow state DB) — files_hashed correlates with files changed since the previous run: 16 on quiet runs (11-18 17:21), 43 after the 11-18 evening refactors, 58/32/27 after the 2026-11-19 waves. The "median 16" was measuring quiet runs; post-refactor runs legitimately hash every changed input. No ratchet defect; no action.
-31. Stop using the deprecated `--go-upgrade-blame all` alias (last used 2026-11-17); use `touched` or drop the flag.
-32. Determine what process held the state DB 23:18–23:23; add a single-instance guard if concurrent runs are real (see g1).
-33. Re-run a full `buildflow --build-mode=full` after fixes to confirm: 114/114 steps, error-severity findings at 0, timings recorded.
+    ~~30. Investigate the io-history-ratchet anomaly (43 files hashed vs median 16) with `--profile-io`.~~ NOT-DO: explained via io_metrics (buildflow state DB) — files_hashed correlates with files changed since the previous run: 16 on quiet runs (11-18 17:21), 43 after the 11-18 evening refactors, 58/32/27 after the 2026-11-19 waves. The "median 16" was measuring quiet runs; post-refactor runs legitimately hash every changed input. No ratchet defect; no action.
+30. Stop using the deprecated `--go-upgrade-blame all` alias (last used 2026-11-17); use `touched` or drop the flag.
+31. Determine what process held the state DB 23:18–23:23; add a single-instance guard if concurrent runs are real (see g1).
+32. Re-run a full `buildflow --build-mode=full` after fixes to confirm: 114/114 steps, error-severity findings at 0, timings recorded.
 
 _Docs / memory / process:_
 

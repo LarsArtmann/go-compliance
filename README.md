@@ -78,9 +78,9 @@ muscle memory can rely on them:
 
 | Code | Meaning                                                              |
 | ---- | -------------------------------------------------------------------- |
-| 0    | Success                                                             |
+| 0    | Success                                                              |
 | 1    | Rejection: invalid flags, bad window, malformed input — do not retry |
-| 69   | Infrastructure: internal wiring failure                             |
+| 69   | Infrastructure: internal wiring failure                              |
 | 75   | Transient: cache/IO unreachable — retry (e.g. `Restart=on-failure`)  |
 
 Verify live: `compliance-hub report --db /nonexistent/x.db; echo $?` → `75`.

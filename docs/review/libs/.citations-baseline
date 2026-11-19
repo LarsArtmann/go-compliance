@@ -28,3 +28,4 @@ docs/review/libs/go-idempotency.md	cache.go:216-219	moved: queries.go:60-63 (que
 docs/review/libs/go-sse.md	events.go:333	moved: events.go:276 region (store.Append, post-extraction shift)
 docs/review/libs/go-sse.md	events.go:334	moved: events.go:277 (NewEventID append)
 docs/review/libs/templ-components.md	chips.templ:19-46	shifted: chips block now chips.templ:19-44 after templ fmt normalization
+docs/review/libs/go-credentials-store.md	TODO_LIST.md:55	row moved by the 2026-11-19 TODO_LIST reconcile; FLAKE_PAT blocked row now in the Blocked section tail
