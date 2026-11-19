@@ -66,7 +66,7 @@ Executed 2026-11-19, all green unless noted:
 ```bash
 # 1. Absence in both consumer modules (exclude docs/ — this report mentions the name)
 rg -l 'go-appkit' --glob '!vendor/**' --glob '!docs/**' /home/lars/projects/go-compliance
-# → ./STACK.md only (the "Deliberately excluded" row), exit 0
+# → /home/lars/projects/go-compliance/STACK.md only (the "Deliberately excluded" row), exit 0
 
 # 2. Library version metadata
 git -C /home/lars/projects/go-appkit describe --tags --abbrev=0   # preset/v0.1.1

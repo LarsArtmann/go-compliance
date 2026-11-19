@@ -1,0 +1,96 @@
+# cqrs-htmx
+
+- Reviewed: 2026-11-19 (group E framework audit)
+- Consumer modules: core (root `github.com/larsartmann/go-compliance`) and hub (`hub/`). **cqrs-htmx: absent from both** (`rg 'cqrs-htmx' go.mod hub/go.mod` → nothing; only mention is the STACK.md:73 exclusion row, where it is named alongside go-cqrs-lite). The `hub/go.mod:86` indirect `templ-components/htmx v1.27.0` is templ-components' htmx subpackage — unrelated to this library despite the name.
+- Library reviewed at: `git -C /home/lars/projects/cqrs-htmx describe --tags --abbrev=0` → `loginpage/v4.18.0`; `git log -1` → `ccab30e5 2026-11-18 chore: auto-commit 4 changed file(s) (heuristic)`. Remote tags fetched (`git fetch --tags` no-op — local == origin).
+- Main module (root `github.com/larsartmann/cqrs-htmx/v4`) tags are unprefixed: newest `v4.18.1` (2026-11-07); newest overall tag `loginpage/v4.18.0` (2026-11-11); same-train family tags `usermgmt/v4.20.0`, `adminui/v4.17.0`, `dashboardui/v4.17.0`, `setup/v4.17.0`, `systemadapter/v4.13.0`, `huma/v4.0.0` (2026-11-07).
+- **39 `go.mod` sub-modules** (root + 12 `examples/*` demos + `scripts/testdata/verify-tag/*` fixtures + the module families: usermgmt, usermgmt/{totp,webauthn,oauth2}, adminui, dashboardui, loginpage, setup, datastar, huma, health, auditlog, systemadapter, gfl-usermgmt, identity-model, e2e/server, integration_test).
+- Skill contract honored before auditing: `~/.config/crush/skills/cqrs-htmx/SKILL.md` — CQRS command/query HTTP handlers (`App.Command/Query` + `HandlerOption` pipeline: decode→authorize→validate→dispatch), HTMX responses, event-sourced usermgmt (WebAuthn/OAuth2/TOTP, Casbin, sessions, roles/tenants/bots), adminui (identity ops), dashboardui (event-store observability), SSE-only since v5/ADR-0046, Path 0 building blocks usable without the `App`.
+
+## Verdict: NOT-ADOPTED-justified (bordering NOT-APPLICABLE)
+
+cqrs-htmx's own README states the gate: "**If you are not using go-cqrs-lite, this library is not for you** — it is the HTMX/HTTP binding for that specific CQRS core." The hub uses no cqrs-lite (see go-cqrs-lite.md, this group), has **no users, no sessions, no auth, and no write endpoints at all** — every route it serves is a GET (`hub/internal/cli/serve.go:83`, `hub/internal/dashboard/routes.go:58-60`; the only POST in the hub tree is the *outbound* discovery client call, `hub/internal/discovery/client.go`). That empties the library's module families one by one: usermgmt + its three auth strategies solve a problem the bind posture deliberately excludes (localhost/unix-socket, single operator — `STACK.md:22`, `docs/decisions/bind-posture.md`); adminui administers usermgmt objects (users/tenants/members/audit) that do not exist here; dashboardui introspects event stores, journals, projections, DLQs and snapshots the hub does not have (its requires graph pulls `go-cqrs-lite/command`, `commandlifecycle`, `event`, `id` — `dashboardui/go.mod:11-15`); the root `App` handler pipeline (decode→Casbin authorize→validate→dispatch→HTMX response) has no dispatchers to bind and no HTMX to answer — the hub is DataStar by recorded decision (`STACK.md:46`). The two families with any surface-level overlap — SSE transport and the `datastar` adapter module — resolve against adoption: the hub already uses go-sse directly (the same wire-format layer cqrs-htmx's own SSE is built on), and the `datastar/v4` module's distinctive features (signal decoding for command POSTs, `EventBridge` mapping `go-cqrs-lite/event.Event` → patches) map to nothing the hub does while dragging `go-cqrs-lite/event/v4` + `id/v4` in as DIRECT requires (`datastar/go.mod:6-7`). This is the rare audit where the counterfactual inventory finds nothing the consumer lacks: the correct amount of cqrs-htmx for a userless, read-only, DataStar dashboard is zero.
+
+**Flip trigger:** a posture change, not a library decision — if the hub ever serves *remote operators* (multi-user access, sessions, login), usermgmt + loginpage + adminui become the fleet-standard path and this audit re-runs. Until the bind-posture decision itself changes (STACK.md:22 / `docs/decisions/bind-posture.md`), no feature growth inside the current posture (more views, more filters, more API routes) moves the needle, because none of it creates users or commands.
+
+## Derived score
+
+Counterfactual rubric (NOT-adopted framework): Fully (1) when the consumer's existing solution is equivalent-or-better for THIS consumer's needs, Partial (0.5) when adoption would add real marginal value today, Missed (0) when the consumer lacks a capability it genuinely needs. N/A rows carry a one-line reason.
+
+- Capability inventory rows: **N = 10**
+- N/A rows: 8 (root App handler pipeline, HTMX vocabulary, usermgmt, auth strategies, adminui, dashboardui, loginpage+setup, huma) → **applicable A = 2**
+- Fully = 2 × 1, Partial = 0, Missed = 0 → **Σ = 2**
+- **Score = round(100 × 2 / 2) = 100 — very high band (≥85). Publish "2 of 2".**
+
+## Capability inventory
+
+| Capability | Status | Library evidence (path) | Consumer evidence (path:line) |
+| --- | --- | --- | --- |
+| CQRS command/query HTTP handlers (`App.Command/Query`, decode→authorize(Casbin)→validate→guard→dispatch, RFC 9457 errors) | N/A — no dispatchers exist; the hub's API surface is one GET returning a frozen byte-exact v1 JSON document | `README.md` ("One endpoint, five concerns"); skill Path A | `hub/internal/cli/serve.go:83-102` (`GET /v1/compliance`: build → `MarshalV1` → write; frozen contract, STACK.md:57) |
+| HTMX responses (partial-vs-full rendering, `HX-*` headers, embedded htmx.js) | N/A — the hub is DataStar, not HTMX, by recorded choice ("patches-as-values… vs starfederation/datastar-go", STACK.md:46) | skill modules table (root: embedded HTMX JS) | `hub/internal/dashboard/dashboard.go:13-14` (go-datastar + go-datastar/static) |
+| Event-sourced user management (`usermgmt.Service`: register/login/logout/me, roles, tenants, bots, sessions, Casbin authz) | N/A — no users; the domain language has no user term at all (`docs/DOMAIN_LANGUAGE.md`); localhost/unix bind posture makes sessions meaningless | `usermgmt/README.md` (skill modules table) | `STACK.md:22` (bind posture), `docs/decisions/bind-posture.md` |
+| Auth strategies: WebAuthn passkeys, OAuth2/OIDC, TOTP MFA | N/A — single operator on-loopback; any of these would contradict the recorded bind posture rather than fill a gap | skill modules table (`usermgmt/{totp,webauthn,oauth2}`) | — |
+| adminui (ready-made admin dashboard: users/tenants/members/audit over `*usermgmt.Service`, role-gated write actions) | N/A — hub "administration" is CLI flags + systemd + health; there are no usermgmt objects for the panel to render or mutate | `adminui/README.md` ("manages your users… identity operations") | `hub/internal/cli/flags.go`, `hub/internal/cli/health.go` (the entire admin surface) |
+| dashboardui (event-store observability: journal, aggregates, projections, DLQ, snapshots, time-travel; read-only by default) | N/A — the hub has no event store/journal/projections/DLQ to introspect (see go-cqrs-lite.md); its own dashboard IS the domain observability surface | `dashboardui/README.md` ("introspects your event store"); requires cqrs-lite command/event modules (`dashboardui/go.mod:11-15`) | `hub/internal/dashboard/` (the dashboard exists already, for evidence rows) |
+| loginpage + setup (passwordless login page; one-call composition of stores + usermgmt + all three panels) | N/A — composes usermgmt machinery the hub lacks; `setup.RunWithAppkit` presumes the appkit spine the hub also declined | skill modules table; `setup/README.md` | — |
+| SSE building blocks (`Broadcaster`/`SSEStream`/`JournalSSEStore`, Path 0 usable without the App) | Fully (solved at the layer below) — the hub uses go-sse directly (the same wire layer cqrs-htmx's SSE consumes); adopting a second fan-out implementation would ADD a parallel hub, not replace one | skill Path 0 example (`cqrshtmx.NewBroadcaster`) | `hub/internal/events/events.go:13` (go-sse import), `:126-129` (`sse.NewBroadcaster` + drop callback); STACK.md:45 (go-sse chosen "vs go-aichat ssehub") |
+| `datastar` adapter module (script serving with ETag, signal decode, patch constructors, SSE response builder, `EventBridge`) | Fully (solved at the layer below, without the cqrs baggage) — the hub serves the pinned bundle via go-datastar/static and constructs patches as values via go-datastar directly; the module's adds (ReadSignals for POST bodies, EventBridge over `go-cqrs-lite/event.Event`) are unusable here, and its go.mod DIRECT-requires `go-cqrs-lite/event/v4` + `id/v4` (`datastar/go.mod:6-7`) | `datastar/README.md` (API table); `datastar/go.mod:5-12` | `hub/internal/dashboard/dashboard.go:14` (static bundle), `routes.go:58` (script route), `dashboard.go:30-36` (patch construction); STACK.md:46 |
+| huma adapter (typed OpenAPI operations over command/query dispatch) | N/A — the hub's API is a frozen v1 JSON contract + a JSON state snapshot, not OpenAPI-first; no typed operations to register | skill modules table (`huma/v4`) | `v1.go` (`MarshalV1`/`DecodeV1Report`), STACK.md:57 |
+
+## Gap analysis
+
+Nothing actionable. Every sub-module family was assessed against an actual hub need and none maps:
+
+- **usermgmt/adminui/loginpage/setup** — the "hub administration" hypothesis fails concretely: what an operator administers here is *evidence windows, staleness thresholds, and the source* — flags on `compliance-hub serve` (`hub/internal/cli/flags.go`), re-read by restarting the systemd unit. adminui's panels (accounts, tenants, members, audit log) have no data source to bind to without first adopting usermgmt, sessions, and a posture change.
+- **dashboardui** — the second hypothesis ("observability dashboard for hub administration?") fails because dashboardui is CQRS-internal observability: it autodetects `EventSource`/`Journal`/`SeekableJournal`/`StreamReader`/`Host`/`DLQ`/`Snapshots`/`Bus` interfaces (`dashboardui/README.md` "Integration Modes") — interfaces only a go-cqrs-lite store can implement. The hub's SQLite cache implements none of them, and building adapters from `evidence_runs` to a journal-shaped interface would be pure ceremony.
+- **SSE transport** — cqrs-htmx's `Broadcaster`/`SSEStream` and the hub's `events.Hub` are both thin layers over the same go-sse; the consumer already owns the richer one (typed snapshot/update/diff payloads + ring replay + DataStar projection). Swapping would lose `DiffRows` semantics and gain nothing.
+- **datastar adapter** — the single module with a seductive name. Reality check line-by-line: `ScriptHandler()` ≙ already have (`routes.go:58`, version-pinned by go-datastar/static per `dashboard.go:112` comment); `ReadSignals` — the hub has zero POST routes; `NewResponse` builder — the hub's "patches-as-values" stance (STACK.md:46) is deliberately the opposite of a response-builder API; `EventBridge` — requires `go-cqrs-lite/event.Event`, i.e. the exact dependency this consumer's architecture excludes. And the module is on go-datastar v0.7.0 while the hub pins v0.6.x — adopting would fork the fleet's DataStar layer at two versions.
+
+## Version currency
+
+- Very active: ~1288 commits since 2026-10-20; HEAD 2026-11-18 (auto-commit daemon); family tags 2026-11-07, newest `loginpage/v4.18.0` 2026-11-11.
+- v4 is the stable surface (skill targets v4); v5 is in flight — WebSocket transport removed (ADR-0046, SSE-only), deprecated root re-exports (`cqrshtmx.HTMXScriptHandler` etc.) and the deprecated CSRF/rate-limit aliases deleted, `datastar` module's same-named constructors already marked v5-removal. Same conclusion as go-cqrs-lite.md: adopting today would buy a migration obligation for capability the hub cannot use.
+- Module-count caveat: of 39 go.mod sub-modules, 12 are example apps and ~13 are verify-tag test fixtures — the *product* is roughly a dozen modules, of which 8 are usermgmt-shaped.
+
+## Fleet leverage
+
+cqrs-htmx is the fleet's multi-user GOTH-stack application framework (root + usermgmt + panels + setup; reference consumers are the example apps and the wider fleet's HTMX services). The two-way honesty: this is the most clear-cut of the three audits — there is no shared plumbing being duplicated here. The hub's realtime stack (go-sse + go-datastar + templ-components) is *already* the same primitive layer cqrs-htmx itself builds on, so collective improvements flow between hub and framework consumers through those primitives regardless of adoption. The library's target shape — authenticated, command-dispatching, HTMX-rendered web app — is defined by exactly the properties the hub's design removes (users, commands, HTMX). The hub is not an under-served member of cqrs-htmx's audience; it is outside the audience, correctly. The only future convergence is the posture-change scenario in the flip trigger, which is a product decision about remote operators, not a library-utilization finding.
+
+## Ranked opportunities (impact × ease)
+
+1. **None.** No code, dependency, or doc change is warranted. The STACK.md:73 row already covers this library ("cqrs-htmx" named in the exclusion); if that row is ever rewritten for the go-cqrs-lite count fix, add the one-word reason "userless" so future audits don't re-derive it.
+
+## How to verify
+
+Executed 2026-11-19, all green unless noted:
+
+```bash
+# 1. Absence in both consumer modules and the whole tree (docs excluded — this report names the lib)
+rg -l 'cqrs-htmx' --glob '!vendor/**' --glob '!docs/**' /home/lars/projects/go-compliance
+# → /home/lars/projects/go-compliance/STACK.md only (the "Deliberately excluded" row), exit 0
+
+# 2. Library version metadata
+git -C /home/lars/projects/cqrs-htmx describe --tags --abbrev=0   # loginpage/v4.18.0
+git -C /home/lars/projects/cqrs-htmx log -1 --format='%h %cs %s'  # ccab30e5 2026-11-18 …
+git -C /home/lars/projects/cqrs-htmx ls-files '*go.mod' | wc -l   # 39
+git -C /home/lars/projects/cqrs-htmx tag -l --format='%(refname:short) %(creatordate:short)' --sort=-creatordate | head -8
+
+# 3. The library's own gate + the cqrs-lite coupling of the two "overlap" modules
+rg -n 'not using go-cqrs-lite' /home/lars/projects/cqrs-htmx/README.md
+rg -n 'go-cqrs-lite' /home/lars/projects/cqrs-htmx/datastar/go.mod      # event/v4 + id/v4 DIRECT requires
+rg -n 'go-cqrs-lite' /home/lars/projects/cqrs-htmx/dashboardui/go.mod  # command/commandlifecycle/event/id
+
+# 4. Consumer's GET-only, userless posture
+rg -n 'mux.Handle' /home/lars/projects/go-compliance/hub/internal/cli/serve.go /home/lars/projects/go-compliance/hub/internal/dashboard/routes.go
+# → every route is GET /v1/compliance, GET /datastar.js, GET /events, GET /
+rg -n 'user|session|auth' /home/lars/projects/go-compliance/docs/DOMAIN_LANGUAGE.md   # no hits
+
+# 5. Consumer already owns the SSE + DataStar layers directly
+rg -n 'go-sse|go-datastar' /home/lars/projects/go-compliance/hub/internal/events/events.go /home/lars/projects/go-compliance/hub/internal/dashboard/dashboard.go
+rg -n 'Realtime transport|WebUI patch protocol' /home/lars/projects/go-compliance/STACK.md  # :45, :46
+
+# 6. Recorded decision this audit defends
+rg -n 'cqrs-htmx' /home/lars/projects/go-compliance/STACK.md             # :73 exclusion row
+```
+
+Spot-checks confirmed: `README.md` gate sentence present; `datastar/go.mod`/`dashboardui/go.mod` cqrs-lite requires as quoted; hub routes all GET; DOMAIN_LANGUAGE.md contains no user/session/auth terms; STACK.md:45-46/:73 as cited.
