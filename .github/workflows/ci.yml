@@ -14,6 +14,10 @@ on:
     branches: [master]
   pull_request:
 
+# CI never publishes: contents stays read (cue-policy ci_workflow.cue).
+permissions:
+  contents: read
+
 env:
   FLAKE_PAT: ${{ secrets.FLAKE_PAT }}
 
