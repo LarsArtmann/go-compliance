@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/larsartmann/go-filewatcher/v2"
 	"github.com/larsartmann/go-health"
 	"github.com/larsartmann/go-health/checks"
 
@@ -64,11 +65,16 @@ var (
 )
 
 // buildHealthProbe wires the hub's health probe: liveness is always pass;
-// readiness/startup gate on published evidence; refresh-freshness and
-// discovery warn when their loops stop making progress; disk headroom
-// keeps the SQLite cache honest.
+// readiness/startup gate on published evidence; refresh-freshness,
+// evidence-watch, and discovery warn when their loops stop making
+// progress; disk headroom keeps the SQLite cache honest.
 func buildHealthProbe(
-	ctx context.Context, version string, hub *events.Hub, refresher *refresher, cacheDir string,
+	ctx context.Context,
+	version string,
+	hub *events.Hub,
+	refresher *refresher,
+	watcher *filewatcher.Watcher,
+	cacheDir string,
 ) (*health.Probe, error) {
 	checksByName := map[string]health.CheckFunc{
 		evidenceCheckName: func(_ context.Context) error {
@@ -125,6 +131,10 @@ func buildHealthProbe(
 		}
 
 		return nil
+	}
+
+	if watcher != nil {
+		checksByName[evidenceWatchCheckName] = watcher.Healthy
 	}
 
 	if cacheDir != "" {

@@ -59,10 +59,15 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 			store.OnWrite(func(compliance.RepoName) { refresher.Kick() })
 		}
 
+		// Filesystem triggers: cross-process evidence writes (WAL sidecars,
+			// atomic renames) kick the refresher within ~1-2s; the safety net
+			// stays as the backstop.
+		watcher := watchEvidence(ctx, flags.QueryFlags, refresher)
+
 		go refresher.Run(ctx)
 		go runDiscoveryWatch(ctx, discovery.New(discovery.ResolveSocketPath()), refresher)
 
-		probe, err := buildHealthProbe(ctx, Version, hub, refresher, cacheDirForDB(flags.DB))
+		probe, err := buildHealthProbe(ctx, Version, hub, refresher, watcher, cacheDirForDB(flags.DB))
 		if err != nil {
 			return err
 		}

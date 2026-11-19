@@ -27,7 +27,7 @@ func booted(refresher *refresher) *health.Probe {
 	_, err := hub.PublishSnapshot(nil)
 	Expect(err).NotTo(HaveOccurred())
 
-	probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, "")
+	probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, nil, "")
 	Expect(err).NotTo(HaveOccurred())
 	DeferCleanup(probe.Shutdown)
 
@@ -94,7 +94,7 @@ var _ = Describe("readiness HTTP contract", func() {
 		refresher.lastRefreshSuccess.Store(time.Now().UnixNano())
 		refresher.markDiscoverySuccess()
 
-		probe, err := buildHealthProbe(context.Background(), "contract-test", hub, refresher, "")
+		probe, err := buildHealthProbe(context.Background(), "contract-test", hub, refresher, nil, "")
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(probe.Shutdown)
 
@@ -157,7 +157,7 @@ var _ = Describe("health probe sse-backpressure check", func() {
 		refresher.lastRefreshSuccess.Store(time.Now().UnixNano())
 		refresher.markDiscoverySuccess()
 
-		probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, "")
+		probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, nil, "")
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(probe.Shutdown)
 
@@ -213,7 +213,7 @@ var _ = Describe("health probe evidence gate", func() {
 
 		refresher := newRefresher(hub, nil, time.Hour, 24*time.Hour, 3, "")
 
-		probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, "")
+		probe, err := buildHealthProbe(context.Background(), "test", hub, refresher, nil, "")
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(probe.Shutdown)
 
