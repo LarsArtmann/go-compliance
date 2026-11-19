@@ -15,6 +15,10 @@
 #      after a refresh AND a count change, re-record:
 #        go test -run '^$' -bench . -benchmem -count=1 . > benchmarks/baseline.txt
 #      (quiet machine; the baseline is a comparison anchor, not a gate).
+# Freshness guard (XP2 follow-up, 2026-11-19): refresh ONLY from a binary
+# you just built - verify `buildflow --version` matches a fresh `nix build .`
+# in the BuildFlow checkout first. A stale PATH binary silently captures
+# OLD contract bytes and the golden test then pins stale output.
 # After any refresh: run the full root-module test suite; the golden test
 # failing means the contract moved — decide deliberately, not by reflex.
 set -euo pipefail

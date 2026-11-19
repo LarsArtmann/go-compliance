@@ -8,10 +8,11 @@ Status: decided and executed
 BuildFlow was the origin of this library's contract: its
 `compliance --json` output IS the frozen v1 wire document, and the
 extraction (2026-11-18) left BuildFlow as producer-only with ZERO imports
+
 - compat held by dual golden tests (its fixture decodes real producer
-output). The open question was whether BuildFlow would ever IMPORT the
-dep-light core (state model, wire shapes, derive/marshal) or stay
-permanently decoupled with the goldens as the only tie.
+  output). The open question was whether BuildFlow would ever IMPORT the
+  dep-light core (state model, wire shapes, derive/marshal) or stay
+  permanently decoupled with the goldens as the only tie.
 
 The deep-dive audit of 2026-11-19 scored the posture 33/100 precisely
 because of that gap: a ~180-line twin of a frozen-forever contract,
