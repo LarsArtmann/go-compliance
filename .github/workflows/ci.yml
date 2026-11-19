@@ -193,7 +193,7 @@ jobs:
       # while build+test(hub) downloads the same module fine — downloading the
       # parent pulls the whole source tree (the sub-dirs live inside it) and
       # makes any fetch problem loud instead of an empty .Dir.
-      - run: cd hub && GOWORK=off go mod download github.com/larsartmann/templ-components
+      - run: cd hub && GOWORK=off go mod download github.com/larsartmann/templ-components github.com/larsartmann/templ-components/datastar github.com/larsartmann/templ-components/errorpage github.com/larsartmann/templ-components/icons github.com/larsartmann/templ-components/utils
       # Byte-freshness: regenerating from go.mod truth + app.css must
       # reproduce the committed artifacts exactly — an adopted component
       # whose utilities never reached the stylesheet renders unstyled.
