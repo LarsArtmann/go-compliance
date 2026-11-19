@@ -20,8 +20,12 @@ The plan is a snapshot: this file is the living backlog.
 
 ## High Impact
 
-| Task | Status | Impact | Effort | Evidence |
-| ---- | ------ | ------ | ------ | -------- |
+| Task                                                                                                                             | Status    | Impact | Effort | Evidence                                    |
+| -------------------------------------------------------------------------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------- |
+| Adopt go-filewatcher: watch the evidence source's directory (SQLite `-wal` sidecars / reporter atomic renames) so cross-process writes refresh in ~1-2s instead of the 5-min safety net; note the DEFAULT `--source file` has NO write trigger at all today | 🔴 `TODO` | High   | 2h     | docs/review/libs/go-filewatcher.md (2026-11-19 audit; NOT-ADOPTED-but-should) |
+| Replace the discovery client's hand-rolled SSE `data:` scanner with `daemon.ParseSSEData` (already a direct dep; current parser drops multi-line frames and skips `scanner.Err()`, gopls-flagged) | 🔴 `TODO` | High   | 1h     | docs/review/libs/go-daemon.md + go-sse.md (both groups independently flagged client.go:184-201) |
+| Stop unconditional unix-socket removal on bind (`bind.go:46` removes a live daemon's socket; adopt `daemon.CleanStaleSocket` probe-first behavior or the `Server.Start` lifecycle) | 🔴 `TODO` | High   | 1-2h   | docs/review/libs/go-daemon.md (UNDERUSED-severe) |
+| Fleet exit-code contract: map `*compliance.Error` classifications through `errorfamily.ExitCode(err)` in `main.go` (hub currently exits generic 1 on transient failures) | 🔴 `TODO` | Med    | 10m    | docs/review/libs/go-error-family.md (hub boundaries) |
 
 ## Medium Impact
 
@@ -46,6 +50,13 @@ The plan is a snapshot: this file is the living backlog.
 | Semantic audit of the 23-40 report's ~22 token-"matched" open items (docs-gates token-match green ≠ harvest); strike or route each               | 🔴 `TODO` | Low    | 30m    | 00-53 §b3; docs-freshness matched-items list                                |
 | Exit-code policy in AGENTS.md commands block: redirect-to-file then `echo $?`, never `cmd \| tail; echo $?`                                      | 🔴 `TODO` | Low    | 5m     | 00-53 §d1 (3 in-session instances of the known trap)                        |
 | Goroutine window on probe-construction failure: clarifying comment in serve.go or ROADMAP conditional (embedder-only; never a code change today) | 🔴 `TODO` | Low    | 5m     | 00-53 §b6; serve.go:62-65 ordering                                          |
+| `X-Content-Type-Options: nosniff` baseline header wrap in serve.go (5-line stdlib middleware; no httputil adoption needed) | 🔴 `TODO` | Low    | 5m     | docs/review/libs/httputil.md G1                                            |
+| Bump go-sse v0.6.2 → v0.7.0 (additive) and go-datastar v0.6.x → v0.7.0/static v0.8.0 in lockstep (v0.7 `ScriptTagVersioned` fixes a 24h stale-JS-client window) | 🔴 `TODO` | Low    | 30m    | docs/review/libs/go-sse.md + go-datastar.md version currency               |
+| go-datastar de-dup: replace hand-rolled `ringStore` with `datastar.MemoryStore`; use `ScriptHandlerWith` ETag/304 contract for `/datastar.js` | 🔴 `TODO` | Low    | 1h     | docs/review/libs/go-datastar.md                                            |
+| Add `--format` flag to the fleet-table CLI path (go-output already in graph with 16 formats via cmdguard → samber-do-auditlog; ~25 lines, zero new deps) | 🔴 `TODO` | Low    | 30m    | docs/review/libs/go-output.md                                              |
+| cmdguard follow-ups: cmdguard-lint CI gate; `pkg/testutil.AssertDescribeContract` at next tag; upstream the `Nd` day-suffix duration codec | 🔴 `TODO` | Low    | 1h     | docs/review/libs/cmdguard.md                                               |
+| Use `health.Off` for the unconfigured `cache-disk` check instead of conditional registration | 🔴 `TODO` | Low    | 10m    | docs/review/libs/go-health.md                                              |
+| templ-components cheap wins: `errorpage` for default 404s, `layout.ThemeToggle`; migrate off the Tailwind Play CDN (known CSP debt) | 🔴 `TODO` | Low    | 2h     | docs/review/libs/templ-components.md                                       |
 
 ## Blocked (owner decisions)
 
