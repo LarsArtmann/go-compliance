@@ -17,7 +17,7 @@ import (
 templ View(model ViewModel) {
 	@layout.Base(layout.PageProps{
 		Title:       model.Title,
-		CSSPath:     "",
+		CSSPath:     model.CSSSrc,
 		HTMXVersion: "",
 		HeadContent: headContent(model),
 	}) {
@@ -32,14 +32,17 @@ templ View(model ViewModel) {
 				</div>
 				<div class="mt-6 flex flex-wrap items-center justify-between gap-2" data-signals={ fmt.Sprintf("{\"stateFilter\":\"%s\"}", model.StateFilter) }>
 					@StateFilterChips(model.StateFilter)
-					// The one AutoRefresh=true RelativeTime on the page: it
-					// ships the singleton 30s tick script that keeps every
-					// data-tc-relative cell (rows included) honest, and its
-					// own text going stale is the dead-stream signal.
-					<span class="text-xs text-gray-400 dark:text-gray-500">
-						rendered
-						@display.RelativeTime(display.RelativeTimeProps{Time: model.RenderedAt, AutoRefresh: true})
-					</span>
+					<div class="flex items-center gap-3">
+						// The one AutoRefresh=true RelativeTime on the page: it
+						// ships the singleton 30s tick script that keeps every
+						// data-tc-relative cell (rows included) honest, and its
+						// own text going stale is the dead-stream signal.
+						<span class="text-xs text-gray-400 dark:text-gray-500">
+							rendered
+							@display.RelativeTime(display.RelativeTimeProps{Time: model.RenderedAt, AutoRefresh: true})
+						</span>
+						@layout.ThemeToggle("Toggle dark mode", "")
+					</div>
 				</div>
 				<div class="mt-4">
 					@datastar.LiveRegion(datastar.LiveRegionProps{
@@ -61,7 +64,9 @@ templ View(model ViewModel) {
 }
 
 // headContent loads the DataStar SDK (self-hosted when ScriptSrc is set)
-// and Tailwind via the Play CDN — no build step until compiled CSS lands.
+// and the pre-paint theme script. Styling is the compiled Tailwind artifact
+// linked via PageProps.CSSPath — the Play CDN and its inline tailwind.config
+// block are gone (CSP debt paid, 2026-11-19).
 templ headContent(model ViewModel) {
 	if model.ScriptSrc != "" {
 		@datastar.SDKScript(datastar.SDKScriptProps{
@@ -71,10 +76,7 @@ templ headContent(model ViewModel) {
 	} else {
 		@datastar.SDKScript(datastar.SDKScriptProps{BaseProps: utils.BaseProps{}})
 	}
-	<script src="https://cdn.tailwindcss.com"></script>
-	<script>
-		tailwind.config = { darkMode: 'class' }
-	</script>
+	@layout.ThemeScript("")
 }
 
 // fleetTable renders the fleet table with the patchable tbody: the stream

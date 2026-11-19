@@ -14,6 +14,10 @@ type ViewModel struct {
 	// ScriptSrc self-hosts the DataStar bundle; empty falls back to the
 	// jsdelivr CDN.
 	ScriptSrc string
+	// CSSSrc links the compiled Tailwind artifact (content-hash versioned
+	// so upgrades are fresh cache keys); empty suppresses the stylesheet
+	// (embedders that own styling).
+	CSSSrc string
 	// Rows is the initial fleet state, rendered server-side so the page
 	// paints before the stream connects.
 	Rows []events.RepoRow

@@ -86,6 +86,7 @@ require (
 	github.com/larsartmann/go-output/tree v0.38.7 // indirect
 	github.com/larsartmann/go-sse/sseparse v0.2.1 // indirect
 	github.com/larsartmann/samber-do-auditlog v0.12.3 // indirect
+	github.com/larsartmann/templ-components/errorpage v1.27.0 // indirect
 	github.com/larsartmann/templ-components/htmx v1.27.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
