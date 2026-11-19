@@ -104,6 +104,9 @@
             templGen
             ps.dprint
             ps.actionlint
+            # Tailwind v4 CLI for the dashboard's compiled CSS pipeline
+            # (scripts/regen-ui.sh; CI regenerates and diffs byte-fresh).
+            ps.tailwindcss_4
           ];
 
         devShellHook = ''
@@ -170,7 +173,7 @@
             postPatch = "rm -f go.work";
             modRoot = "hub";
             subPackages = [ "./cmd/compliance-hub" ];
-            vendorHash = "sha256-tOaKCC+tpMj+VNQe+5tZUFa61JwdvHh+NTxp0oSXWOA=";
+            vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
             ldflags = [
               "-s"
               "-w"

@@ -158,6 +158,77 @@ var _ = Describe("routes and content negotiation", func() {
 		Expect(page.Body.String()).To(ContainSubstring("/compliance/events"))
 		Expect(page.Body.String()).To(ContainSubstring("/compliance/datastar.js"))
 	})
+
+	It("links the compiled stylesheet versioned and stays off the Tailwind Play CDN", func() {
+		board := newBoardWithRows()
+		mux := http.NewServeMux()
+		board.RegisterRoutes(mux)
+
+		page := httptest.NewRecorder()
+		mux.ServeHTTP(page, httptest.NewRequest(http.MethodGet, "/", nil))
+		body := page.Body.String()
+
+		// The compiled artifact is content-hash versioned (immutable day
+		// cache + fresh key per regeneration).
+		Expect(body).To(ContainSubstring(`href="/app.css?v=`))
+
+		// CSP regression: the Play CDN script and its inline tailwind.config
+		// block are gone for good.
+		Expect(body).NotTo(ContainSubstring("cdn.tailwindcss.com"))
+		Expect(body).NotTo(ContainSubstring("tailwind.config"))
+
+		// Dark mode ships as the pre-paint ThemeScript + a real toggle.
+		Expect(body).To(ContainSubstring("classList.add('dark')"))
+		Expect(body).To(ContainSubstring(`aria-label="Toggle dark mode"`))
+	})
+
+	It("serves the compiled stylesheet with ETag/304 revalidation", func() {
+		board := newBoardWithRows()
+		mux := http.NewServeMux()
+		board.RegisterRoutes(mux)
+
+		css := httptest.NewRecorder()
+		mux.ServeHTTP(css, httptest.NewRequest(http.MethodGet, "/app.css", nil))
+		Expect(css.Code).To(Equal(http.StatusOK))
+		Expect(css.Header().Get("Content-Type")).To(ContainSubstring("text/css"))
+		Expect(css.Header().Get("Cache-Control")).To(ContainSubstring("immutable"))
+		Expect(css.Body.Bytes()).NotTo(BeEmpty())
+
+		etag := css.Header().Get("ETag")
+		Expect(etag).NotTo(BeEmpty())
+
+		conditional := httptest.NewRequest(http.MethodGet, "/app.css", nil)
+		conditional.Header.Set("If-None-Match", etag)
+
+		revalidated := httptest.NewRecorder()
+		mux.ServeHTTP(revalidated, conditional)
+		Expect(revalidated.Code).To(Equal(http.StatusNotModified))
+	})
+
+	It("returns the styled 404 for unknown paths, not the dashboard", func() {
+		board := newBoardWithRows()
+		mux := http.NewServeMux()
+		board.RegisterRoutes(mux)
+
+		// The serve wiring: dashboard owns the root exactly, the host's
+		// catch-all renders the 404.
+		mux.Handle("/", board.NotFoundHandler())
+
+		missing := httptest.NewRecorder()
+		mux.ServeHTTP(missing, httptest.NewRequest(http.MethodGet, "/no/such/page", nil))
+		Expect(missing.Code).To(Equal(http.StatusNotFound))
+		Expect(missing.Header().Get("X-Robots-Tag")).To(Equal("noindex"))
+		Expect(missing.Header().Get("Content-Type")).To(ContainSubstring("text/html"))
+		Expect(missing.Body.String()).To(ContainSubstring("Page not found"))
+		Expect(missing.Body.String()).To(ContainSubstring(`href="/app.css?v=`),
+			"the 404 renders inside the styled shell")
+
+		// The root itself still serves the fleet.
+		root := httptest.NewRecorder()
+		mux.ServeHTTP(root, httptest.NewRequest(http.MethodGet, "/", nil))
+		Expect(root.Code).To(Equal(http.StatusOK))
+		Expect(root.Body.String()).To(ContainSubstring(`id="fleet-rows"`))
+	})
 })
 
 var _ = Describe("?state= filter contract", func() {

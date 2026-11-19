@@ -156,9 +156,9 @@ var _ = Describe("readiness HTTP contract", func() {
 // a future constant edit fails here first and forces the README along.
 var _ = Describe("README readiness thresholds", func() {
 	It("pins refresh-freshness and discovery warn thresholds at 10 minutes", func() {
-		Expect(refreshFreshnessWarn).To(Equal(10 * time.Minute),
+		Expect(refreshFreshnessWarn).To(Equal(10*time.Minute),
 			"README.md 'Checks' section promises a 10-minute stall warning")
-		Expect(discoveryStaleWarn).To(Equal(10 * time.Minute),
+		Expect(discoveryStaleWarn).To(Equal(10*time.Minute),
 			"README.md 'Checks' section promises a 10-minute stall warning")
 	})
 })

@@ -11,7 +11,7 @@ import (
 	"github.com/larsartmann/go-output"
 	_ "github.com/larsartmann/go-output/delimited" // csv, tsv
 	_ "github.com/larsartmann/go-output/markdown"
-	_ "github.com/larsartmann/go-output/markup" // html, xml, asciidoc
+	_ "github.com/larsartmann/go-output/markup"        // html, xml, asciidoc
 	_ "github.com/larsartmann/go-output/serialization" // json, jsonl, yaml, toml
 	gotable "github.com/larsartmann/go-output/table"
 
@@ -24,6 +24,8 @@ const maxRepoCellWidth = 24
 
 // tableHeaders orders the fleet table columns; shared by the styled TTY
 // path and the machine-format path so both views stay column-identical.
+//
+//nolint:gochecknoglobals // immutable column metadata, effectively a const
 var tableHeaders = []string{
 	"REPO", "STATE", "ERR", "WARN", "INFO", "FINDINGS", "RUNS", "FAILS", "RATE", "VERDICT", "LAST RUN",
 }
@@ -111,18 +113,20 @@ func runTable(out, _ io.Writer) func(context.Context, *Config, TableFlags) error
 
 // supportedTableFormats is the registry-backed set table.go can render:
 // one entry per imported go-output sub-module's self-registered formats.
+//
+//nolint:gochecknoglobals // immutable format metadata, effectively a const
 var supportedTableFormats = map[output.Format]struct{}{
-	output.FormatTable:     {},
-	output.FormatJSON:      {},
-	output.FormatJSONL:     {},
-	output.FormatYAML:      {},
-	output.FormatTOML:      {},
-	output.FormatCSV:       {},
-	output.FormatTSV:       {},
-	output.FormatMarkdown:  {},
-	output.FormatHTML:      {},
-	output.FormatXML:       {},
-	output.FormatAsciiDoc:  {},
+	output.FormatTable:    {},
+	output.FormatJSON:     {},
+	output.FormatJSONL:    {},
+	output.FormatYAML:     {},
+	output.FormatTOML:     {},
+	output.FormatCSV:      {},
+	output.FormatTSV:      {},
+	output.FormatMarkdown: {},
+	output.FormatHTML:     {},
+	output.FormatXML:      {},
+	output.FormatAsciiDoc: {},
 }
 
 // parseTableFormat validates the --format flag against the formats the
@@ -170,6 +174,7 @@ func renderTableData(
 
 		lastRun := compliance.ParseWireTime(row.LastRunAt)
 		lastRunCell := "-"
+
 		if !lastRun.IsZero() {
 			lastRunCell = lastRun.UTC().Format(time.RFC3339)
 		}

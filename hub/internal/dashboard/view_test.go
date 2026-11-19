@@ -87,4 +87,23 @@ var _ = Describe("fleet page render", func() {
 
 		Expect(rendered.String()).To(ContainSubstring("No compliance evidence yet"))
 	})
+
+	It("keeps row patches script-free and inside the patch budget", func() {
+		// FleetRow is the replace-patch unit: it re-renders inside every
+		// update, so a script or a size regression here multiplies across
+		// the whole stream. The templ-components pass (ThemeToggle,
+		// ThemeScript) must stay page-level.
+		var rowBuf bytes.Buffer
+		Expect(dashboard.FleetRow(events.RepoRow{
+			Repo:      "budget-probe",
+			State:     compliance.StateFailing,
+			LastRunAt: time.Now(),
+		}).Render(context.Background(), &rowBuf)).To(Succeed())
+
+		row := rowBuf.String()
+		Expect(row).NotTo(ContainSubstring("<script"),
+			"row patches must stay script-free; row: %s", row)
+		Expect(len(row)).To(BeNumerically("<", 2048),
+			"per-row patch budget breached: %d bytes; row: %s", len(row), row)
+	})
 })

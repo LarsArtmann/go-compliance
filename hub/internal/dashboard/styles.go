@@ -19,12 +19,17 @@ var appCSS []byte
 // appCSSVersion is the artifact's content hash: pageHandler versions the
 // stylesheet URL with it, so every regeneration is a fresh cache key and
 // the day-long cache can never serve yesterday's styles.
+//
+//nolint:gochecknoglobals // computed once from the embedded artifact; hashing cannot be a const
 var appCSSVersion = func() string {
 	sum := sha256.Sum256(appCSS)
+
 	return hex.EncodeToString(sum[:8])
 }()
 
 // appCSSETag is the strong validator for conditional requests.
+//
+//nolint:gochecknoglobals // derived once from the embedded artifact, same lifetime as appCSS
 var appCSSETag = `"` + appCSSVersion + `"`
 
 // cssRoute serves the compiled stylesheet.
@@ -42,6 +47,7 @@ func (d *Dashboard) CSSHandler() http.Handler {
 		if match := r.Header.Get("If-None-Match"); match != "" &&
 			strings.Contains(match, appCSSETag) {
 			w.WriteHeader(http.StatusNotModified)
+
 			return
 		}
 
