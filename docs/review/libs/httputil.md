@@ -302,7 +302,7 @@ rg -n 'httputil' /home/lars/projects/go-compliance/go.mod /home/lars/projects/go
 # Consumer surface citations
 rg -n 'RegisterRoutesAt|RegisterRoutes\(|GET /v1/compliance' /home/lars/projects/go-compliance/hub/internal/cli/serve.go  # → :75 :81 :83
 rg -n 'mux.HandleFunc|mux.Handle' /home/lars/projects/go-compliance/hub --type go -g '!*_test.go'                        # → only dashboard routes.go:58-60 + serve.go:83 (all GET)
-rg -n 'ReadHeaderTimeout' /home/lars/projects/go-compliance/hub/internal/cli/serve.go                                    # → :22 :107
+rg -n 'ReadHeaderTimeout' /home/lars/projects/go-compliance/hub/internal/cli/serve.go                                    # → :107 (const readHeaderTimeout at :22-23)
 rg -n 'WriteTimeout' /home/lars/projects/go-compliance/hub --type go -g '!*_test.go'                                     # → none (SSE-safe by construction)
 rg -n 'Cache-Control' /home/lars/projects/go-compliance/hub --type go -g '!*_test.go'                                    # → dashboard.go:116 only
 rg -n 'cdn.tailwindcss.com|<script>' /home/lars/projects/go-compliance/hub/internal/dashboard/view.templ                 # → :74 :75

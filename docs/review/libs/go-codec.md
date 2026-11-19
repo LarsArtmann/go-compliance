@@ -13,7 +13,7 @@
 
 - `Codec` interface (`Encode/Decode/Encoding`) with `CBORCodec`
   (recommended, canonical RFC 7049, signing-safe), `JSONCodec`, `CBORCompactCodec`
-  (RFC 89489 core deterministic + unknown-field rejection), `RawCodec`.
+  (RFC 8949 core deterministic + unknown-field rejection), `RawCodec`.
 - Supporting surface: `BufferEncoder` (zero-alloc), `EncodePooled`,
   streaming CBOR encoder/decoder, `ObservableCodec` (metrics/hooks),
   `AutoDetect`, `TranscodeToJSON`, `WrapEncode/UnwrapDecode` envelopes,
@@ -41,7 +41,7 @@ layer between the golden fixture and the stdlib behavior it pins, for zero
 capability gain — the hub's other JSON surfaces (SSE event payloads
 `hub/internal/events/events.go:5,37`, discovery wire types
 `hub/internal/discovery/client.go:11`, cache column marshaling
-`hub/internal/cache/cache.go:8`) are likewise direct `encoding/json/v2`.
+`hub/internal/cache/cache.go:11`) are likewise direct `encoding/json/v2`.
 
 Strictly, go-codec is first-party (larsartmann), so the "third-party JSON
 libs banned" line does not name it; but the policy's *mechanism* — JSON goes
@@ -114,7 +114,7 @@ Bands: 85-100 excellent · 70-84 good · 50-69 fair · <50 poor.
 
 | Capability                            | Status                   | Library evidence (path)                        | Consumer evidence (path:line)                                                                                        |
 | ------------------------------------- | ------------------------ | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| JSON encode/decode                    | Covered elsewhere — 1    | `json.go` (`JSONCodec`)                        | direct `encoding/json/v2` at every JSON site: `v1.go:5`, `events/events.go:5`, `discovery/client.go:11`, `cache/cache.go:8` |
+| JSON encode/decode                    | Covered elsewhere — 1    | `json.go` (`JSONCodec`)                        | direct `encoding/json/v2` at every JSON site: `v1.go:5`, `events/events.go:5`, `discovery/client.go:11`, `cache/cache.go:11` |
 | Byte-stable wire marshaling           | Covered elsewhere — 1    | deterministic codecs, golden tests             | golden fixture byte-exactness pinned natively (`v1_golden_test.go`, `testdata/buildflow-v1-fixture.json`, 341 repos)  |
 | CBOR payloads                         | N/A                      | `cbor.go` (`CBORCodec`, recommended)           | no CBOR surface exists in the consumer; SQLite cache uses JSON TEXT (`cache/cache.go:324-338`)                         |
 | Compact/schema-drift-rejecting decode | N/A                      | `cbor_compact.go`                              | all inbound shapes are frozen contracts with explicit decoders (`DecodeV1Report`, discovery wire structs)             |
@@ -195,7 +195,7 @@ rg -n 'larsartmann/go-codec' /home/lars/projects/go-compliance --type go -g '!ve
 # Policy + consumer JSON sites
 rg -n 'encoding/json' /home/lars/projects/go-compliance/v1.go /home/lars/projects/go-compliance/hub/internal/events/events.go /home/lars/projects/go-compliance/hub/internal/discovery/client.go /home/lars/projects/go-compliance/hub/internal/cache/cache.go
 #   → all import "encoding/json/v2" directly
-rg -n 'JSON: encoding/json' /home/lars/projects/go-compliance/STACK.md  # → the constraining policy line
+rg -n 'all third-party JSON libs banned' /home/lars/projects/go-compliance/STACK.md  # → the constraining policy line
 
 # go-daemon's role in the hub
 rg -n 'go-daemon' /home/lars/projects/go-compliance/hub/internal/cli/bind.go  # → :15 import (sd_notify/watchdog)
@@ -203,7 +203,7 @@ rg -n 'go-daemon' /home/lars/projects/go-compliance/hub/internal/cli/bind.go  # 
 
 Spot-checks: hub/go.mod indirect block read (go-codec v0.3.3, cbor v2.10.0);
 bind.go:15 import verified; both `go mod why` chains read from executed
-output; v1.go:5 / events.go:5 / client.go:11 / cache.go:8 imports read
+output; v1.go:5 / events.go:5 / client.go:11 / cache.go:11 imports read
 directly. The MVS-resolved cbor version (v2.10.0 vs go-codec's v2.9.6 floor)
 verified from `go mod graph` output showing go-daemon itself requires
 v2.10.0.
