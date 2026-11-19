@@ -146,8 +146,11 @@ var _ = Describe("fleet table", func() {
 	It("--format csv renders comma-separated rows with full repo names", func() {
 		rendered := renderFormat("csv")
 
+		// The frozen v1 wire contract cannot carry severities (adapter.go:
+		// "fields the contract cannot carry"), so file-sourced severity
+		// cells are honestly "-"; what MUST survive is full repo names.
 		Expect(rendered).To(HavePrefix("REPO,STATE,ERR,WARN"))
-		Expect(rendered).To(ContainSubstring("\nfailing-repo,failing,2,1"))
+		Expect(rendered).To(ContainSubstring("\nfailing-repo,failing,-,-,-,-,8,3"))
 		Expect(rendered).To(ContainSubstring("a-very-long-repository-name-exceeding-the-cell"),
 			"machine formats must not truncate repo names")
 	})
@@ -160,7 +163,9 @@ var _ = Describe("fleet table", func() {
 		Expect(rows).To(HaveLen(3))
 		Expect(rows[0]["REPO"]).To(Equal("failing-repo"))
 		Expect(rows[0]["STATE"]).To(Equal("failing"))
-		Expect(rows[0]["ERR"]).To(Equal("2"))
+		Expect(rows[0]["RUNS"]).To(Equal("8"))
+		Expect(rows[0]["LAST RUN"]).To(MatchRegexp(`^\d{4}-\d{2}-\d{2}T`),
+			"machine formats carry absolute timestamps, not ages")
 	})
 
 	It("--format markdown renders a titled pipe table", func() {
@@ -177,10 +182,11 @@ var _ = Describe("fleet table", func() {
 		}
 	})
 
-	It("rejects an unsupported --format with a validation error", func() {
+	It("rejects an unsupported --format at the flag boundary", func() {
 		err := cli.Run(context.Background(),
 			[]string{"table", "--file", writeFixture(nil), "--format", "dot"}, &out, &errW)
-		Expect(err).To(MatchError(compliance.ErrValidation))
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("allowed"))
 	})
 })
 

@@ -137,10 +137,17 @@ func buildHealthProbe(
 		checksByName[evidenceWatchCheckName] = watcher.Healthy
 	}
 
+	// cache-disk is OFF (not absent) without --db: the row stays visible on
+	// every health surface carrying its enable recipe, but never gates
+	// readiness (go-health StatusOff semantics).
 	if cacheDir != "" {
 		const minFreeBytes = 128 << 20 // 128 MiB is plenty to append runs
 
 		checksByName["cache-disk"] = checks.Disk(cacheDir, minFreeBytes)
+	} else {
+		checksByName["cache-disk"] = func(_ context.Context) error {
+			return health.Off("not configured: pass --db (with --source cache) to enable the disk-headroom check")
+		}
 	}
 
 	probe := health.NewChecks(checksByName,

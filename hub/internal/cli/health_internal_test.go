@@ -54,19 +54,20 @@ var _ = Describe("health check transition logging", func() {
 			hook(health.Response{Status: health.StatusPass, Checks: checks})
 		}
 
-		four := map[string]health.Status{
+		five := map[string]health.Status{
 			evidenceCheckName:         health.StatusPass,
 			refreshFreshnessCheckName: health.StatusPass,
 			discoveryCheckName:        health.StatusPass,
 			sseBackpressureCheckName:  health.StatusPass,
+			"cache-disk":              health.StatusOff,
 		}
 
-		evaluate(four)
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(4),
-			"the first batch logs all four checks once; got: %s", buf.String())
+		evaluate(five)
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(5),
+			"the first batch logs all five checks once; got: %s", buf.String())
 
-		evaluate(four)
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(4),
+		evaluate(five)
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(5),
 			"a stable evaluation must not log")
 
 		flipped := map[string]health.Status{
@@ -74,21 +75,22 @@ var _ = Describe("health check transition logging", func() {
 			refreshFreshnessCheckName: health.StatusPass,
 			discoveryCheckName:        health.StatusPass,
 			sseBackpressureCheckName:  health.StatusWarn,
+			"cache-disk":              health.StatusOff,
 		}
 
 		evaluate(flipped)
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(5),
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(6),
 			"exactly the sse-backpressure flip may log; got: %s", buf.String())
 		Expect(buf.String()).To(ContainSubstring("check=sse-backpressure"))
 
 		evaluate(flipped)
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(5),
+		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(6),
 			"a stable evaluation must not log")
 	})
 })
 
 var _ = Describe("readiness HTTP contract", func() {
-	It("pins the payload shape over real HTTP: fail is 503, warn stays 200, checks carry the four names", func() {
+	It("pins the payload shape over real HTTP: fail is 503, warn stays 200, checks carry the five names", func() {
 		hub := events.NewHub()
 		refresher := newRefresher(hub, nil, time.Hour, 24*time.Hour, 3, "")
 		refresher.lastRefreshSuccess.Store(time.Now().UnixNano())
@@ -137,12 +139,15 @@ var _ = Describe("readiness HTTP contract", func() {
 		Expect(payload.Version).To(Equal("contract-test"))
 		Expect(
 			payload.Checks,
-		).To(HaveLen(4), "evidence, refresh-freshness, discovery, sse-backpressure (no cache-disk without a db dir)")
+		).To(HaveLen(5), "evidence, refresh-freshness, discovery, sse-backpressure, cache-disk(off without a db dir)")
 		Expect(payload.Checks[evidenceCheckName].Status).To(Equal("pass"))
 		Expect(payload.Checks[refreshFreshnessCheckName].Status).To(Equal("warn"))
 		Expect(payload.Checks[refreshFreshnessCheckName].Error).To(ContainSubstring("last successful refresh"))
 		Expect(payload.Checks[discoveryCheckName].Status).To(Equal("pass"))
 		Expect(payload.Checks[sseBackpressureCheckName].Status).To(Equal("pass"))
+		Expect(payload.Checks["cache-disk"].Status).To(Equal("off"))
+		Expect(payload.Checks["cache-disk"].Error).To(ContainSubstring("--db"),
+			"the off row carries its enable recipe")
 	})
 })
 
