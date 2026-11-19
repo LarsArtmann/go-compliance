@@ -96,6 +96,19 @@ replaces).
   pins: store write → OnWrite hook → Kick → debounce → refresh →
   PublishRefresh → append patch on `#fleet-rows`.
 
+## Library Utilization Audit (2026-11-19)
+
+`docs/review/libs/` holds 20 per-library utilization reports + `index.html`
+(fleet run: 5 sub-agent groups, orchestrator QC). Verdict line: go-health /
+go-sse / go-error-family(core) ADOPTED; templ-components/cmdguard/go-datastar/
+go-output/go-daemon UNDERUSED; 11 NOT-ADOPTED-justified (each with a recorded
+flip trigger in its report); go-filewatcher NOT-ADOPTED-but-should (default
+`--source file` has NO write trigger; dir-watch closes the 5-min staleness
+hole). Actionable findings routed to TODO_LIST (4 High/Med + 7 Low rows).
+Re-review triggers: a NOT-ADOPTED lib's flip trigger fires, a pinned dep
+moves a major, or new fleet-wide consumers change the leverage math. For
+NOT-adopted libs the report score is counterfactual (100 = zero unmet need).
+
 ## Live Architecture (M27)
 
 `refresher` (hub/internal/cli/refresher.go) owns liveness: trigger
