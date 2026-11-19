@@ -20,11 +20,11 @@ What the dashboard uses, it uses *well and deeply*: `display.Table` with the
 `LazyRows`/`BodyID`/compact-padding props turned into a DataStar patch target
 (`view.templ:84-93`), `display.RelativeTime` in the sophisticated two-mode split the
 repo pinned a regression test for (page-level `AutoRefresh` carrier vs bare
-`data-tc-relative` row attributes — `view.templ:41`, `rows.templ:36-46`,
-`view_test.go:53-79`), `Badge` with typed tone enums (`rows.templ:62-75`),
+`data-tc-relative` row attributes — `view.templ:41`, `rows.templ:30-44`,
+`view_test.go:53-79`), `Badge` with typed tone enums (`rows.templ:60-75`),
 `Grid`+`StatCard`+`icons` for the stat strip, `layout.Base` (which ships the
 dark-mode `ThemeScript` by default), and the `/datastar` module's `LiveRegion` +
-`SDKScript`. That is ~9 of 138 components carrying an entire realtime dashboard —
+`SDKScript`. That is 10 of 138 components carrying an entire realtime dashboard —
 the STACK.md choice ("fleet server-rendered component library … vs hand-rolled
 HTML/CSS") is broadly vindicated. The "slight" is threefold: the filter chips are
 hand-rolled (`chips.templ`) where `forms.FilterChips`' zero-JS link design matches
@@ -36,12 +36,13 @@ components render correctly in production, is the one capability misused.
 
 **Flip trigger:** adopt `forms.FilterChips` (or upstream a signal-mode variant),
 wire `errorpage`, and ship compiled CSS → ADOPTED; score then lands high-80s.
+(Also fixes row 14 — the missing `ThemeToggle` — for free.)
 
-## Derived score: 72 (high) — 11.5 of 16
+## Derived score: 75 (high) — 12 of 16
 
 - Inventory rows N = 25; applicable A = 16 (9 N/A rows excluded).
-- Fully = 10 × 1.0; Partial = 3 × 0.5; Missed/Misused = 3 × 0.
-- Σ = 11.5; score = round(100 × 11.5 / 16) = **72**, band **high** (70-84).
+- Fully = 10 × 1.0; Partial = 4 × 0.5 (rows 6, 12, 13, 14); Missed/Misused = 2 × 0 (rows 15, 16).
+- Σ = 12.0; score = round(100 × 12 / 16) = **75**, band **high** (70-84).
 
 ## Capability inventory
 
@@ -53,8 +54,8 @@ wire `errorpage`, and ship compiled CSS → ADOPTED; score then lands high-80s.
 | 4 | `display.Grid` + `display.StatCard` (tones + icon slots) | Fully | `display/grid.templ`, `stat_card.templ` | `statcards.templ:13-38` |
 | 5 | `display.Table` incl. `LazyRows`, `BodyID`, compact `CellPadding`, `Striped`/`Hover` | Fully | `display/table.templ:26,74-83,155-156` | `view.templ:84-93` (BodyID feeds `DefaultRowsSelector`) |
 | 6 | Table sorting / clickable rows (`Sortable`+`Href` headers, `Row.Href`) | Partial | `display/table.templ:26-28,99-111` | `view.templ:84-93` sets neither; sort order is the fixed worst-first triage invariant (`cli/table.go:56-58` mirrors it) |
-| 7 | `display.Badge` (typed `BadgeType` enums) | Fully | `display/badge.templ` | `rows.templ:62-75` (`StateBadge`) |
-| 8 | `display.RelativeTime` (+ AutoRefresh singleton pattern) | Fully | `display/relative_time.templ` | `view.templ:39-42` (carrier), `rows.templ:36-46` (bare-attribute rows), regression `view_test.go:53-79` |
+| 7 | `display.Badge` (typed `BadgeType` enums) | Fully | `display/badge.templ` | `rows.templ:60-75` (`StateBadge`) |
+| 8 | `display.RelativeTime` (+ AutoRefresh singleton pattern) | Fully | `display/relative_time.templ` | `view.templ:39-42` (carrier), `rows.templ:30-44` (bare-attribute rows), regression `view_test.go:53-79` |
 | 9 | `/datastar` components (`LiveRegion`, `SDKScript`) | Fully | `datastar/live_region.templ`, `sdk_script.templ` | `view.templ:45-56`, `view.templ:66-73` |
 | 10 | `icons` (102 icons) | Fully | `icons/icon_paths.go` | `statcards.templ:18,24,30,36` (Server, ExclamationTriangle, Clock, Search) |
 | 11 | `utils` (`BaseProps`, `Class`, `utils/format`) | Fully | `utils/` | `view.templ:46`, `statcards.templ` (BaseProps everywhere); `utils/format` unused — no byte/duration rendering needs yet |

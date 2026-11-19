@@ -53,7 +53,7 @@ ADOPTED at high band; if `broadcast/` is adopted too, very high.
 | 10 | `datastartest` Collect family | Fully | `datastartest/collect.go` | `dashboard_test.go:38-39,96`, `routes_test.go:49-50`, `cli/refresher_internal_test.go:53-54` |
 | 11 | `datastartest` assertions/finders | Fully | `datastartest/` (`RequireElementsContains`, `FindSignals`, `FindAllElements`, …) | `dashboard_test.go:41-124`, `cli/refresher_internal_test.go:69-74` |
 | 12 | Self-hosted client bundle (`static/` module) | Fully | `go-datastar/static/static.go` (`Bytes()`, `Version`) | `dashboard.go:14,117` — self-hosted, no CDN dependency (good offline/CSP posture) |
-| 13 | Inbound signal reading (`ReadSignals`) | N/A | `go-datastar/inbound.go` | server never reads signals; filtering is client-side via `data-show` (`rows.templ:30`) |
+| 13 | Inbound signal reading (`ReadSignals`) | N/A | `go-datastar/inbound.go` | server never reads signals; filtering is client-side via `data-show` (`rows.templ:25`) |
 | 14 | Client-side SSE URL attributes (`GetSSE`/`PatchSSE`/…) | N/A | `go-datastar/sugar.go`, `adapters.go` | templ-components `datastar.LiveRegion` owns the SSE region markup (`view.templ:45-56`) — correct layer |
 | 15 | `Response` builder (redirects, `ReplaceURLQuerystring`, console patches) | N/A | `go-datastar/response.go` | no action endpoints; pure patch-stream app |
 | 16 | Custom-event / script patches (`NewDispatchCustomEventPatch`, `NewConsole*Patch`) | N/A | `go-datastar/patch.go`, `script_convenience.go` | no client-side event/script needs |

@@ -206,7 +206,7 @@ the next daemon-talking consumer. Cost: one small PR, zero new module-graph edge
 git -C /home/lars/projects/go-sse describe --tags --abbrev=0        # v0.7.0
 git -C /home/lars/projects/go-sse log -1 --format='%h %cs %s'       # a1b4674 2026-11-17 chore: auto-commit...
 git -C /home/lars/projects/go-sse tag --sort=-creatordate | head -5 # v0.7.0, ssetest/v0.5.0, sseparse/v0.2.1, v0.6.2, sseparse/v0.2.0
-git -C /home/lars/projects/go-sse log --oneline v0.6.2..v0.7.0 | wc -l   # ~40 commits (auto-commit noise; CHANGELOG is the signal)
+git -C /home/lars/projects/go-sse log --oneline v0.6.2..v0.7.0 | wc -l   # 76 commits (auto-commit noise; CHANGELOG is the signal)
 
 # Effective pins in the consumer (matches go.mod — nothing drags them up)
 cd /home/lars/projects/go-compliance/hub && GOWORK=off go list -m all | grep 'go-sse'

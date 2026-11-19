@@ -43,8 +43,8 @@ UNDERUSED-slight; adopt the footer totals row → ADOPTED-adjacent.
 |---|---|---|---|---|
 | 1 | Terminal table rendering (`table.New`/`SetHeaders`/`AddRow`/`Render`) | Fully | `table/` (`Table` type, `Render`) | `hub/internal/cli/table.go:52-54,69-74,77-82` |
 | 2 | ANSI display-width alignment (lipgloss-backed renderer — gotcha #298) | Fully | `table/` renderer internals; FEATURES.md "Rendering Infrastructure" | `table.go:25-30` (comment names the lesson); regression-tested in `table_test.go` / `table_internal_test.go` |
-| 3 | ColorMode plumbing (`ColorModeAuto/Never/Always`, single authority) | Fully | `go-output/color.go`; `table.WithColorMode` | `colors.go:9,36-52` (mode decided once, shared by cells + chrome via `colorMode()`) |
-| 4 | Color/env detection helpers (`IsNoColor`, `IsCI`) | Partial | `go-output/envdetect.go:20,32` | `colors.go:19-21` hand-checks `os.Getenv("NO_COLOR")`; TTY detection hand-rolled via `colorprofile.Detect` (`colors.go:43-45`) instead of the library's envdetect |
+| 3 | ColorMode plumbing (`ColorModeAuto/Never/Always`, single authority) | Fully | `go-output/color.go`; `table.WithColorMode` | `colors.go:9,32-48` (mode decided once, shared by cells + chrome via `colorMode()` at `colors.go:67-73`) |
+| 4 | Color/env detection helpers (`IsNoColor`, `IsCI`) | Partial | `go-output/envdetect.go:20,32` | `colors.go:33` hand-checks `os.Getenv("NO_COLOR")`; TTY detection hand-rolled via `colorprofile.Detect` (`colors.go:44`) instead of the library's envdetect |
 | 5 | Per-cell style functions (`StyleFunc`, `WithFooterStyle`) | Partial | `table/table.go` (`StyleFunc(fn func(row, col int) lipgloss.Style)`) | cells are pre-colored *strings* via `colorService` (`table.go:67-74`, `colors.go:54-58`) — works, but couples styling into data cells instead of the render layer |
 | 6 | Footer/totals row (`SetFooter`/`Table.Footer`) | Missed | `table/` (`SetFooter` — bold-styled totals; root `Table.Footer` doc: rendered by tabular formats) | `table.go:52-75` builds no footer — FINDINGS/RUNS/FAILS column totals are a one-call add |
 | 7 | Multi-format rendering (`output.RenderTable`, 16 `Format` values incl. csv/tsv/markdown/html/yaml) | Missed | `go-output/format.go:7-26` (16 formats); `RenderTable` doc "supports all registered formats when respective sub-modules are imported" | no `--format` flag exists (`flags.go` — QueryFlags only); `report.go:14-31` emits frozen v1 JSON via `compliance.MarshalV1` (stdlib — correct, separate concern) |
@@ -111,7 +111,7 @@ if flags.Format != "" && flags.Format != "table" {
 
 Note: ANSI-colored cell strings must be bypassed for non-terminal formats —
 build `allRows` from the plain values and keep `colorService` for the `table`
-branch only (the color decision already lives in one place, `colors.go:36-52`).
+branch only (the color decision already lives in one place, `colors.go:32-48`).
 
 ### Row 6 — no totals footer (Missed)
 
@@ -133,9 +133,9 @@ plus the accumulators.
 **Library offers:** `output.IsNoColor()` / `output.IsCI()`
 (`envdetect.go:20,32`).
 
-**Consumer does:** `colors.go:19-21` checks `os.Getenv("NO_COLOR")` directly,
+**Consumer does:** `colors.go:33` checks `os.Getenv("NO_COLOR")` directly,
 and detects TTY via `colorprofile.Detect(os.Stdout, os.Environ())`
-(`colors.go:43-45`). The colorprofile route is *more* capable than the
+(`colors.go:44`). The colorprofile route is *more* capable than the
 library's (it handles termcap profiles, not just on/off), so this is a
 half-duplicate: NO_COLOR should defer to `output.IsNoColor()` (one call, fleet
 semantics kept in one place), while the colorprofile detection is a justified
@@ -190,7 +190,7 @@ via row 7 (which subsumes it) rather than as a separate adoption.
    trivial ease.
 3. **`output.IsNoColor()` instead of the direct env check** (row 4) — small
    consistency win, trivial ease; do it in the same PR as #1 (both touch
-   `colors.go`/`table.go`).
+   `colors.go`/`table.go`). One-line change at `colors.go:33`.
 4. **README fleet-status snapshot via `--format markdown`** — only after #1;
    documentation value, zero code.
 
