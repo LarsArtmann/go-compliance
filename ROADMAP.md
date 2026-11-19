@@ -64,3 +64,28 @@ each with an explicit keep-raw/groom verdict and demand-signal trigger
 M26: does go-compliance replace the overview system or coexist?
 Answer shapes the migration note and whether an overview-compat
 decoder stays a supported surface. See TODO_LIST blocked row.
+
+## Conditions watched — library flip triggers (2026-11-19 audit)
+
+The 11 NOT-ADOPTED-justified verdicts in `docs/review/libs/` each carry a
+flip trigger; adopting before one fires is debt. Summary — full argument in
+each report: httputil (bind-posture exposure / v2 API), go-etag (snapshot
+identity in v2 wire), go-idempotency (first HTTP write endpoint), go-retry
+(first flaky one-shot outbound), go-health-dashboard (expose-g1 or
+health-hub retirement), go-credentials-store (g1 auth or outbound authed
+call), go-appkit (TCP-only core grows a listener seam), go-cqrs-lite (hub
+grows a command side), cqrs-htmx (multi-user posture), go-codec (core dep
+policy loosening — currently policy-banned), go-atomic-write (same).
+
+## Fleet adoption waves (raw, from the 2026-11-19 utilization audit)
+
+Each likely repeats across LarsArtmann projects; promote to a fleet
+backlog/TODO when a second consumer confirms: go-daemon `Server.Start`
+adoption (socket-steal hazard in every hand-rolled unix-socket service);
+cmdguard `AssertDescribeContract` at its next tag; go-output `--format`
+on cmdguard-based CLIs (formats already in those graphs); go-health
+`health.Off` idiom for unconfigured deps. Owner decisions pending: fleet
+SSE-parser canonical owner (`daemon.ParseSSEData` vs `go-sse/sseparse`);
+mandate for consumer sessions filing upstream TODOs in library repos
+(cmdguard Nd duration codec, go-datastar MarshalSignals determinism,
+templ-components signal-mode FilterChips).

@@ -56,7 +56,12 @@ The plan is a snapshot: this file is the living backlog.
 | Add `--format` flag to the fleet-table CLI path (go-output already in graph with 16 formats via cmdguard → samber-do-auditlog; ~25 lines, zero new deps) | 🔴 `TODO` | Low    | 30m    | docs/review/libs/go-output.md                                              |
 | cmdguard follow-ups: cmdguard-lint CI gate; `pkg/testutil.AssertDescribeContract` at next tag; upstream the `Nd` day-suffix duration codec | 🔴 `TODO` | Low    | 1h     | docs/review/libs/cmdguard.md                                               |
 | Use `health.Off` for the unconfigured `cache-disk` check instead of conditional registration | 🔴 `TODO` | Low    | 10m    | docs/review/libs/go-health.md                                              |
-| templ-components cheap wins: `errorpage` for default 404s, `layout.ThemeToggle`; migrate off the Tailwind Play CDN (known CSP debt) | 🔴 `TODO` | Low    | 2h     | docs/review/libs/templ-components.md                                       |
+| templ-components cheap wins: `errorpage` for default 404s, `layout.ThemeToggle`; migrate off the Tailwind Play CDN (known CSP debt); fix view.templ:46 embedlit hint | 🔴 `TODO` | Low    | 2h     | docs/review/libs/templ-components.md                                       |
+| Citation-check script (verify every file:line cite in docs/review/libs reports) + run over all 20 reports + fix stale cites | 🔴 `TODO` | Med    | 1h     | 07-41 status §e1; plan T10                                                 |
+| Screenshot docs/review/libs/index.html into docs/assets + link from index (firefox permission needed) | 🔴 `TODO` | Low    | 10m    | 07-41 status §b1; plan T10.4                                               |
+| Link docs/review/libs/ from README docs section (discoverability) | 🔴 `TODO` | Low    | 5m     | 07-41 status §c4; plan T12.2                                               |
+| Utilization reports for the two used-but-unlisted libs: go-branded-id, go-sqlitestore | 🔴 `TODO` | Low    | 1h     | 07-41 status §c2; plan T15                                                 |
+| Flip-triggers table (11 justified-no libs) → ROADMAP "conditions watched" section | 🔴 `TODO` | Low    | 12m    | 07-41 status §f24; plan T12.1                                              |
 
 ## Blocked (owner decisions)
 
