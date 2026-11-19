@@ -5,18 +5,20 @@
 package discovery
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	daemon "github.com/LarsArtmann/go-daemon"
 
 	"github.com/larsartmann/go-compliance"
 )
@@ -29,8 +31,8 @@ const (
 
 	discoverTimeout = 60 * time.Second
 
-	// SSE frame scan budget: 64 KiB initial buffer, 1 MiB max line length.
-	scanBufSize = 64 * 1024
+	// SSE line cap: a longer line fails the parse instead of being silently
+	// truncated (the framed event would be corrupt).
 	maxScanLine = 1024 * 1024
 )
 
@@ -181,30 +183,24 @@ func (c *Client) Watch(ctx context.Context) (<-chan Event, error) {
 		defer close(events)
 		defer func() { _ = resp.Body.Close() }()
 
-		scanner := bufio.NewScanner(resp.Body)
-		scanner.Buffer(make([]byte, 0, scanBufSize), maxScanLine)
-
-		for scanner.Scan() {
-			line := scanner.Text()
-			if !strings.HasPrefix(line, "data:") {
-				continue // event names, comments (heartbeats), blank lines
-			}
-
-			payload := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
-			if payload == "" {
-				continue
-			}
-
+		// daemon.ParseSSEData owns WHATWG framing: multi-line data frames are
+		// joined per spec, CR/LF/CRLF terminators, BOM, and comments are
+		// handled, and read errors come back as errors instead of masquerading
+		// as clean EOF (the caller re-subscribes either way; the log says why).
+		err := daemon.ParseSSEData(resp.Body, maxScanLine, func(payload string) {
 			var event Event
-			if err := json.Unmarshal([]byte(payload), &event); err != nil {
-				continue // a malformed frame never kills the stream
+			if jsonErr := json.Unmarshal([]byte(payload), &event); jsonErr != nil {
+				return // a malformed frame never kills the stream
 			}
 
 			select {
 			case events <- event:
 			case <-ctx.Done():
-				return
 			}
+		})
+		if err != nil {
+			slog.Warn("compliance-hub: discovery watch stream failed",
+				"socket", c.socketPath, "error", err)
 		}
 	}()
 
