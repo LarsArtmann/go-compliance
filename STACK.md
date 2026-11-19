@@ -101,7 +101,9 @@ decision.
    go-datastar patches; templ-components WebUI mirroring
    go-health-dashboard (one `RegisterRoutes(mux)`, severity-grouped repo
    tables, filter chips, live badges); go-health self-probe; go-daemon
-   sd_notify; systemd unit.
+   sd_notify (SSE framing + probe-first socket checks) + go-filewatcher
+   (cross-process evidence dir-watch); go-error-family exit-code contract
+   in main; systemd unit.
 3. flake.nix via go-nix-helpers; `buildflow` quality gate once covered.
 4. Re-run `stack-drift-check.sh` after every new larsartmann/* require.
 
