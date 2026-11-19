@@ -852,7 +852,7 @@
             <div class="square"></div>
             <div class="tri"></div>
           </div>
-          <div class="hero-badge">Fleet run · 5 groups · 20 reports</div>
+          <div class="hero-badge">Fleet run · 5 groups + T15 completion · 22 reports</div>
           <h1>First-party library utilization audit</h1>
           <p class="hero-subtitle">
             Twenty LarsArtmann Go libraries audited against both go-compliance modules
@@ -902,9 +902,12 @@
 
         <h2 id="verdicts"><span class="num">01</span>Verdict table</h2>
         <p>
-          10 of 20 libraries are in the dependency graph (8 direct, 2 indirect); 10 are
+          13 of 22 libraries are in the dependency graph (11 direct, 2 indirect); 9 are
           absent. httputil covers the three user-listed entries (base, server_timing,
-          endpoints) with per-sub-module verdicts inside one report.
+          endpoints) with per-sub-module verdicts inside one report. go-filewatcher
+          flipped to ADOPTED and go-daemon's surface widened on 2026-11-19 (post-audit
+          waves; see the report addenda); go-branded-id and go-sqlitestore close the
+          dep-graph coverage gap (T15).
         </p>
         <div class="table-wrap">
         <table>
@@ -986,19 +989,37 @@
             <tr>
               <td><strong>go-daemon</strong></td>
               <td>direct · hub</td>
-              <td><span class="badge badge-critical">UNDERUSED-severe</span></td>
-              <td>38 <span style="color:var(--text-faint)">(3/8 · low)</span></td>
+              <td><span class="badge badge-medium">UNDERUSED (surface widened 2026-11-19)</span></td>
+              <td>38 <span style="color:var(--text-faint)">(pre-wave score; addendum ↑)</span></td>
               <td>pin ahead of tag (Go-current)</td>
-              <td>4 sd_notify calls only; ~90 LOC re-implement <code>Server.Start</code>, strictly weaker (socket steal)</td>
+              <td>Waves adopted <code>ParseSSEData</code> (SSE framing) + probe-first socket cleanup (<code>IsSocketAlive</code>); <code>Server.Start</code> still declined by STACK decision</td>
               <td><a href="go-daemon.md">go-daemon.md</a></td>
             </tr>
             <tr>
+              <td><strong>go-branded-id</strong></td>
+              <td>direct · core</td>
+              <td><span class="badge badge-fixed">ADOPTED</span></td>
+              <td>90 <span style="color:var(--text-faint)">(4.5/5)</span></td>
+              <td>v0.7.1 = latest</td>
+              <td>Brand + codec core IS the frozen v1 wire's type spine (<code>RepoName</code>/<code>SourceName</code>)</td>
+              <td><a href="go-branded-id.md">go-branded-id.md</a></td>
+            </tr>
+            <tr>
+              <td><strong>go-sqlitestore</strong></td>
+              <td>direct · hub</td>
+              <td><span class="badge badge-fixed">ADOPTED</span></td>
+              <td>85 <span style="color:var(--text-faint)">(4.25/5)</span></td>
+              <td>v0.1.1 = latest</td>
+              <td>Engine core (<code>Open</code> WAL+pool, <code>ExecWrite</code> mutex+busy-retry) owns the hub's cross-process cache writes</td>
+              <td><a href="go-sqlitestore.md">go-sqlitestore.md</a></td>
+            </tr>
+            <tr>
               <td><strong>go-filewatcher</strong></td>
-              <td>absent</td>
-              <td><span class="badge badge-critical">NOT-ADOPTED-but-should</span></td>
-              <td>0 <span style="color:var(--text-faint)">(0/6 · all 6 applicable missed)</span></td>
+              <td>direct · hub</td>
+              <td><span class="badge badge-fixed">ADOPTED 2026-11-19</span></td>
+              <td>0/6 → key surface in use <span style="color:var(--text-faint)">(plan T3; addendum ↑)</span></td>
               <td>v2.5.0 = latest</td>
-              <td>Default <code>--source file</code> has no write trigger; dir-watch → ~1-2s freshness vs 5-min safety net</td>
+              <td>Dir-watch on WAL sidecars + evidence renames: ~1-2s cross-process freshness; 5-min safety net kept as backstop</td>
               <td><a href="go-filewatcher.md">go-filewatcher.md</a></td>
             </tr>
             <tr>
