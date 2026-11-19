@@ -151,6 +151,18 @@ var _ = Describe("readiness HTTP contract", func() {
 	})
 })
 
+// The README's health section promises "warn when their loop stalls past
+// 10 minutes" for refresh-freshness and discovery. Pin both thresholds so
+// a future constant edit fails here first and forces the README along.
+var _ = Describe("README readiness thresholds", func() {
+	It("pins refresh-freshness and discovery warn thresholds at 10 minutes", func() {
+		Expect(refreshFreshnessWarn).To(Equal(10 * time.Minute),
+			"README.md 'Checks' section promises a 10-minute stall warning")
+		Expect(discoveryStaleWarn).To(Equal(10 * time.Minute),
+			"README.md 'Checks' section promises a 10-minute stall warning")
+	})
+})
+
 var _ = Describe("health probe sse-backpressure check", func() {
 	It("warns on new drops since the last evaluation and clears when they stop", func() {
 		hub := events.NewHub()

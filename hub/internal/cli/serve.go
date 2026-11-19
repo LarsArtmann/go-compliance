@@ -74,6 +74,12 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		// stays as the backstop.
 		watcher := watchEvidence(ctx, flags.QueryFlags, refresher)
 
+		// These loops start before the remaining fallible wiring (probe,
+		// mux) on purpose: every trigger they fire only Kicks the
+		// refresher, whose publishes land in the hub before any SSE
+		// subscriber exists — late subscribers still get the snapshot.
+		// If a later setup step fails and runServe returns early, ctx
+		// cancellation (or process exit) reaps both goroutines.
 		go refresher.Run(ctx)
 		go runDiscoveryWatch(ctx, discovery.New(discovery.ResolveSocketPath()), refresher)
 

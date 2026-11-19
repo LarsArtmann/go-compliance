@@ -20,8 +20,9 @@ Please do **not** open a public issue for security reports.
 
 Include what you can of: the affected version
 (`go list -m github.com/larsartmann/go-compliance`), a minimal reproduction,
-and your assessment of impact. You will get an acknowledgement within a
-week, and a fix or a mitigation plan before any public disclosure.
+and your assessment of impact. Response time: every report is acknowledged
+within a week and receives a fix or a mitigation plan before any public
+disclosure.
 
 ## Security Practices
 
