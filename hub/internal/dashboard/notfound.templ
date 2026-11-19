@@ -1,0 +1,22 @@
+package dashboard
+
+import (
+	"github.com/larsartmann/templ-components/errorpage"
+	"github.com/larsartmann/templ-components/layout"
+)
+
+// NotFound renders the library's 404 fragment inside the dashboard shell,
+// so unknown paths fail in the same styling (and dark mode) as the fleet.
+// The standalone-document variant carries no stylesheet link; this shell
+// does, via the same compiled CSS every page uses.
+templ NotFound(pageTitle string, cssPath string) {
+	@layout.Base(layout.PageProps{
+		Title:       pageTitle,
+		CSSPath:     cssPath,
+		HTMXVersion: "",
+	}) {
+		<div class="py-16">
+			@errorpage.NotFound404(errorpage.DefaultNotFound404Props())
+		</div>
+	}
+}

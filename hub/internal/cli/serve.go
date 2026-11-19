@@ -97,7 +97,12 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 			Page:   "/",
 			Stream: "/events",
 			Script: "/datastar.js",
+			CSS:    "/app.css",
 		}, mux)
+
+		// Catch-all: unknown paths get the styled 404 (the dashboard page
+		// owns the root exactly, so /anything lands here, not on the fleet).
+		mux.Handle("/", board.NotFoundHandler())
 
 		probe.RegisterRoutes(mux, health.DefaultRoutes())
 

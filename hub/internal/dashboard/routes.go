@@ -22,11 +22,13 @@ type Routes struct {
 	Stream string
 	// Script serves the pinned DataStar bundle.
 	Script string
+	// CSS serves the compiled Tailwind artifact.
+	CSS string
 }
 
 // DefaultRoutes returns the canonical single-service layout.
 func DefaultRoutes() Routes {
-	return Routes{Page: "/", Stream: "/events", Script: "/datastar.js"}
+	return Routes{Page: "/", Stream: "/events", Script: "/datastar.js", CSS: cssRoute}
 }
 
 func (r Routes) withDefaults() Routes {
@@ -43,6 +45,10 @@ func (r Routes) withDefaults() Routes {
 		r.Script = defaults.Script
 	}
 
+	if r.CSS == "" {
+		r.CSS = defaults.CSS
+	}
+
 	return r
 }
 
@@ -57,9 +63,30 @@ func (d *Dashboard) RegisterRoutes(mux *http.ServeMux) {
 func (d *Dashboard) RegisterRoutesAt(routes Routes, mux *http.ServeMux) {
 	routes = routes.withDefaults()
 
+	// "/" alone is Go-mux-speak for EVERY path; the dashboard must own the
+	// root exactly so unknown paths fall through to the host's 404 instead
+	// of silently rendering the fleet at /anything.
+	page := routes.Page
+	if page == "/" {
+		page = "/{$}"
+	}
+
+	mux.HandleFunc("GET "+routes.CSS, d.CSSHandler().ServeHTTP)
 	mux.HandleFunc("GET "+routes.Script, d.ScriptHandler().ServeHTTP)
 	mux.HandleFunc("GET "+routes.Stream, d.StreamHandler().ServeHTTP)
-	mux.Handle("GET "+routes.Page, d.pageHandler(routes))
+	mux.Handle("GET "+page, d.pageHandler(routes))
+}
+
+// NotFoundHandler renders the styled 404 page; serve wires it as the
+// mux catch-all so unknown paths fail visibly instead of falling into a
+// bare-text default.
+func (d *Dashboard) NotFoundHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Header().Set("X-Robots-Tag", "noindex")
+		w.WriteHeader(http.StatusNotFound)
+		_ = NotFound(d.title+" — page not found", versionedCSSHref(cssRoute)).Render(r.Context(), w)
+	})
 }
 
 // pageHandler renders the HTML page; a client whose Accept header prefers
@@ -85,6 +112,7 @@ func (d *Dashboard) pageHandler(routes Routes) http.Handler {
 			Title:       d.title,
 			StreamURL:   routes.Stream,
 			ScriptSrc:   versionedScriptSrc(routes.Script),
+			CSSSrc:      versionedCSSHref(routes.CSS),
 			Rows:        filterRowsByState(rows, stateFilter),
 			StateFilter: stateFilterOrAll(stateFilter),
 			RenderedAt:  time.Now(),
@@ -106,6 +134,17 @@ func versionedScriptSrc(path string) string {
 	}
 
 	return path + "?v=" + datastar.Version()
+}
+
+// versionedCSSHref pins the compiled stylesheet's content hash as a cache
+// buster: the artifact is served immutable for a day, so an upgrade MUST
+// change the URL or returning browsers keep yesterday's styles.
+func versionedCSSHref(path string) string {
+	if path == "" {
+		return ""
+	}
+
+	return path + "?v=" + appCSSVersion
 }
 
 // preferJSON reports whether the Accept header prefers application/json
