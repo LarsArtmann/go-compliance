@@ -95,6 +95,7 @@ var _ = Describe("bind address handling", func() {
 
 			server := &http.Server{Handler: http.NotFoundHandler()}
 			go func() { _ = server.Serve(listener) }()
+
 			DeferCleanup(func() { _ = server.Close() })
 
 			// The first hub must be answering before the second one probes.

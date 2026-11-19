@@ -235,6 +235,7 @@ var _ = Describe("discovery client SSE framing", func() {
 
 		logs := &syncBuffer{}
 		previous := slog.Default()
+
 		slog.SetDefault(slog.New(slog.NewTextHandler(logs, nil)))
 		DeferCleanup(func() { slog.SetDefault(previous) })
 

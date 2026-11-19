@@ -67,24 +67,24 @@ func bindAddress(ctx context.Context, address string) (net.Listener, error) {
 	return listener, nil
 }
 
+// errSocketOwned is returned when another live listener already answers on
+// the socket path: its socket is never stolen, only refused (errors.Is-
+// matchable for embedders).
+var errSocketOwned = errors.New("another listener is answering on this socket: refusing to steal it (stop it first)")
+
 // removeUnownedSocket deletes an existing socket file only when nothing is
 // answering on it (go-daemon CleanStaleSocket semantics): a leftover file
 // from a crashed run goes away, a live sibling hub makes the bind fail
 // loudly instead of silently killing the sibling's socket path.
 func removeUnownedSocket(ctx context.Context, socketPath string) error {
-	if _, statErr := os.Stat(socketPath); statErr != nil {
-		return nil
-	}
+	if _, statErr := os.Stat(socketPath); statErr == nil {
+		if daemon.IsSocketAlive(ctx, socketPath, probeHealthPath) {
+			return fmt.Errorf("%w: %s", errSocketOwned, socketPath)
+		}
 
-	if daemon.IsSocketAlive(ctx, socketPath, probeHealthPath) {
-		return fmt.Errorf(
-			"another listener is answering on %s: refusing to steal its socket (stop it first)",
-			socketPath,
-		)
-	}
-
-	if err := os.Remove(socketPath); err != nil && !errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("remove stale socket %s: %w", socketPath, err)
+		if err := os.Remove(socketPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("remove stale socket %s: %w", socketPath, err)
+		}
 	}
 
 	return nil

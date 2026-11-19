@@ -9,15 +9,15 @@ require (
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/larsartmann/cmdguard/v5 v5.1.0
 	github.com/larsartmann/go-compliance v0.0.0
-	github.com/larsartmann/go-datastar v0.6.2
-	github.com/larsartmann/go-datastar/datastartest v0.6.2
-	github.com/larsartmann/go-datastar/static v0.6.1
+	github.com/larsartmann/go-datastar v0.7.0
+	github.com/larsartmann/go-datastar/datastartest v0.7.0
+	github.com/larsartmann/go-datastar/static v0.8.0
 	github.com/larsartmann/go-error-family v0.12.0
 	github.com/larsartmann/go-health v0.10.0
 	github.com/larsartmann/go-output v0.38.7
 	github.com/larsartmann/go-output/table v0.38.7
 	github.com/larsartmann/go-sqlitestore v0.1.1
-	github.com/larsartmann/go-sse v0.6.2
+	github.com/larsartmann/go-sse v0.7.0
 	github.com/larsartmann/go-sse/ssetest v0.5.0
 	github.com/larsartmann/templ-components v1.27.0
 	github.com/larsartmann/templ-components/datastar v1.27.0
@@ -116,7 +116,7 @@ require (
 	github.com/xo/terminfo v1.3.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.6 // indirect
-	golang.org/x/mod v0.41.0 // indirect
+	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect

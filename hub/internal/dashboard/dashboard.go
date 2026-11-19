@@ -6,12 +6,10 @@ package dashboard
 
 import (
 	"encoding/json/v2"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/larsartmann/go-datastar"
-	dstarstatic "github.com/larsartmann/go-datastar/static"
 	"github.com/larsartmann/go-sse"
 
 	"github.com/larsartmann/go-compliance/hub/internal/events"
@@ -26,9 +24,6 @@ const defaultTitle = "Fleet compliance"
 
 const (
 	heartbeatInterval = 15 * time.Second
-
-	scriptContentType  = "text/javascript; charset=utf-8"
-	scriptCacheControl = "public, max-age=86400"
 )
 
 // stateSignals is the signals payload patched on every state change:
@@ -108,14 +103,12 @@ func (d *Dashboard) StreamHandler() http.Handler {
 	})
 }
 
-// ScriptHandler serves the embedded DataStar JS bundle with day-long
-// caching: the bundle is version-pinned by the go-datastar/static module.
+// ScriptHandler serves the embedded DataStar JS bundle with ETag/304
+// conditional requests and day-long caching (go-datastar's handler; the
+// versioned script URL in the page turns upgrades into fresh cache keys,
+// so no client runs yesterday's bundle).
 func (d *Dashboard) ScriptHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", scriptContentType)
-		w.Header().Set("Cache-Control", scriptCacheControl)
-		_, _ = w.Write(dstarstatic.Bytes())
-	})
+	return datastar.ScriptHandler()
 }
 
 // sendPublished projects one hub event; false stops the stream (client

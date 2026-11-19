@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/larsartmann/go-datastar"
+
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
@@ -82,7 +84,7 @@ func (d *Dashboard) pageHandler(routes Routes) http.Handler {
 		model := ViewModel{
 			Title:       d.title,
 			StreamURL:   routes.Stream,
-			ScriptSrc:   routes.Script,
+			ScriptSrc:   versionedScriptSrc(routes.Script),
 			Rows:        filterRowsByState(rows, stateFilter),
 			StateFilter: stateFilterOrAll(stateFilter),
 			RenderedAt:  time.Now(),
@@ -91,6 +93,19 @@ func (d *Dashboard) pageHandler(routes Routes) http.Handler {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = View(model).Render(r.Context(), w)
 	})
+}
+
+// versionedScriptSrc pins the embedded DataStar client version as a cache
+// buster on the self-hosted bundle URL (ScriptTagVersioned semantics; the
+// SDKScript component renders the URL we hand it). ScriptHandler caches the
+// bundle for 24h, so an unversioned URL would serve yesterday's client to
+// returning browsers after an upgrade.
+func versionedScriptSrc(path string) string {
+	if path == "" {
+		return ""
+	}
+
+	return path + "?v=" + datastar.Version()
 }
 
 // preferJSON reports whether the Accept header prefers application/json
