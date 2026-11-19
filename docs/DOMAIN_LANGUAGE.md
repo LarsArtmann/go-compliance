@@ -10,7 +10,7 @@
 | Compliance State | A repo's posture: `compliant`, `failing`, `stale`, or `never-covered`              | `state.go`, `State`                                          |
 | Verdict          | The pass/fail outcome of a single run                                              | `VerdictPassed` / `VerdictFailed`                            |
 | Evidence         | Per-repo observations (runs, failures, findings, worst steps) used to derive state | `evidence.go`, `RepoEvidence`                                |
-| Fold             | Unioning evidence rows per repo within a window, capped by worstStepLimit          | `fold.go`, `FoldEvidence`                                    |
+| Fold             | Unioning evidence rows per repo within a window, capped by worstStepLimit; the `<= 0 → default` rule has one home (`worstStepLimitOrDefault`) | `fold.go`, `FoldEvidence`                                    |
 | Window           | The evidence lookback period (`since`)                                             | `Source.QueryEvidence` ctx + since                           |
 | Stale            | A repo whose newest evidence is older than `staleAfter`                            | `state.go` DeriveState                                       |
 | Never-covered    | A repo the discovery daemon knows but which has no evidence in the window          | `hub/internal/discovery`                                     |

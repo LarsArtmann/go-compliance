@@ -92,6 +92,18 @@ replaces).
 - Re-open triggers: a 4th cache query site (extract the scan-callback
   collector then); accept directives are line-proximity fragile (5-line
   window) — expect drift after refactors near them, re-audit on sight.
+- One `// art-dupl:accept` directive suppresses its WHOLE clone group
+  (both occurrences — observed empirically on the refresher group;
+  mechanism undocumented upstream, don't rely on per-occurrence
+  behavior).
+
+## docs-health annotate writer
+
+- Keys into reports with MULTIPLE numbered sections MUST use the
+  `N@substring` disambiguator — a number-only key strikes the FIRST
+  matching item number across sections (one repair cycle burned
+  2026-11-19). Always `emit-keys` + `--dry-run` the first spec against
+  an unfamiliar file shape.
 
 ## Testing Conventions
 

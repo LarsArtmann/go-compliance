@@ -56,7 +56,7 @@ not?
 | ------------------------------------ | --------------------- | ------------------------------------------------------- | --------------------------------------------------------------- |
 | dprint formatting gate               | 🟢 `FULLY_FUNCTIONAL` | `dprint.json`; `dprint check` green                     | testdata fixtures excluded (golden bytes)                       |
 | flake.nix build + devShell           | 🟢 `FULLY_FUNCTIONAL` | `flake.nix`; `nix flake check` green (both modules)     | `_core_only` vendor isolation; templ generator pinned v0.3.1100 |
-| CI (build/test/lint/docs gates)      | 🟢 `FULLY_FUNCTIONAL` | `.github/workflows/ci.yml`; actionlint clean            | hub/flake jobs skip until `FLAKE_PAT` secret exists             |
+| CI (build/test/lint/docs gates)      | 🟢 `FULLY_FUNCTIONAL` | `.github/workflows/ci.yml`; actionlint clean            | dupl-gate (art-dupl ratchet), templ-fmt, citation-gate, cmdguard-usage, css-freshness gates; hub/flake jobs skip until `FLAKE_PAT` secret exists; the five newest gates have zero runner executions so far (first push pending) |
 | golangci-lint (both modules)         | 🟢 `FULLY_FUNCTIONAL` | `.golangci.yml`; 0 issues core + hub                    | wrapcheck v2 keys are kebab-case (silently dropped otherwise)   |
 | `examples/reporter` integration demo | 🟢 `FULLY_FUNCTIONAL` | `examples/reporter/main.go`; `docs/guides/integrate.md` | runnable; README screenshots in `docs/assets/`                  |
 | Benchmarks + baseline                | 🟢 `FULLY_FUNCTIONAL` | `bench_test.go`; `benchmarks/baseline.txt`              | fold @341 ≈ 150µs; derive zero-alloc                            |
