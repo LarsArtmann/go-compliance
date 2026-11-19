@@ -112,6 +112,14 @@ TODO_LIST (4 High/Med + 7 Low rows).
 Re-review triggers: a NOT-ADOPTED lib's flip trigger fires, a pinned dep
 moves a major, or new fleet-wide consumers change the leverage math. For
 NOT-adopted libs the report score is counterfactual (100 = zero unmet need).
+Citation integrity: `scripts/check-citations.sh` verifies every
+`file:line` cite in the reports against the tree (ratchet via
+`docs/review/libs/.citations-baseline` — rerun after ANY refactor that
+moves cited code; new drift fails, baselined drift prints ACCEPTED).
+Tag-watch hook: when a reviewed lib (starting with go-daemon) cuts a new
+tag, append an executed-addendum to its report the next time it is
+touched — the reports pin versions in their verdicts and go stale
+silently otherwise.
 
 ## Live Architecture (M27)
 

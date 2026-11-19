@@ -102,5 +102,8 @@ The hub module and the flake build need one private dependency
 ## Documentation
 
 - [Integrating a project in one line](docs/guides/integrate.md)
+- [Library utilization reports](docs/review/libs/index.html) — 20 audited
+  dependencies, verdicts and flip triggers (citations mechanically
+  verified by `scripts/check-citations.sh`)
 - [STACK.md](STACK.md) — foundation decision record (enforced by
   stack-drift-check)

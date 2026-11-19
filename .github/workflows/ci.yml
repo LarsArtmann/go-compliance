@@ -150,6 +150,31 @@ jobs:
         run: git clone --depth 1 https://github.com/LarsArtmann/SKILLS /tmp/skills
       - run: bash /tmp/skills/stack-selection/scripts/stack-drift-check.sh "$PWD"
 
+  citation-gate:
+    name: report citation gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: scripts/check-citations.sh
+
+  cmdguard-lint:
+    name: cmdguard usage gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: hub/go.mod
+          cache: false
+      # The published lint module carries local-dev replace directives, so
+      # `go run @version` is unusable (upstream TODO, owner-gated); a shallow
+      # clone of the pinned tag satisfies the sibling replaces.
+      - name: Fetch cmdguard-lint lint/v0.3.0
+        run: git clone --depth 1 --branch lint/v0.3.0 https://github.com/LarsArtmann/cmdguard /tmp/cmdguard
+      - run: go -C /tmp/cmdguard/lint run ./cmd/cmdguard-lint lint "$GITHUB_WORKSPACE"
+
   docs-gates:
     name: docs gates
     runs-on: ubuntu-latest
