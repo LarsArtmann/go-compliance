@@ -38,7 +38,7 @@
 
 | Item                            | State                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | What remains                                                                                                                                                                                                                                                                                                     |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **M18 / F082–F085 — flake.nix** | flake.nix written via `flakeModules.go-standard`: devShell (go_1_27, golangci, templ pinned v0.3.1100 via templGen derivation, dprint, actionlint; GOWORK unset for the two-module workspace), treefmt (nixfmt only — Go formatting stays in its dedicated gate), `deps`/`publicDeps` wired for GOPRIVATE shell injection. Hub binary built **manually** via `mkPreparedSource` + `buildGoModule` (modRoot=hub) because of the go-standard FOD bug (§d). Core module covered by `checks.core-build` (compile + `go test` in sandbox). `nix flake lock` green. | vendorHash bootstrap for BOTH derivations (placeholders `sha256-AAA…`/`sha256-BBB…` in place); **the postPatchExtra hub-replace injection is NOT yet on disk** — the python heredoc that writes it failed on quoting (§d) and the subsequent `nix build` ran the old flake. Then `nix flake check` green (F085). |
+| ~~**M18 / F082–F085 — flake.nix**~~ done — M18 closed (13-31 archived report); flake green since | ~~flake.nix written via `flakeModules.go-standard`: devShell (go_1_27, golangci, templ pinned v0.3.1100 via templGen derivation, dprint, actionlint; GOWORK unset for the two-module workspace), treefmt (nixfmt only — Go formatting stays in its dedicated gate), `deps`/`publicDeps` wired for GOPRIVATE shell injection. Hub binary built **manually** via `mkPreparedSource` + `buildGoModule` (modRoot=hub) because of the go-standard FOD bug (§d). Core module covered by `checks.core-build` (compile + `go test` in sandbox). `nix flake lock` green.~~ | ~~vendorHash bootstrap for BOTH derivations (placeholders `sha256-AAA…`/`sha256-BBB…` in place); **the postPatchExtra hub-replace injection is NOT yet on disk** — the python heredoc that writes it failed on quoting (§d) and the subsequent `nix build` ran the old flake. Then `nix flake check` green (F085).~~ |
 
 ## c) NOT STARTED
 
@@ -70,30 +70,30 @@
 ## f) Top #25 things to get done next!
 
 1. ~~Apply the postPatchExtra hub-replace injection to flake.nix (edit tool, not heredoc).~~ done — flake.nix postPatchExtra hub-replace injection live
-2. Bootstrap the hub vendorHash (`nix build .#compliance-hub` → paste `got:` hash → repeat until build).
-3. Bootstrap the core vendorHash (`checks.core-build`).
-4. `nix flake check` green (F085) — M18 complete.
-5. Re-run full hub suite + core suite; then M18 flip in TODO_LIST/FEATURES/CHANGELOG.
-6. M19: `.github/workflows/ci.yml` — build+test per module (GOWORK=off per-module jobs), valid on Forgejo Actions + GitHub runners.
-7. M19: lint job pinned to the devShell golangci version (write `.golangci.yml` first — overlaps the lint debt).
-8. M19: dprint + docs-gates (freshness battery) jobs; actionlint the workflow itself (actionlint already in devShell).
-9. M21: `examples/reporter/main.go` (uses `compliance.Record`, compiles standalone, go build -o /dev/null test).
+~~2. Bootstrap the hub vendorHash (`nix build .#compliance-hub` → paste `got:` hash → repeat until build).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~3. Bootstrap the core vendorHash (`checks.core-build`).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~4. `nix flake check` green (F085) — M18 complete.~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~5. Re-run full hub suite + core suite; then M18 flip in TODO_LIST/FEATURES/CHANGELOG.~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~6. M19: `.github/workflows/ci.yml` — build+test per module (GOWORK=off per-module jobs), valid on Forgejo Actions + GitHub runners.~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~7. M19: lint job pinned to the devShell golangci version (write `.golangci.yml` first — overlaps the lint debt).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~8. M19: dprint + docs-gates (freshness battery) jobs; actionlint the workflow itself (actionlint already in devShell).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~9. M21: `examples/reporter/main.go` (uses `compliance.Record`, compiles standalone, go build -o /dev/null test).~~ done — shipped; tree-verified by the 15-00 final-pass audit
 10. ~~M21: docs/guides/integrate.md — the one-line-per-project promise.~~ done — docs/guides/integrate.md
-11. M21: README screenshots (terminal table + WebUI) — render from fixture.
-12. M22: benchmark fold+derive at 300 repos (synthetic + fixture), commit baseline under `benchmarks/`.
-13. M23: BuildFlow repo TODO_LIST pointer row + link (cross-repo edit).
-14. M23: STACK.md errata pass (hosting rows now real).
-15. M24: `docs/decisions/v2-wire-design.md` (diff vs v1, compat policy: v1 emittable forever).
-16. M25: `docs/notes/federation-interop.md` (research note, hub ↔ go-health-dashboard API surface).
-17. M27: fix `queryLatestRunCounts` N+1 (single window query, `hub/internal/cache/cache.go:221`).
-18. M27: store write-hook → `hub.PublishRefresh` re-derive.
-19. M27: `discovery.Client.Watch` (`/v1/watch` SSE) → debounced refresh trigger.
-20. M27: E2E test — evidence change → browser event (datastartest).
-21. Quality: `go test -race ./internal/...` hub-wide.
-22. Quality: shared `waitForSubscriber` helper; RelativeTime patch-purity check.
-23. Quality: AGENTS.md with hub conventions + the verified API facts.
+~~11. M21: README screenshots (terminal table + WebUI) — render from fixture.~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~12. M22: benchmark fold+derive at 300 repos (synthetic + fixture), commit baseline under `benchmarks/`.~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~13. M23: BuildFlow repo TODO_LIST pointer row + link (cross-repo edit).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~14. M23: STACK.md errata pass (hosting rows now real).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~15. M24: `docs/decisions/v2-wire-design.md` (diff vs v1, compat policy: v1 emittable forever).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~16. M25: `docs/notes/federation-interop.md` (research note, hub ↔ go-health-dashboard API surface).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~17. M27: fix `queryLatestRunCounts` N+1 (single window query, `hub/internal/cache/cache.go:221`).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~18. M27: store write-hook → `hub.PublishRefresh` re-derive.~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~19. M27: `discovery.Client.Watch` (`/v1/watch` SSE) → debounced refresh trigger.~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~20. M27: E2E test — evidence change → browser event (datastartest).~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~21. Quality: `go test -race ./internal/...` hub-wide.~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~22. Quality: shared `waitForSubscriber` helper; RelativeTime patch-purity check.~~ done — shipped; tree-verified by the 15-00 final-pass audit
+~~23. Quality: AGENTS.md with hub conventions + the verified API facts.~~ done — shipped; tree-verified by the 15-00 final-pass audit
 24. ~~Quality: .gitignore note (generated `*_templ.go` committed), fixture-refresh ritual doc.~~ done — .gitignore note + scripts/refresh-fixture.sh ritual header
-25. Upstream (owner-gated): fix + push go-nix-helpers FOD double-cd; then simplify this flake back onto the module path.
+25. Upstream (owner-gated): fix + push go-nix-helpers FOD double-cd; then simplify this flake back onto the module path. **→ ROADMAP cross-repo upstream line — the go-nix-helpers FOD fix is owner-gated (push never done unasked)**
 
 ## g) Top #1 question I can NOT figure out myself!
 

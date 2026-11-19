@@ -112,12 +112,17 @@ before moving on, honest reporting of everything that broke along the way.
   (unix-socket HTTP, Discover, Watch SSE parser, RepoNames) and a full
   unix-socket test server are written, but the package fails `go vet`/build
   on two defects listed in (d). ~15 min of fixes + test-run from green.
+  Resolved: fixed the same night (06-47 M10 — io.ReadAll + Unmarshal);
+  discovery suite green since.
 - **M7 serve**: functional but minimal — serves a startup snapshot as JSON;
   the realtime internals (M11–M15, M27) are designed to replace it. Flag
   surface (`--addr`, localhost default) is final per the bind posture.
+  Resolved: superseded by the realtime hub (M11–M15 rebuilt serve on the
+  event backbone).
 - **CLI source selection**: `--source file|buildflow` only; the cache (M9)
   is not yet reachable from the CLI (`--source cache --db …` lands with
-  M14's content negotiation work).
+  M14's content negotiation work). Resolved: `--source cache --db` landed
+  with M14.
 
 ---
 
@@ -210,75 +215,75 @@ before moving on, honest reporting of everything that broke along the way.
 
 ## f) NEXT UP TO 50 TASKS (ranked; parent IDs from the plan)
 
-1. Fix discovery compile: io.ReadAll + json.Unmarshal in Discover (d1)
+~~1. Fix discovery compile: io.ReadAll + json.Unmarshal in Discover (d1)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 2. ~~Delete bogus jsonNewDecoder helper in client_test.go (d2)~~ done — helper deleted from hub/internal/discovery/client_test.go
-3. Run discovery suite green (unix-socket httptest server is already written)
-4. M11/F050: broadcaster wiring + heartbeat (go-sse NewBroadcaster + Stream)
-5. M11/F051: evidence refresh → state-diff events
-6. M11/F052: /events endpoint with Last-Event-ID replay (EventStore ring)
-7. M11/F053: endpoint tests (ssetest or hand-rolled SSE client)
-8. M12/F054: patch types for fleet table rows (go-datastar ElementsPatch)
+~~3. Run discovery suite green (unix-socket httptest server is already written)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~4. M11/F050: broadcaster wiring + heartbeat (go-sse NewBroadcaster + Stream)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~5. M11/F051: evidence refresh → state-diff events~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~6. M11/F052: /events endpoint with Last-Event-ID replay (EventStore ring)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~7. M11/F053: endpoint tests (ssetest or hand-rolled SSE client)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~8. M12/F054: patch types for fleet table rows (go-datastar ElementsPatch)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 9. ~~M12/F055: signal patches for counts/badges (SignalsPatch)~~ done — dashboard sendSignals SignalsPatch
 10. ~~M12/F056: ScriptHandler serving DataStar JS~~ done — dashboard ScriptHandler serves the pinned bundle
 11. ~~M12/F057: datastartest E2E assertions~~ done — datastartest assertions live in dashboard + cli E2E tests
-12. M13/F058: templ setup + layout via templ-components (go:generate, tool
+~~12. M13/F058: templ setup + layout via templ-components (go:generate, tool~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
     directive, commit generated files)
-13. M13/F059: fleet table component (repo/state/severity columns)
-14. M13/F060: badges + stat cards
-15. M13/F061: detail row expansion (worst steps)
-16. M13/F062: page render test
-17. M14/F063: filter chips (state filter)
+~~13. M13/F059: fleet table component (repo/state/severity columns)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~14. M13/F060: badges + stat cards~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~15. M13/F061: detail row expansion (worst steps)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~16. M13/F062: page render test~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~17. M14/F063: filter chips (state filter)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 18. ~~M14/F064: grouping by severity/state~~ done — state-ranked sort hub/internal/cli/table.go + ?state= filter hub/internal/dashboard/routes.go
-19. M14/F065: RegisterRoutes(mux) public surface
-20. M14/F066: content negotiation HTML/JSON
+~~19. M14/F065: RegisterRoutes(mux) public surface~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~20. M14/F066: content negotiation HTML/JSON~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 21. ~~M14/F067: embedding quickstart in README~~ done — README links docs/guides/integrate.md
-22. M14: `--source cache --db path` CLI wiring for M9
-23. M15/F068: go-health probe registration
-24. M15/F069: sd_notify wiring via go-daemon
-25. M15/F070: systemd unit file + docs
+~~22. M14: `--source cache --db path` CLI wiring for M9~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~23. M15/F068: go-health probe registration~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~24. M15/F069: sd_notify wiring via go-daemon~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~25. M15/F070: systemd unit file + docs~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
     ~~26. M15/F071: smoke: serve + curl /health~~ done at 2026-11-19: serve smoke exists — dynamic port, /healthz + full route sweep with hardening-header assertions (hub/internal/cli/app_test.go:96-150)
-26. M27/F107: re-derive on store writes (hook)
-27. M27/F108: debounce + coalesce events
-28. M27/F109: E2E: evidence change → browser event
-29. M27: discovery /v1/watch → refresh trigger (client.Watch exists after d1–d3)
-30. M20/F090: decision doc docs/decisions/bind-posture.md
-31. M20/F091: bind flag + localhost default (flag exists; document+test)
-32. M20/F092: optional unix-socket listen mode
-33. M20/F093: test non-localhost bind requires explicit flag
-34. M17/F077: dprint.json + format check
-35. M17/F078: TODO_LIST.md seeded from the plan (HARVEST target)
+~~26. M27/F107: re-derive on store writes (hook)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~27. M27/F108: debounce + coalesce events~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~28. M27/F109: E2E: evidence change → browser event~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~29. M27: discovery /v1/watch → refresh trigger (client.Watch exists after d1–d3)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~30. M20/F090: decision doc docs/decisions/bind-posture.md~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~31. M20/F091: bind flag + localhost default (flag exists; document+test)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~32. M20/F092: optional unix-socket listen mode~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~33. M20/F093: test non-localhost bind requires explicit flag~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~34. M17/F077: dprint.json + format check~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~35. M17/F078: TODO_LIST.md seeded from the plan (HARVEST target)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 36. ~~M17/F079: FEATURES.md initial inventory~~ done — FEATURES.md
 37. ~~M17/F080: DOMAIN_LANGUAGE.md core terms~~ done — docs/DOMAIN_LANGUAGE.md
-38. M17/F081: CHANGELOG.md Unreleased section
-39. M18/F082–F085: flake.nix skeleton + devShell + packages + `nix flake
+~~38. M17/F081: CHANGELOG.md Unreleased section~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~39. M18/F082–F085: flake.nix skeleton + devShell + packages + `nix flake~~ done — shipped (M18); tree-verified (15-00 audit)
     check` green
-40. M19/F086–F089: CI build/test/lint per module, drift-check, docs gates,
+~~40. M19/F086–F089: CI build/test/lint per module, drift-check, docs gates,~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
     Forgejo+GitHub runner validity
-41. M21/F094–F096: examples/reporter, one-line integration guide, screenshots
-42. M22/F097–F098: benchmarks (fold+derive at 300 repos) + baseline file
-43. M23/F099–F100: BuildFlow TODO_LIST pointer row + STACK.md errata check
-44. M24/F101–F102: v2 API design doc + compat policy note
-45. M25/F103–F104: go-health-dashboard federation research + interop note
-46. M26/F105–F106: overview endgame note + migration sketch (blocked: g2)
+~~41. M21/F094–F096: examples/reporter, one-line integration guide, screenshots~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~42. M22/F097–F098: benchmarks (fold+derive at 300 repos) + baseline file~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~43. M23/F099–F100: BuildFlow TODO_LIST pointer row + STACK.md errata check~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~44. M24/F101–F102: v2 API design doc + compat policy note~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~45. M25/F103–F104: go-health-dashboard federation research + interop note~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+46. M26/F105–F106: overview endgame note + migration sketch (blocked: g2) **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
 47. ~~Fix queryLatestRunCounts N+1 before M27 (e1)~~ done — queryLatestRecords single correlated-subquery query hub/internal/cache/cache.go
-48. Relax the 341-repo fixture pin before the next fixture refresh (e7)
-49. Final: whole-repo build+test+lint+docs audit vs plan, then release
+~~48. Relax the 341-repo fixture pin before the next fixture refresh (e7)~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~49. Final: whole-repo build+test+lint+docs audit vs plan, then release~~ done — final pass complete (15-00); core v0.1.0 tagged 77881b3; the hub replace-drop rides the TODO row
     procedure (drop hub's replace directive, tag core v0.1.0 first)
 
 ---
 
 ## g) UP TO 3 QUESTIONS I CANNOT FIGURE OUT MYSELF
 
-1. **Forgejo visibility (carried over)**: is `lars/go-compliance` set public
+1. **Forgejo visibility (carried over)**: is `lars/go-compliance` set public **→ TODO_LIST Blocked row — Forgejo visibility, owner-only UI click**
    in the Forgejo UI? Push-to-create used the server default and there is no
    API token/tea CLI to check or flip it (anonymous API 404s even for known
    repos). Needs one manual click by the owner.
-2. **g1 — hub auth/bind posture**: localhost-only is the safe default (and
+~~2. **g1 — hub auth/bind posture**: localhost-only is the safe default (and~~ done — bind posture decided (docs/decisions/bind-posture.md); the auth layer is parked as a v2-era design question
    is what ships). Should the hub ever bind the LAN (plain HTTP? unix socket
    - reverse proxy? auth token?), and if so which mechanism is the fleet
      standard? Blocks M20's unix-socket mode value and any remote dashboard
      use.
-3. **g2 — overview endgame**: replace overview's compliance views with the
+3. **g2 — overview endgame**: replace overview's compliance views with the **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
    hub (embed via RegisterRoutes + migration sketch), or keep overview as
    the consumer and the hub as a parallel producer forever? Blocks M26;
    until answered both dashboards will drift features independently.

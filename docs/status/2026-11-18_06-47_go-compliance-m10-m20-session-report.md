@@ -209,85 +209,85 @@ templ-components v1.27.0 (skill loaded before authoring):
 
 **M20 finish (1)**
 
-1. F093: test non-localhost warning + unix-socket serve round-trip.
+~~1. F093: test non-localhost warning + unix-socket serve round-trip.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 
 **M17 docs (5)**
-2. dprint.json + format check.
-3. TODO_LIST.md seeded from the plan (annotate plan, never rewrite).
+~~2. dprint.json + format check.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~3. TODO_LIST.md seeded from the plan (annotate plan, never rewrite).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 4. ~~FEATURES.md honest inventory (core + hub).~~ done — FEATURES.md
 5. ~~DOMAIN_LANGUAGE.md core terms.~~ done — docs/DOMAIN_LANGUAGE.md
-6. CHANGELOG.md Unreleased section.
+~~6. CHANGELOG.md Unreleased section.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 
 **M18 nix (4)**
-7. flake.nix skeleton (both modules).
-8. devShell (go, templ, golangci, dprint).
-9. packages + vendorHash bootstrap loop.
+~~7. flake.nix skeleton (both modules).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~8. devShell (go, templ, golangci, dprint).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~9. packages + vendorHash bootstrap loop.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~10. `nix flake check` green.~~ done at 2026-11-19: green at both wave boundaries and twice re-verified after the go-filewatcher and errorpage go.mod windows
 
 **M19 CI (4)**
-11. build+test per module (Forgejo+GitHub compatible).
-12. lint job pinned to devShell golangci version.
-13. drift-check + docs-gates jobs.
-14. workflow files validated on both runner flavors.
+~~11. build+test per module (Forgejo+GitHub compatible).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~12. lint job pinned to devShell golangci version.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~13. drift-check + docs-gates jobs.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~14. workflow files validated on both runner flavors.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 
 **M21 examples (3)**
 15. ~~examples/reporter/main.go.~~ done — examples/reporter/main.go
-16. One-line integration guide.
-17. README screenshots (terminal table + WebUI).
+~~16. One-line integration guide.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~17. README screenshots (terminal table + WebUI).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 
 **M22 benchmarks (2)**
-18. Benchmark fold+derive at 300 repos.
-19. Baseline under benchmarks/.
+~~18. Benchmark fold+derive at 300 repos.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~19. Baseline under benchmarks/.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 
 **M23 pointers (2)**
-20. BuildFlow TODO_LIST pointer row + link.
-21. STACK.md errata check.
+~~20. BuildFlow TODO_LIST pointer row + link.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~21. STACK.md errata check.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 
 **M24 v2 sketch (2)**
-22. v2 API design doc (diff vs v1).
-23. Compat policy: v1 emittable forever.
+~~22. v2 API design doc (diff vs v1).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~23. Compat policy: v1 emittable forever.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 
 **M25 federation (2)**
-24. Research go-health-dashboard federation API.
-25. Interop options note in docs.
+~~24. Research go-health-dashboard federation API.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~25. Interop options note in docs.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 
 **M26 (blocked on g2) (2)**
-26. Endgame decision note.
-27. Migration sketch if hub replaces overview views.
+26. Endgame decision note. **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
+27. Migration sketch if hub replaces overview views. **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
 
 **M27 realtime loop (4)**
-28. Fix `queryLatestRunCounts` N+1 (single query with window join).
-29. Re-derive on store writes (hook → hub.PublishRefresh).
+~~28. Fix `queryLatestRunCounts` N+1 (single query with window join).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~29. Re-derive on store writes (hook → hub.PublishRefresh).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~30. discovery.Watch → refresh trigger with debounce/coalesce.~~ done at 2026-11-19: runDiscoveryWatch kicks the refresher — cap-1 trigger channel (coalescing) + 500ms debounce + 5-min safety net (hub/internal/cli/refresher.go, serve.go)
-31. E2E: evidence change → browser event.
+~~31. E2E: evidence change → browser event.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 
 **Quality debts from this session (8)**
-32. `go test -race` across hub (events/dashboard/cli concurrency).
-33. golangci-lint config + run for hub module (per-module parity).
-34. Shared `waitForSubscriber`/AwaitSubscriber test helper.
+~~32. `go test -race` across hub (events/dashboard/cli concurrency).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~33. golangci-lint config + run for hub module (per-module parity).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~34. Shared `waitForSubscriber`/AwaitSubscriber test helper.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 ~~35. Dynamic port in serve smoke test.~~ done at 2026-11-19: serve smoke binds a free dynamic port (hub/internal/cli/app_test.go:100 freePort())
-36. Patch purity check for RelativeTime (align with dashboard pattern).
+~~36. Patch purity check for RelativeTime (align with dashboard pattern).~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 37. ~~.gitignore templ-commit note.~~ done — .gitignore templ-commit note
 38. ~~AGENTS.md: hub conventions learned this session.~~ done — AGENTS.md
 ~~39. gofmt/format gate for .templ sources in CI (templ fmt check).~~ done at 2026-11-19: `templ fmt -fail` CI gate job (templ-fmt; AGENTS.md row)
 
 **Release hygiene (6)**
-40. go mod tidy + GOWORK=off builds for both modules.
-41. Drop hub `replace` directive when core tags v0.1.0.
-42. Fixture 341-repo pin relaxation before next refresh.
-43. Tag train plan (core first, hub second) per fleet release procedure.
-44. Update STACK.md hosting/deploy row with systemd unit.
-45. Final pass: whole-repo build+test + plan-vs-tree audit + this
+~~40. go mod tidy + GOWORK=off builds for both modules.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+41. Drop hub `replace` directive when core tags v0.1.0. **→ TODO_LIST Low row — hub replace-drop executes at the next core tag (v0.1.0 predates the Wave core splits)**
+~~42. Fixture 341-repo pin relaxation before next refresh.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~43. Tag train plan (core first, hub second) per fleet release procedure.~~ done — core v0.1.0 tagged (77881b3); the hub tag rides the replace-drop TODO row
+~~44. Update STACK.md hosting/deploy row with systemd unit.~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
+~~45. Final pass: whole-repo build+test + plan-vs-tree audit + this~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
 report's items harvested into TODO_LIST.
 
 ## g) QUESTIONS (cannot resolve myself)
 
-1. **g1 — hub auth/bind endgame:** is socket/localhost the PERMANENT
+~~1. **g1 — hub auth/bind endgame:** is socket/localhost the PERMANENT~~ done — bind posture decided (docs/decisions/bind-posture.md); auth parked as a v2-era design question
    posture (no auth ever, tunnel for remote), or should an auth layer be
    planned? M20's warning strictness and M26 both lean on this.
-2. **g2 — overview endgame:** replace or coexist? Blocks M26 (migration
+2. **g2 — overview endgame:** replace or coexist? Blocks M26 (migration **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
    sketch vs interop note emphasis).
-3. **Forgejo visibility:** `lars/go-compliance` still needs your manual
+3. **Forgejo visibility:** `lars/go-compliance` still needs your manual **→ TODO_LIST Blocked row — Forgejo visibility, owner-only UI click**
    UI click to go public (no API token exists). Say the word and I'll
    assume it stays private for now.
 

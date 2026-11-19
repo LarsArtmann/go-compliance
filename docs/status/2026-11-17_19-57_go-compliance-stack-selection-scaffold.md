@@ -71,33 +71,33 @@ choices were not validated against the tag vocabulary.
 
 ## b) PARTIALLY DONE
 
-1. **Wiring step 1 only** — module initialized, but `go get` of
+~~1. **Wiring step 1 only** — module initialized, but `go get` of~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
    go-branded-id + go-error-family deferred until first real code (a go.mod
    require without importing code would be tidied away).
-2. **STACK.md enforcement is manual** — drift check exits 0 today, but
+~~2. **STACK.md enforcement is manual** — drift check exits 0 today, but~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
    nothing (pre-commit hook / flake check) re-runs it; the skill calls this
    "a decorative document" without enforcement in the hygiene loop.
-3. **Module split is decided but singular on disk** — core module exists;
+~~3. **Module split is decided but singular on disk** — core module exists;~~ done — shipped in the M-series build; tree-verified by the 15-00 final-pass audit
    the `hub` module is a STACK.md plan, not a directory.
-4. **Report/decision propagation** — the verdict + link exists in
+~~4. **Report/decision propagation** — the verdict + link exists in~~ done — closed by M23/F099: BuildFlow carries the extraction pointer (final-pass verified)
    go-compliance/STACK.md's decision log, but BuildFlow's TODO_LIST/docs
    carry no pointer (a future session could re-derive the whole evaluation).
 
 ## c) NOT STARTED (STACK.md wiring steps 2–8)
 
-1. State model port: `DeriveComplianceState` → generalized (+ `never-covered`)
-2. Evidence fold + aggregation types port
-3. v1 wire types, byte-exact, + golden tests (BuildFlow producer side AND
+~~1. State model port: `DeriveComplianceState` → generalized (+ `never-covered`)~~ done — shipped (M1-M19); tree-verified (15-00 audit)
+~~2. Evidence fold + aggregation types port~~ done — shipped (M1-M19); tree-verified (15-00 audit)
+~~3. v1 wire types, byte-exact, + golden tests (BuildFlow producer side AND~~ done — shipped (M1-M19); tree-verified (15-00 audit)
    overview decoder side)
-4. `Source` adapter interface + one-liner reporter SDK
-5. BuildFlow adapter (piped v1 JSON file / CLI-spawn "auto" mode)
-6. Discovery daemon HTTP client → never-covered derivation
-7. Hub module: cmdguard CLI (`serve|report|table`), go-output tables,
+~~4. `Source` adapter interface + one-liner reporter SDK~~ done — shipped (M1-M19); tree-verified (15-00 audit)
+~~5. BuildFlow adapter (piped v1 JSON file / CLI-spawn "auto" mode)~~ done — shipped (M1-M19); tree-verified (15-00 audit)
+~~6. Discovery daemon HTTP client → never-covered derivation~~ done — shipped (M1-M19); tree-verified (15-00 audit)
+~~7. Hub module: cmdguard CLI (`serve|report|table`), go-output tables,~~ done — shipped (M1-M19); tree-verified (15-00 audit)
    go-sqlitestore evidence cache
-8. Realtime: go-sse broadcaster + go-datastar patches + templ-components
+~~8. Realtime: go-sse broadcaster + go-datastar patches + templ-components~~ done — shipped (M1-M19); tree-verified (15-00 audit)
    WebUI (severity-grouped repo tables, filter chips, live badges)
-9. go-health self-probe; go-daemon sd_notify; systemd unit
-10. flake.nix via go-nix-helpers; LICENSE/AUTHORS; CI; ginkgo bootstrap;
+~~9. go-health self-probe; go-daemon sd_notify; systemd unit~~ done — shipped (M1-M19); tree-verified (15-00 audit)
+~~10. flake.nix via go-nix-helpers; LICENSE/AUTHORS; CI; ginkgo bootstrap;~~ done — shipped (M1-M19); tree-verified (15-00 audit)
     TODO_LIST/FEATURES/DOMAIN_LANGUAGE/CHANGELOG for the repo
 
 ## d) TOTALLY FUCKED UP (process deviations; all low-damage, none silently wrong)
@@ -154,37 +154,37 @@ choices were not validated against the tag vocabulary.
 
 **Core port (BuildFlow → go-compliance) — the 1% that unlocks everything**
 
-1. Port `DeriveComplianceState`, add `never-covered` state (S)
-2. Port evidence fold + `ComplianceRepoEvidence`-shaped aggregation types (S)
-3. Port v1 wire types byte-exact (`schema_version`, nil-map `{}`/`[]` semantics) (S)
-4. Golden test against real `buildflow compliance --json` output (M)
-5. Golden test mirroring overview's decoder (rejects schema_version 2 case) (S)
-6. Branded types via go-branded-id: RepoName, SourceName, EvidenceID (S)
-7. Error policy via go-error-family (sentinels + wrap, erraudit-clean) (S)
-8. Define the `Source` adapter interface (S)
-9. Reporter SDK one-liner (`compliance.Record(ctx, Evidence{...})`) (M)
-10. Decide + document the reporter write path (HTTP ingest vs file drop) (S/M)
+~~1. Port `DeriveComplianceState`, add `never-covered` state (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~2. Port evidence fold + `ComplianceRepoEvidence`-shaped aggregation types (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~3. Port v1 wire types byte-exact (`schema_version`, nil-map `{}`/`[]` semantics) (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~4. Golden test against real `buildflow compliance --json` output (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~5. Golden test mirroring overview's decoder (rejects schema_version 2 case) (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~6. Branded types via go-branded-id: RepoName, SourceName, EvidenceID (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~7. Error policy via go-error-family (sentinels + wrap, erraudit-clean) (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~8. Define the `Source` adapter interface (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~9. Reporter SDK one-liner (`compliance.Record(ctx, Evidence{...})`) (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~10. Decide + document the reporter write path (HTTP ingest vs file drop) (S/M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
 
 **Hub**
 11. ~~Init `go-compliance/hub` module (S)~~ done — hub/go.mod — hub module exists (M2)
-12. cmdguard CLI shell: `serve` / `report` / `table` (M)
-13. go-output terminal fleet table (S)
-14. go-sqlitestore evidence cache + versioned migrations (M)
-15. BuildFlow adapter: read the piped v1 JSON file (M)
-16. BuildFlow adapter: CLI-spawn mode (overview "auto" precedent) (S)
-17. Discovery daemon HTTP client (`/v1/discover`) (M)
-18. never-covered derivation: discovery fleet ∪ evidence repos (S)
+~~12. cmdguard CLI shell: `serve` / `report` / `table` (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~13. go-output terminal fleet table (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~14. go-sqlitestore evidence cache + versioned migrations (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~15. BuildFlow adapter: read the piped v1 JSON file (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~16. BuildFlow adapter: CLI-spawn mode (overview "auto" precedent) (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~17. Discovery daemon HTTP client (`/v1/discover`) (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~18. never-covered derivation: discovery fleet ∪ evidence repos (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
 19. ~~SSE broadcaster wiring (go-sse) (S)~~ done — hub/internal/events/events.go — go-sse broadcaster + heartbeat
-20. go-datastar patch stream for state changes (M)
-21. templ-components fleet table page (M)
-22. Filter chips + severity grouping (mirror go-health-dashboard UX) (M)
-23. `RegisterRoutes(mux)` embed surface (S)
+~~20. go-datastar patch stream for state changes (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~21. templ-components fleet table page (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~22. Filter chips + severity grouping (mirror go-health-dashboard UX) (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~23. `RegisterRoutes(mux)` embed surface (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
 ~~24. Auth/bind posture decision + implementation (S) [owner Q1]~~ resolved: bind posture decided + implemented (docs/decisions/bind-posture.md; SECURITY.md records the no-auth-yet posture as a practice) — the auth layer itself is a v2-wire-era design question parked in ROADMAP
 25. ~~go-health self-probe (S)~~ done — hub/internal/cli/health.go — go-health probe surface
-26. go-daemon sd_notify + systemd unit (S)
-27. JSON API endpoint emitting v1-compat contract (S)
+~~26. go-daemon sd_notify + systemd unit (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~27. JSON API endpoint emitting v1-compat contract (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
 28. ~~Hub v2 API sketch (deferred by design — only when v1 is solid) (M)~~ done — docs/decisions/v2-wire-design.md
-29. Watch-mode: hub re-derives on evidence writes + discovery `/v1/watch` (M)
+~~29. Watch-mode: hub re-derives on evidence writes + discovery `/v1/watch` (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
 30. ~~Staleness/`never-covered` in the WebUI with distinct badges (S)~~ done — hub/internal/dashboard/rows.templ StateBadge — stale amber, never-covered gray
 
 **Repo hygiene**
@@ -192,25 +192,25 @@ choices were not validated against the tag vocabulary.
 32. ~~LICENSE (MIT) + AUTHORS (S)~~ done — LICENSE + AUTHORS in-tree
 33. ~~dprint.json + `nix fmt` wiring (S)~~ done — dprint.json + nix fmt gate
 34. ~~ginkgo/gomega suite bootstrap (S)~~ done — ginkgo suite bootstraps (events, dashboard, cli)
-35. CI workflows (build/test/lint per module) (M)
-36. Drift-check pre-commit or flake check hook (S)
+~~35. CI workflows (build/test/lint per module) (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~36. Drift-check pre-commit or flake check hook (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
 37. ~~TODO_LIST.md + FEATURES.md + DOMAIN_LANGUAGE.md (S)~~ done — TODO_LIST.md + FEATURES.md + docs/DOMAIN_LANGUAGE.md
-38. CHANGELOG.md initial Unreleased section (S)
-39. `examples/` with a runnable reporter (S)
-40. Benchmark: evidence fold over 300+ repos (S)
-41. Docs guide: "integrate a project in one line" (S)
+~~38. CHANGELOG.md initial Unreleased section (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~39. `examples/` with a runnable reporter (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~40. Benchmark: evidence fold over 300+ repos (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~41. Docs guide: "integrate a project in one line" (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
 42. meta: revisit importance + tag consumers when adopted (S) **→ ROADMAP.md adoption triggers**
 
 **Cross-repo**
-43. BuildFlow TODO_LIST pointer: extraction verdict → go-compliance (S)
-44. Decide overview endgame: hub replaces its compliance views or stays a
+~~43. BuildFlow TODO_LIST pointer: extraction verdict → go-compliance (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+44. Decide overview endgame: hub replaces its compliance views or stays a **→ TODO_LIST Blocked row — M26 overview endgame, owner question g2**
 peer consumer [owner Q2] (S)
-45. Research hub ↔ go-health-dashboard federation interop (M)
-46. STACK.md row upkeep as deps land (drift-check in the loop) (S)
+~~45. Research hub ↔ go-health-dashboard federation interop (M)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
+~~46. STACK.md row upkeep as deps land (drift-check in the loop) (S)~~ done — shipped in the M-series build; tree-verified (15-00 audit)
 
 ## g) Questions I can NOT figure out myself
 
-1. **Hub security posture:** localhost-bind with no auth, unix-socket-only,
+~~1. **Hub security posture:** localhost-bind with no auth, unix-socket-only,~~ done — bind posture decided + implemented (docs/decisions/bind-posture.md); the auth layer is parked as a v2-era design question
    or authenticated LAN exposure? The fleet table names private repos and
    their failure evidence — anything wider than loopback needs an auth
    story, and cqrs-htmx usermgmt was deliberately excluded from the stack.
