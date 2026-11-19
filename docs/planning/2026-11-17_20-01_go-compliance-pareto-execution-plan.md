@@ -12,7 +12,7 @@ BuildFlow's `compliance` command was evaluated for extraction (verdict: the
 generic core ports, the BuildFlow-schema SQL stays), the owner set the product
 vision — **superbly easy integration into basically ALL projects + WebUI with
 realtime updates** — and the stack was selected and frozen in
-[`STACK.md`](../STACK.md) (17 chosen rows, 8 deliberate exclusions,
+[`STACK.md`](../../STACK.md) (17 chosen rows, 8 deliberate exclusions,
 drift-check exit 0).
 
 **Owner decisions taken since the status report:**
