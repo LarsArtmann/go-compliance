@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/larsartmann/go-datastar"
 	"github.com/larsartmann/go-sse"
 
 	"github.com/larsartmann/go-compliance"
@@ -70,7 +71,7 @@ type Published struct {
 // reads one source of truth. Safe for concurrent use.
 type Hub struct {
 	broadcaster      *sse.Broadcaster[Published]
-	store            *ringStore
+	store            *datastar.MemoryStore
 	heartbeat        time.Duration
 	subscriberBuffer int
 	seq              atomic.Uint64
@@ -88,7 +89,7 @@ type Option func(*Hub)
 func WithReplayCapacity(capacity int) Option {
 	return func(h *Hub) {
 		if capacity > 0 {
-			h.store = &ringStore{cap: capacity}
+			h.store = datastar.NewMemoryStore(capacity)
 		}
 	}
 }
@@ -115,7 +116,7 @@ func WithHeartbeat(interval time.Duration) Option {
 // NewHub returns a Hub with fleet-default replay, buffering, and heartbeat.
 func NewHub(opts ...Option) *Hub {
 	hub := &Hub{
-		store:            &ringStore{cap: defaultReplayCapacity},
+		store:            datastar.NewMemoryStore(defaultReplayCapacity),
 		heartbeat:        defaultHeartbeat,
 		subscriberBuffer: defaultSubscriberBuffer,
 	}
@@ -330,7 +331,7 @@ func (h *Hub) publish(eventName string, payload any, snapshot *Snapshot, update 
 		Update:   update,
 	}
 
-	h.store.append(sse.Event{Event: eventName, Data: event.Data, ID: sse.NewEventID(event.ID)})
+	h.store.Append(sse.Event{Event: eventName, Data: event.Data, ID: sse.NewEventID(event.ID)})
 	h.broadcaster.Broadcast(event)
 
 	return event.ID, nil

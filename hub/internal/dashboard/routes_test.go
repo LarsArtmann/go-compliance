@@ -7,6 +7,7 @@ import (
 	"time"
 
 	datastartest "github.com/larsartmann/go-datastar/datastartest"
+	"github.com/larsartmann/go-datastar"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -39,9 +40,26 @@ var _ = Describe("routes and content negotiation", func() {
 		Expect(page.Body.String()).To(ContainSubstring(`id="fleet-rows"`))
 		Expect(page.Body.String()).To(ContainSubstring("data-repo=\"broken\""))
 
+		// The self-hosted bundle URL is version-pinned: upgrades become new
+		// cache keys, so no browser serves yesterday's client inside the
+		// bundle's 24h Cache-Control window.
+		Expect(page.Body.String()).To(ContainSubstring(`src="/datastar.js?v=` + datastar.Version() + `"`))
+
 		script := httptest.NewRecorder()
 		mux.ServeHTTP(script, httptest.NewRequest(http.MethodGet, "/datastar.js", nil))
 		Expect(script.Code).To(Equal(http.StatusOK))
+
+		// ScriptHandler answers conditional requests (ETag/304): the pinned
+		// ETag comes from the handler, not a hand-rolled header set.
+		etag := script.Header().Get("ETag")
+		Expect(etag).NotTo(BeEmpty())
+
+		conditional := httptest.NewRequest(http.MethodGet, "/datastar.js", nil)
+		conditional.Header.Set("If-None-Match", etag)
+
+		revalidated := httptest.NewRecorder()
+		mux.ServeHTTP(revalidated, conditional)
+		Expect(revalidated.Code).To(Equal(http.StatusNotModified))
 
 		// A real request lifecycle, not a shared recorder: the handler
 		// goroutine writing while the test polls the same recorder is a
