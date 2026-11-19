@@ -6,10 +6,12 @@
 
 ## Adoption triggers (from the 2026-11-17 stack-selection scaffold)
 
-- **Tag consumers when adopted** — once real repos consume
-  go-compliance (core or hub), revisit the module split and the v1
-  contract's importance ranking against actual usage; adjust before
-  v2 anything.
+- **Tag consumers when adopted** — first real consumers landed
+  2026-11-19: BuildFlow bound the dep-light core at `v0.1.0` (see
+  `docs/decisions/producer-bind-posture.md`), and md-go-validator's CLI
+  adopted the reporter SDK one-liner the same day. Revisit the module
+  split and the v1 contract's importance ranking against actual usage;
+  adjust before v2 anything.
 - **Hub v2 wire** — `docs/decisions/v2-wire-design.md` sketches v2
   (v1 stays emittable forever). Build only when v1 has been solid in
   production for a full adoption cycle.
