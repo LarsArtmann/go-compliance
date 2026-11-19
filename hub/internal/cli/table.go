@@ -9,6 +9,10 @@ import (
 	"unicode/utf8"
 
 	"github.com/larsartmann/go-output"
+	_ "github.com/larsartmann/go-output/delimited" // csv, tsv
+	_ "github.com/larsartmann/go-output/markdown"
+	_ "github.com/larsartmann/go-output/markup" // html, xml, asciidoc
+	_ "github.com/larsartmann/go-output/serialization" // json, jsonl, yaml, toml
 	gotable "github.com/larsartmann/go-output/table"
 
 	"github.com/larsartmann/go-compliance"
@@ -17,6 +21,12 @@ import (
 // maxRepoCellWidth bounds the REPO column; longer names truncate with an
 // ellipsis so one long path cannot blow up the whole table.
 const maxRepoCellWidth = 24
+
+// tableHeaders orders the fleet table columns; shared by the styled TTY
+// path and the machine-format path so both views stay column-identical.
+var tableHeaders = []string{
+	"REPO", "STATE", "ERR", "WARN", "INFO", "FINDINGS", "RUNS", "FAILS", "RATE", "VERDICT", "LAST RUN",
+}
 
 // runTable renders the human fleet view: every repo, its state, its
 // latest-run finding severities (ERR/WARN/INFO), window counters, and
@@ -28,11 +38,27 @@ const maxRepoCellWidth = 24
 // later columns on a TTY. lipgloss measures ANSI display width, so
 // colored and plain cells align identically (the gotcha #298 lesson,
 // regression-tested in table_test.go).
-func runTable(out, _ io.Writer) func(context.Context, *Config, QueryFlags) error {
-	return func(ctx context.Context, _ *Config, flags QueryFlags) error {
-		evidence, since, staleAfter, err := queryEvidence(ctx, flags)
+//
+// --format selects go-output's RenderTable registry instead (json/csv/
+// markdown/html/...): machine formats get full untruncated repo names,
+// absolute timestamps, and zero ANSI — data, not chrome. cmdguard's own
+// --output flag stays CLI-global (error envelopes) because the command
+// handler contract does not expose it; --format is the command-local
+// twin for the payload itself.
+func runTable(out, _ io.Writer) func(context.Context, *Config, TableFlags) error {
+	return func(ctx context.Context, _ *Config, flags TableFlags) error {
+		evidence, since, staleAfter, err := queryEvidence(ctx, flags.QueryFlags)
 		if err != nil {
 			return err
+		}
+
+		format, err := parseTableFormat(flags.Format)
+		if err != nil {
+			return err
+		}
+
+		if format != output.FormatTable {
+			return renderTableData(out, format, evidence, since, staleAfter)
 		}
 
 		colors := newColorService(output.ColorModeAuto)
@@ -49,9 +75,7 @@ func runTable(out, _ io.Writer) func(context.Context, *Config, QueryFlags) error
 
 		fmt.Fprintf(out, "%s\n\n", colors.Header("Repo compliance"))
 
-		tbl := gotable.New(gotable.WithColorMode(colors.colorMode())).SetHeaders(
-			"REPO", "STATE", "ERR", "WARN", "INFO", "FINDINGS", "RUNS", "FAILS", "RATE", "VERDICT", "LAST RUN",
-		)
+		tbl := gotable.New(gotable.WithColorMode(colors.colorMode())).SetHeaders(tableHeaders...)
 
 		// Worst-first: the report builder's sort (state rank, then
 		// failures desc, then name) is the triage invariant.

@@ -33,6 +33,15 @@ type ServeFlags struct {
 	Addr string `default:"127.0.0.1:8477" flag:"addr" help:"Listen address (localhost-only default by policy)"`
 }
 
+// TableFlags extends the query flags with the table command's output
+// format. The supported set is exactly the formats whose go-output
+// sub-modules table.go imports for self-registration.
+type TableFlags struct {
+	QueryFlags
+
+	Format string `default:"table" flag:"format" help:"Output format for the fleet table" values:"table,json,jsonl,yaml,toml,csv,tsv,markdown,html,xml,asciidoc"`
+}
+
 // resolveSource builds the Source the flags select. The cache store is
 // returned alongside so long-running callers (serve) can close it on
 // shutdown; one-shot callers ignore it.

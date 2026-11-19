@@ -22,6 +22,16 @@ const (
 	readHeaderTimeout = 10 * time.Second
 )
 
+// securityHeaders is the browser-hardening floor on EVERY response:
+// nosniff keeps user-controlled content (repo names in JSON, evidence
+// bodies) from being reinterpreted as executable MIME types.
+func securityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		next.ServeHTTP(w, r)
+	})
+}
+
 // runServe runs the hub HTTP server: the realtime dashboard (page, DataStar
 // patch stream, SDK bundle), the evidence JSON API, and the health probe
 // surface (/healthz /readyz /startupz /version).
@@ -108,7 +118,7 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 
 		server := &http.Server{
 			Addr:              flags.Addr,
-			Handler:           mux,
+			Handler:           securityHeaders(mux),
 			ReadHeaderTimeout: readHeaderTimeout,
 		}
 
