@@ -119,11 +119,12 @@ jobs:
       - name: Install dprint 0.64.3 (devShell parity)
         run: |
           curl -fsSL https://dprint.dev/install.sh | sh -s 0.64.3
-          echo "$PWD/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.dprint/bin" >> "$GITHUB_PATH"
       - run: dprint check
       - name: Install actionlint 1.7.12 (devShell parity)
         run: bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
-      - run: actionlint
+      # the download script drops the binary in the CWD (repo root)
+      - run: ./actionlint
 
   templ-fmt:
     name: templ fmt gate
@@ -186,6 +187,13 @@ jobs:
           go-version-file: hub/go.mod
           cache-dependency-path: hub/go.sum
       - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # main
+      # Warm the module cache with VISIBLE errors first: gen-library-classes
+      # resolves templ-components (and its sub-dirs) via `go list -m` and the
+      # first real run (2026-11-19) got a silent empty .Dir on the cold runner,
+      # while build+test(hub) downloads the same module fine — downloading the
+      # parent pulls the whole source tree (the sub-dirs live inside it) and
+      # makes any fetch problem loud instead of an empty .Dir.
+      - run: cd hub && GOWORK=off go mod download github.com/larsartmann/templ-components
       # Byte-freshness: regenerating from go.mod truth + app.css must
       # reproduce the committed artifacts exactly — an adopted component
       # whose utilities never reached the stylesheet renders unstyled.
