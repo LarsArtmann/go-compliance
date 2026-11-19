@@ -23,3 +23,5 @@ require (
 	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/tools v0.45.0 // indirect
 )
+
+toolchain go1.27.4

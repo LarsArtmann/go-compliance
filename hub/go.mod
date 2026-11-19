@@ -140,3 +140,5 @@ require (
 replace github.com/larsartmann/go-compliance => ../
 
 tool github.com/a-h/templ/cmd/templ
+
+toolchain go1.27.4

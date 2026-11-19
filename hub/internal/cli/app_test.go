@@ -132,6 +132,17 @@ var _ = Describe("compliance-hub CLI", func() {
 
 				return resp.StatusCode
 			}, "5s", "50ms").Should(Equal(200), "path %s", path)
+
+			// The hardening floor rides on every route, JSON and HTML alike.
+			Eventually(func() string {
+				resp, err := Get(base + path)
+				if err != nil {
+					return ""
+				}
+				defer func() { _ = resp.Body.Close() }()
+
+				return resp.Header.Get("X-Content-Type-Options")
+			}, "5s", "50ms").Should(Equal("nosniff"), "path %s", path)
 		}
 
 		ready, err := Get(base + "/readyz")
