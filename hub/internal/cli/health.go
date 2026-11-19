@@ -37,6 +37,11 @@ const discoveryCheckName = "discovery"
 // instead of standing warn forever (the drop counter is cumulative).
 const sseBackpressureCheckName = "sse-backpressure"
 
+// cacheDiskMinFreeBytes is the cache-disk check's free-space floor —
+// pinned by the README thresholds contract test (128 MiB is plenty to
+// append runs).
+const cacheDiskMinFreeBytes = 128 << 20
+
 var (
 	// ErrEvidenceNotPublished is the evidence check's failure: the hub booted
 	// but has not folded evidence yet (source error or first query pending).
@@ -141,9 +146,7 @@ func buildHealthProbe(
 	// every health surface carrying its enable recipe, but never gates
 	// readiness (go-health StatusOff semantics).
 	if cacheDir != "" {
-		const minFreeBytes = 128 << 20 // 128 MiB is plenty to append runs
-
-		checksByName["cache-disk"] = checks.Disk(cacheDir, minFreeBytes)
+		checksByName["cache-disk"] = checks.Disk(cacheDir, cacheDiskMinFreeBytes)
 	} else {
 		checksByName["cache-disk"] = func(_ context.Context) error {
 			return health.Off("not configured: pass --db (with --source cache) to enable the disk-headroom check")
