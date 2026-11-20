@@ -148,7 +148,7 @@ var _ = Describe("events hub endpoint", func() {
 			ssetest.WithLastEventID(first),
 		)
 
-		Expect(received[0].ID).To(Equal(sse.NewEventID("2")))
+		Expect(received[0].ID).To(Equal("2")) // ssetest records the wire id: verbatim, as a string
 		ssetest.RequireEventType(GinkgoTB(), received[0], events.EventUpdate)
 		ssetest.RequireDataContains(GinkgoTB(), received[0], `"state":"failing"`)
 	})
