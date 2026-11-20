@@ -42,7 +42,7 @@ ADOPTED at high band; if `broadcast/` is adopted too, very high.
 | #  | Capability                                                                                        | Status      | Library evidence (path)                                                                                    | Consumer evidence (path:line)                                                                                                                                                                                               |
 | -- | ------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1  | Element patches from templ (`ElementsFromTempl`)                                                  | Fully       | `go-datastar/elements.go`; `patch.go` (`Patch.Event() sse.Event`)                                          | `dashboard.go:149-152,173-176,183-186,207-210`                                                                                                                                                                              |
-| 2  | Patch modes inner/append/replace/remove + selectors                                               | Fully       | `go-datastar/options.go` (`WithMode*`, `WithSelector*`)                                                    | `dashboard.go:151,175,185,194`; row selector helper `dashboard.go:240-243`                                                                                                                                                  |
+| 2  | Patch modes inner/append/replace/remove + selectors                                               | Fully       | `go-datastar/options.go` (`WithMode*`, `WithSelector*`)                                                    | `dashboard.go:151,175,185,194`; row selector helper `dashboard.go:234-236`                                                                                                                                                  |
 | 3  | Signals patches (`NewSignalsPatch`/`MarshalSignals`)                                              | Partial     | `go-datastar/signals.go:62,82-84` (plain `json.Marshal`, no determinism option)                            | `dashboard.go:228-233` hand-marshals with `json.Deterministic(true)`, then `SignalsPatch{Signals: encoded}`                                                                                                                 |
 | 4  | Script serving with ETag/304 (`ScriptHandler`/`ScriptHandlerWith`)                                | **Misused** | `go-datastar/script_handler.go:47-62` (ETag + `If-None-Match` 304 + max-age=86400)                         | `dashboard.go:111-118` hand-rolls the handler: max-age=86400, **no ETag, no 304**                                                                                                                                           |
 | 5  | Cache-busting versioned script tag (`ScriptTagVersioned`, v0.7.0)                                 | Missed      | `go-datastar/script.go` (`ScriptTagVersioned`); CHANGELOG [0.7.0]                                          | `hub/internal/dashboard/view.templ:67-73` emits plain `/datastar.js` via templ-components `SDKScript`                                                                                                                       |
@@ -137,7 +137,7 @@ the hub can self-serve:
 semantic difference: `ringStore.EventsAfter` _excludes_ stored events with
 unparseable IDs (`store.go:35`) while `MemoryStore` treats them as sequence 0 —
 irrelevant here, since the Hub mints all IDs as `strconv.FormatUint`
-(`events.go:324-327`).
+(`events.go:270-273`).
 
 **Impact:** moderate fleet cost, tiny local cost. This is the canonical
 "every project re-implements plumbing" specimen: the store exists, is tested in
@@ -325,8 +325,7 @@ All file:line citations spot-checked against the working tree on 2026-11-19.
 
 ## Citation drift addendum (2026-11-19 post-audit wave)
 
-`events.go:324-327` shifted to `events.go:267-270` (ringStore deletion +
-Handler extraction). `dashboard.go:240-243` was born stale (the file
-never exceeded 242 lines); the rows-selector option tail it gestures at
-lives at `dashboard.go:219-236` (see `.citations-baseline`; verified by
-`scripts/check-citations.sh`).
+The ID-minting citation (events.go 324-327) now sits at
+`events.go:270-273` and the row-selector helper citation at
+`dashboard.go:234-236` after the ringStore deletion + Handler
+extraction (verified by `scripts/check-citations.sh`).

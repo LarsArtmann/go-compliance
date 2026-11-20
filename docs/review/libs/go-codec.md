@@ -90,7 +90,7 @@ go-compliance's wire contract; the hub's wire surfaces never pass through it.
 ## Non-JSON capabilities the hub could use? (assessed separately)
 
 - **CBOR for the SQLite cache**: `gate_findings`/`severity_counts` columns are
-  JSON TEXT today (`marshalCounts`, `hub/internal/cache/cache.go:324-338`).
+  JSON TEXT today (`marshalCounts`, `hub/internal/cache/queries.go:168-183`).
   CBOR would shrink them and add unknown-field rejection, but requires BLOB
   columns + a migration in the append-only `migrations` list (cache.go:26-48),
   loses `sqlite3` CLI readability, and saves bytes nobody counts at 341 repos.
@@ -116,7 +116,7 @@ Bands: 85-100 excellent · 70-84 good · 50-69 fair · <50 poor.
 | ------------------------------------- | --------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | JSON encode/decode                    | Covered elsewhere — 1 | `json.go` (`JSONCodec`)                        | direct `encoding/json/v2` at every JSON site: `v1.go:5`, `events/events.go:5`, `discovery/client.go:11`, `cache/cache.go:11` |
 | Byte-stable wire marshaling           | Covered elsewhere — 1 | deterministic codecs, golden tests             | golden fixture byte-exactness pinned natively (`v1_golden_test.go`, `testdata/buildflow-v1-fixture.json`, 341 repos)         |
-| CBOR payloads                         | N/A                   | `cbor.go` (`CBORCodec`, recommended)           | no CBOR surface exists in the consumer; SQLite cache uses JSON TEXT (`cache/cache.go:324-338`)                               |
+| CBOR payloads                         | N/A                   | `cbor.go` (`CBORCodec`, recommended)           | no CBOR surface exists in the consumer; SQLite cache uses JSON TEXT (`cache/queries.go:168-183`)                               |
 | Compact/schema-drift-rejecting decode | N/A                   | `cbor_compact.go`                              | all inbound shapes are frozen contracts with explicit decoders (`DecodeV1Report`, discovery wire structs)                    |
 | Zero-alloc / pooled encoding          | N/A                   | `pool.go`, `BufferEncoder`, `streaming.go`     | hot paths are SSE event sends (already go-sse) and a 5-min-cadence derive — no alloc-bound encode path                       |
 | Observable codec (hooks/metrics)      | N/A                   | `observability.go`                             | no codec telemetry need                                                                                                      |
@@ -210,6 +210,6 @@ v2.10.0.
 
 ## Citation drift addendum (2026-11-19 post-audit wave)
 
-`hub/internal/cache/cache.go:324-338` (marshalCounts) moved to
-`hub/internal/cache/queries.go:168-182` in the cache split (see
-`.citations-baseline`; verified by `scripts/check-citations.sh`).
+The `hub/internal/cache/cache.go` marshalCounts citation (324-338) moved
+to `hub/internal/cache/queries.go:168-183` in the cache split (verified
+by `scripts/check-citations.sh`).

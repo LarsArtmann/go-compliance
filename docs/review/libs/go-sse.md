@@ -25,7 +25,7 @@ The hub's SSE layer is a textbook consumption of the library: the typed
 (`hub/internal/events/events.go:126-129`), the documented `NewStream` + deferred
 `Close` + `Heartbeat` goroutine + `select`-on-context pattern in both handlers
 (`events.go:215-263`, `hub/internal/dashboard/dashboard.go:84-109`), branded
-`EventID` values minted at publish (`events.go:256`, `events.go:333`), and full
+`EventID` values minted at publish (`events.go:256`, `events.go:273`), and full
 Last-Event-ID replay through the `EventStore` extension point
 (`events.go:220-224` + `store.go`). The `EventStore` interface is consumed exactly
 as designed — the consumer supplies the ring, the library supplies `Replay`.
@@ -54,11 +54,11 @@ reaching for `sseparse`.
 | -- | ------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
 | 1  | SSE stream serving lifecycle (`NewStream`/`Send`/`Close`/`Context`)       | Fully      | `go-sse/stream.go` (`Stream` type)                                                                                 | `hub/internal/events/events.go:217-218`, `hub/internal/dashboard/dashboard.go:86-87`                 |
 | 2  | Comment heartbeat keep-alive (`Stream.Heartbeat`)                         | Fully      | `go-sse/stream.go` (`Heartbeat`); `WriteHeartbeat`                                                                 | `events.go:244`, `dashboard.go:96` (15 s in both)                                                    |
-| 3  | Branded event IDs (`EventID`, `NewEventID`, `ParseEventID`)               | Fully      | `go-sse/event.go`; branded `brandid.ID`                                                                            | `events.go:256`, `events.go:333`, `store.go:53-64`                                                   |
+| 3  | Branded event IDs (`EventID`, `NewEventID`, `ParseEventID`)               | Fully      | `go-sse/event.go`; branded `brandid.ID`                                                                            | `events.go:256`, `events.go:273`, `store.go:53-64`                                                   |
 | 4  | Last-Event-ID request extraction (`LastEventIDFromRequest`)               | Fully      | `go-sse/stream.go` / `event.go`                                                                                    | `events.go:220`                                                                                      |
 | 5  | Replay via `EventStore` + `sse.Replay`                                    | Fully      | `go-sse/replay.go`; `EventStore` iface                                                                             | `events.go:221-224`; `store.go:23-41` implements the interface                                       |
 | 6  | `retry:` field advisement (`WriteRetry`)                                  | Missed     | `go-sse/stream.go` (`WriteRetry` doc: reconnect cadence)                                                           | no call site — neither handler sends `retry`                                                         |
-| 7  | Typed fan-out (`Broadcaster[T]` Subscribe/Broadcast/Unsubscribe)          | Fully      | `go-sse/broadcaster.go`, `fanout.go`                                                                               | `events.go:126-129`, `events.go:269-270`, `events.go:334`                                            |
+| 7  | Typed fan-out (`Broadcaster[T]` Subscribe/Broadcast/Unsubscribe)          | Fully      | `go-sse/broadcaster.go`, `fanout.go`                                                                               | `events.go:126-129`, `events.go:269-270`, `events.go:280`                                            |
 | 8  | Drop observability (`WithOnDrop` → `Dropped()`)                           | Fully      | `go-sse/fanout.go` (`WithOnDrop`)                                                                                  | `events.go:127`, `events.go:276`                                                                     |
 | 9  | Backpressure sizing (`WithBufferSize`, `DefaultSubscriberBuffer`)         | Fully      | `go-sse/fanout.go`; const added in v0.7.0                                                                          | `events.go:30,100,128` (buffer 64 = the default, made explicit)                                      |
 | 10 | Graceful shutdown (`Broadcaster.Shutdown(ctx)`)                           | Fully      | `go-sse/fanout.go`                                                                                                 | `events.go:282`                                                                                      |
@@ -233,6 +233,7 @@ them by a line or two on re-read).
 
 ## Citation drift addendum (2026-11-19 post-audit wave)
 
-`events.go:333` / `events.go:334` shifted to `events.go:276-277` after
-the ringStore deletion and Handler extraction (see
-`.citations-baseline`; verified by `scripts/check-citations.sh`).
+The publish-path citations (events.go 333 / 334) now sit at
+`events.go:273` (NewEventID mint) / `events.go:280` (Broadcast) after
+the ringStore deletion and Handler extraction (verified by
+`scripts/check-citations.sh`).

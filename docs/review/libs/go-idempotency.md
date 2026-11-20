@@ -34,7 +34,7 @@ through two non-HTTP paths:
   timestamp is already idempotent for equal payloads**. The fleet lock
   (reporter.go:152-156) serializes concurrent reporters.
 - **SQLite path**: append-only, and reads derive "each repo's all-history
-  newest record in ONE query" (`queryLatestRecords`, cache.go:216-219 comment;
+  newest record in ONE query" (`queryLatestRecords`, queries.go:60-63 comment;
   "out-of-order records cannot corrupt the view", cache.go:98-100). A
   duplicated INSERT yields two identical rows of which exactly one (the
   newest) is ever read. Harmless by design; the only cost is row bloat.
@@ -75,7 +75,7 @@ Bands: 85-100 excellent · 70-84 good · 50-69 fair · <50 poor.
 
 | Capability                                      | Status                | Library evidence (path)                  | Consumer evidence (path:line)                                                                                                                                                             |
 | ----------------------------------------------- | --------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| At-most-once processing of commands             | Covered by design — 1 | README "How it works" (`CheckAndRecord`) | writes are timestamp-LWW state upserts: file merge ignores non-newer results (reporter.go:59-62,168-170); SQL reads newest-only (cache.go:216-219)                                        |
+| At-most-once processing of commands             | Covered by design — 1 | README "How it works" (`CheckAndRecord`) | writes are timestamp-LWW state upserts: file merge ignores non-newer results (reporter.go:59-62,168-170); SQL reads newest-only (queries.go:60-63)                                        |
 | HTTP Idempotency-Key middleware                 | N/A                   | `middleware/http.go:30`                  | zero HTTP write endpoints exist to wrap (`hub/internal/cli/serve.go:75-83`, all GET)                                                                                                      |
 | Command-wrapper dedup (`middleware.NewCommand`) | N/A                   | `middleware/middleware.go:50`            | no command dispatch surface in the consumer (adapters write directly)                                                                                                                     |
 | Atomic key store interface                      | N/A                   | `store.go` (`Store`)                     | no keys to store — nothing deduplicates because nothing double-executes                                                                                                                   |
@@ -175,6 +175,6 @@ is outbound" distinction verified at discovery/client.go:110-118 (client-side
 
 ## Citation drift addendum (2026-11-19 post-audit wave)
 
-`cache.go:216-219` (queryLatestRecords) moved to
-`hub/internal/cache/queries.go:60-63` in the cache split (see
-`.citations-baseline`; verified by `scripts/check-citations.sh`).
+The `cache.go` queryLatestRecords comment citation (216-219) moved to
+`queries.go:60-63` in the cache split (verified by
+`scripts/check-citations.sh`).

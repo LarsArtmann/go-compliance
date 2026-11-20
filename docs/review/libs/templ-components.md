@@ -59,7 +59,7 @@ wire `errorpage`, and ship compiled CSS → ADOPTED; score then lands high-80s.
 | 9  | `/datastar` components (`LiveRegion`, `SDKScript`)                                   | Fully         | `datastar/live_region.templ`, `sdk_script.templ`                       | `view.templ:45-56`, `view.templ:66-73`                                                                                                                                                                        |
 | 10 | `icons` (102 icons)                                                                  | Fully         | `icons/icon_paths.go`                                                  | `statcards.templ:18,24,30,36` (Server, ExclamationTriangle, Clock, Search)                                                                                                                                    |
 | 11 | `utils` (`BaseProps`, `Class`, `utils/format`)                                       | Fully         | `utils/`                                                               | `view.templ:46`, `statcards.templ` (BaseProps everywhere); `utils/format` unused — no byte/duration rendering needs yet                                                                                       |
-| 12 | `forms.FilterChips` (+ `FilterToggleHref` query builder, `aria-current`)             | Partial       | `forms/filter_chips.templ:1-45` (zero-JS link chips)                   | `chips.templ:19-46` hand-rolls 5 chips, 3 class constants, `aria-pressed` logic                                                                                                                               |
+| 12 | `forms.FilterChips` (+ `FilterToggleHref` query builder, `aria-current`)             | Partial       | `forms/filter_chips.templ:1-45` (zero-JS link chips)                   | `chips.templ:19-44` hand-rolls 5 chips, 3 class constants, `aria-pressed` logic                                                                                                                               |
 | 13 | Empty-state ladder (`EmptyState`/`SimpleEmptyState`/`DataState`)                     | Partial       | `display/empty_state.templ`, `data_state.templ`                        | `view.templ:97-104` hand-rolls a `<td colspan=4>` empty row inside the tbody                                                                                                                                  |
 | 14 | Dark-mode theme system (`ThemeScript` + `ThemeToggle`)                               | Partial       | `layout/theme_toggle.templ`; `base.templ:182-191,271-272`              | script shipped by Base (implicit use); **no `ThemeToggle` rendered** — dark mode follows OS preference only                                                                                                   |
 | 15 | Theming pipeline (compiled CSS, `@theme` vars; "compiled-CSS rule" in SKILL)         | **Misused**   | SKILL.md Part 1 "Consumer essentials" + `references/consumer-guide.md` | `view.templ:74-77` loads `https://cdn.tailwindcss.com` (Play CDN, dev-only per Tailwind) + an inline `tailwind.config` script at runtime                                                                      |
@@ -133,7 +133,7 @@ class toggling already interoperate.
 string, and library-owned selected/unselected styling
 (`forms/filter_chips.templ:1-45`).
 
-**Consumer does:** `chips.templ:19-46` — five hand-rolled `<button>`s wired to
+**Consumer does:** `chips.templ:19-44` — five hand-rolled `<button>`s wired to
 the DataStar `$stateFilter` signal (`data-on-click`, `data-class` ternaries), plus
 three hand-maintained class constants and `aria-pressed` logic. The no-JS path
 already exists in the consumer (`?state=` query, `routes.go:88-92`) — which is
@@ -296,9 +296,8 @@ All file:line citations spot-checked against the working tree on 2026-11-19.
 
 ## Citation drift addendum (2026-11-19 post-audit wave)
 
-`chips.templ:19-46` shifted to `chips.templ:19-44` after the templ fmt
-normalization (see `.citations-baseline`; verified by
-`scripts/check-citations.sh`).
+The chips-block citation (19-46) shifted to `chips.templ:19-44` after
+the templ fmt normalization (verified by `scripts/check-citations.sh`).
 
 ## Executed addendum (2026-11-19 post-audit wave, plan T9)
 
