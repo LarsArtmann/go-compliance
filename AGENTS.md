@@ -13,7 +13,7 @@ work uses `GOWORK=off`.
 ## Commands
 
 ```bash
-# Per module (ALWAYS GOWORK=off; the workspace hides replace-directive drift)
+# Per module (ALWAYS GOWORK=off — module-isolated, consumer-parity gates)
 cd hub && GOWORK=off go build ./... && GOWORK=off go vet ./...
 cd hub && GOWORK=off go test -race -count=1 ./...
 GOWORK=off go test -race -count=1 ./...      # core: -race parity with hub (CI runs both)
@@ -189,23 +189,22 @@ regression test.
 ## Nix / FOD Lessons
 
 - **The vendorHash FOD self-reference flip-flop** (root-caused
-  2026-11-17): `go mod vendor` copies directory-replaced modules
-  verbatim, so hub's `replace go-compliance => ../` vendored the repo
-  root INCLUDING flake.nix — the FOD hashed its own placeholder. Fix:
-  `postPatchExtra` builds `_core_only` (Go files + go.mod/go.sum only)
-  and repoints the hub replace at it. Consequence: doc-only edits no
-  longer change the hub vendorHash.
-- go.mod/go.sum bumps — and ANY root-module Go-file edit (the `_core_only`
-  replace target is vendored verbatim) — invalidate `vendorHash`: tidy per
-  module FIRST, then bootstrap (`vendorHash = "sha256-AAA..."` → build →
-  paste the `got:` hash → rebuild to confirm convergence) and `nix flake
-  check`. The hub hash appears at TWO flake sites (the `compliance-hub`
-  package AND the CI devShell's hub-module build) — bootstrap BOTH;
-  `nix build .#compliance-hub` alone can pass while `nix flake check`
-  still fails on the second site. The core check's hash is stable (no
-  directory replace in its module set). There is a THIRD hash site:
-  templ-gen's devShell `buildGoModule` (flake.nix) — its `vendorHash`
-  tracks the upstream templ repo's module set and can go stale with NO
+  2026-11-17, retired at v0.2.0 when the hub replace was dropped): `go
+  mod vendor` copied directory-replaced modules verbatim, so hub's
+  `replace go-compliance => ../` vendored the repo root INCLUDING
+  flake.nix — the FOD hashed its own placeholder. The `_core_only`
+  postPatchExtra fix is gone with the replace; keep the lesson for any
+  future directory replace in a vendored module.
+- go.mod/go.sum bumps — and ANY root-module Go-file edit (the hub
+  vendored core from the proxy since v0.2.0, so core edits no longer
+  flip the HUB hash but still flip the CORE check's) — invalidate
+  `vendorHash`: tidy per module FIRST, then bootstrap (`vendorHash =
+  "sha256-AAA..."` → build → paste the `got:` hash → rebuild to confirm
+  convergence) and `nix flake check`. A past run had the hub hash at TWO
+  flake sites — `nix build .#compliance-hub` alone can pass while `nix
+  flake check` still fails on the second site, so ALWAYS finish with the
+  full check. There is another hash site: templ-gen's devShell
+  `buildGoModule` (flake.nix) — its `vendorHash` tracks the upstream templ repo's module set and can go stale with NO
   local change (2026-11-18: devShell build failed on a mismatch; the
   same paste-`got:` ritual fixed it, converged first paste).
 - CI hub/flake jobs need the `FLAKE_PAT` secret (private go-daemon);

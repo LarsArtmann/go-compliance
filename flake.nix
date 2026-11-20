@@ -162,7 +162,7 @@
             postPatch = "rm -f go.work";
             modRoot = "hub";
             subPackages = [ "./cmd/compliance-hub" ];
-            vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+            vendorHash = "sha256-1kgpZQVpPZnG9bI0axe39S1kUw0xeQAQKk9/ODeL61M=";
             ldflags = [
               "-s"
               "-w"

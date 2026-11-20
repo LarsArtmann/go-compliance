@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- Nothing yet.
+- Hub consumes core like a consumer (2026-11-20, post-v0.2.0): the `replace go-compliance => ../` directory replace is dropped — `require v0.2.0` now resolves from the module proxy, go.sum carries its checksums, and the flake's `_core_only` postPatchExtra workaround is retired (vendorHash re-bootstrapped, `nix flake check` all-green).
 
 ### Deprecated
 
