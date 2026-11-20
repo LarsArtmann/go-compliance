@@ -114,6 +114,8 @@ github.com/larsartmann/go-branded-id v0.7.1 h1:w68pg/t74AM8PsTVVw7VkL3vq2C70zLH1
 github.com/larsartmann/go-branded-id v0.7.1/go.mod h1:gM5FhB6d23qZO8hIU/rHpUnm/6dwKy9UGMhgvXDqNsc=
 github.com/larsartmann/go-codec v0.3.3 h1:aKwY9YaUnawfcUxNNgfEb/6xQa8HJsrS7QHSOmnQUpU=
 github.com/larsartmann/go-codec v0.3.3/go.mod h1:hRx2Esr7xEF5+fH8pkLojM6bcHUquQNQk9m6/tBsbZI=
+github.com/larsartmann/go-compliance v0.2.0 h1:6Z2Mr+W4VZwdKwTbrnPP9YIlFXrzY06MZw7QbWXopQI=
+github.com/larsartmann/go-compliance v0.2.0/go.mod h1:ZLDg9tUbY8wrpSC0Z0WlmVnti5knE/hZnsWbgTP6ANA=
 github.com/larsartmann/go-datastar v0.7.0 h1:PE//9bGCdGdVdCdL8AdtRYJYlkl3Yq+On6FktUziy1I=
 github.com/larsartmann/go-datastar v0.7.0/go.mod h1:bbE8MTwWiO4ECbKyKBlFm4jwW6lV4rLD+rNlqI2tlWk=
 github.com/larsartmann/go-datastar/datastartest v0.7.0 h1:mzGUhnZsK88TzVXp5VtOuIztAHdpRdYpraL+jZlXU+g=

@@ -136,10 +136,6 @@ require (
 	modernc.org/sqlite v1.60.1 // indirect
 )
 
-// Dev-only until core is tagged: the release procedure drops this replace
-// and pins the published version (go-finding sibling-module precedent).
-replace github.com/larsartmann/go-compliance => ../
-
 tool github.com/a-h/templ/cmd/templ
 
 toolchain go1.27.4
