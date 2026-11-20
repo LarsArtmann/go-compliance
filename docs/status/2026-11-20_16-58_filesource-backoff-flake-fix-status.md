@@ -32,7 +32,7 @@
 
 1. **Never re-ran the gate that failed.** The whole session exists because `buildflow -s test-race` failed; I declared victory on `go test` alone. By this repo's own recorded lesson, that is exactly the manual-green trap.
 2. **No red reproduction.** I fixed a flake I never once observed failing locally. Confidence is high (17ms vs 50ms observed in-window work, plus the shuffle-seed BuildFlow run), but the discipline of "watch it fail, then watch it pass" was skipped.
-3. **No mutation check of the new trip-wire.** The corrupt-doc design's whole point is a *meaningful* failure mode if the backoff breaks; proving that costs one temporary one-line change + one test run. Not done.
+3. **No mutation check of the new trip-wire.** The corrupt-doc design's whole point is a _meaningful_ failure mode if the backoff breaks; proving that costs one temporary one-line change + one test run. Not done.
 4. **Failure-diff evidence lost to truncation** and I didn't attempt to recover it (BuildFlow run artifacts / DB) before designing the fix. The user instruction limited research, but the failing run's own log is the most related artifact there is.
 5. **Hub verification skipped** on a cross-module-replace repo; cheap insurance not bought.
 6. **`docs-gates run .` skipped** after editing AGENTS.md — the repo has a 5-gate docs battery precisely for such edits.
@@ -40,24 +40,24 @@
 
 ## a) FULLY DONE
 
-| Item | Evidence |
-|---|---|
-| Root-cause analysis of the `test-race` failure: timing flake in the FileSource backoff spec (170KB fixture write inside a 50ms TTL window; ~17ms typical, spikes past 50ms under `-race`+shuffle+load) | `adapter.go:97-124` read; `-ginkgo.v` timestamps (`.313`→`.330`); isolated run PASSED |
-| Fix: spec reworked to be deterministic-in-practice — in-window work is now a 20-byte **corrupt** doc (µs-scale; broken backoff ⇒ `ErrParse` ⇒ meaningful failure), TTL 50→100ms, expiry sleep 60→200ms (2× TTL) | commit `c6b8f41`, `adapter_test.go:91-113` |
-| Verification: focused spec PASS; 5× full suite `-race -count=1` sequential all green (107 specs); `go vet` clean; golangci-lint 0 issues | command outputs in session transcript |
-| Repo-wide sweep for the same flake class: hub's two timing sleeps verified safe-direction (arming delays + `Eventually`) | `refresher_internal_test.go:40-60`, `watcher_internal_test.go:45-60` read |
-| Convention recorded in AGENTS.md Testing Conventions (µs-scale in-window work, ≥2× TTL sleep, corrupt-doc trip-wire) | `AGENTS.md:116-121` (uncommitted) |
-| Concurrent AGENTS.md slimming diff assessed and respected (not mine; my bullet intact; all 5 `docs/notes/*.md` pointer targets exist) | `git diff HEAD -- AGENTS.md`; `rg` + `ls docs/notes/` |
+| Item                                                                                                                                                                                                            | Evidence                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Root-cause analysis of the `test-race` failure: timing flake in the FileSource backoff spec (170KB fixture write inside a 50ms TTL window; ~17ms typical, spikes past 50ms under `-race`+shuffle+load)          | `adapter.go:97-124` read; `-ginkgo.v` timestamps (`.313`→`.330`); isolated run PASSED |
+| Fix: spec reworked to be deterministic-in-practice — in-window work is now a 20-byte **corrupt** doc (µs-scale; broken backoff ⇒ `ErrParse` ⇒ meaningful failure), TTL 50→100ms, expiry sleep 60→200ms (2× TTL) | commit `c6b8f41`, `adapter_test.go:91-113`                                            |
+| Verification: focused spec PASS; 5× full suite `-race -count=1` sequential all green (107 specs); `go vet` clean; golangci-lint 0 issues                                                                        | command outputs in session transcript                                                 |
+| Repo-wide sweep for the same flake class: hub's two timing sleeps verified safe-direction (arming delays + `Eventually`)                                                                                        | `refresher_internal_test.go:40-60`, `watcher_internal_test.go:45-60` read             |
+| Convention recorded in AGENTS.md Testing Conventions (µs-scale in-window work, ≥2× TTL sleep, corrupt-doc trip-wire)                                                                                            | `AGENTS.md:116-121` (uncommitted)                                                     |
+| Concurrent AGENTS.md slimming diff assessed and respected (not mine; my bullet intact; all 5 `docs/notes/*.md` pointer targets exist)                                                                           | `git diff HEAD -- AGENTS.md`; `rg` + `ls docs/notes/`                                 |
 
 ## b) PARTIALLY DONE
 
-| Item | Works | Open | Blocker | Effort |
-|---|---|---|---|---|
-| Canonical gate verification | go-test evidence (5× green, lint, vet) | `buildflow` full gate re-run | none — just time (and the no-overlapping-runs rule) | S |
-| Root-cause certainty | mechanism observed (17ms in-window) + consistent with line-104 failure | original gomega diff unseen (paste truncated); no red replay | artifact location unknown / user paste | S (if log exists) |
-| Trip-wire proof | corrupt-doc logic reasoned (ErrParse ≠ ErrIO) | mutation run (disable `rememberMiss` → expect spec failure with ErrParse) | none | S |
-| Cross-module safety | change is test-only; vendoring excludes dep tests (reasoned) | hub build+test re-run; `nix flake check` | none | S–M |
-| AGENTS.md convention recorded | bullet written, survived parallel slimming | commit (daemon), `docs-gates run .` battery after both edits land | parallel slimming session in flight | S |
+| Item                          | Works                                                                  | Open                                                                      | Blocker                                             | Effort            |
+| ----------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------- | ----------------- |
+| Canonical gate verification   | go-test evidence (5× green, lint, vet)                                 | `buildflow` full gate re-run                                              | none — just time (and the no-overlapping-runs rule) | S                 |
+| Root-cause certainty          | mechanism observed (17ms in-window) + consistent with line-104 failure | original gomega diff unseen (paste truncated); no red replay              | artifact location unknown / user paste              | S (if log exists) |
+| Trip-wire proof               | corrupt-doc logic reasoned (ErrParse ≠ ErrIO)                          | mutation run (disable `rememberMiss` → expect spec failure with ErrParse) | none                                                | S                 |
+| Cross-module safety           | change is test-only; vendoring excludes dep tests (reasoned)           | hub build+test re-run; `nix flake check`                                  | none                                                | S–M               |
+| AGENTS.md convention recorded | bullet written, survived parallel slimming                             | commit (daemon), `docs-gates run .` battery after both edits land         | parallel slimming session in flight                 | S                 |
 
 ## c) NOT STARTED
 
@@ -147,4 +147,4 @@ Format: task — Impact / Effort / Category.
 
 ---
 
-*Waiting for instructions.*
+_Waiting for instructions._

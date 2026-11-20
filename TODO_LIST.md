@@ -41,14 +41,14 @@ The plan is a snapshot: this file is the living backlog.
 
 ## Blocked (owner decisions)
 
-| Task                                                                                        | Status       | Impact | Effort | Evidence                                                               |
-| ------------------------------------------------------------------------------------------- | ------------ | ------ | ------ | ---------------------------------------------------------------------- |
-| M26: overview endgame (replace vs coexist) + migration note                                 | 🔵 `BLOCKED` | Med    | 30m    | owner question g2 unanswered                                           |
-| Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs                         | 🔵 `BLOCKED` | High   | 10m    | owner-only; README CI section documents the requirement                |
-| Forgejo repo visibility (lars/go-compliance → public?)                                      | 🔵 `BLOCKED` | Low    | 5m     | manual UI action, owner-only                                           |
-| `sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB)                            | 🔵 `BLOCKED` | Low    | 10m    | 23-40 §f25; owner machine hygiene                                      |
-| Delete the expendable 0.51 GB cache DB (`~/.cache/buildflow/cache.db`)                      | 🔵 `BLOCKED` | Low    | 5m     | 23-40 §f26; owner data deletion, never agent-executed                  |
-| Clean-dir `go get github.com/larsartmann/go-compliance@v0.2.0` (GONOSUMDB='*' then without) | ⬜ `TODO`    | High   | 5m     | post-tag consumer verification; release run §f11 (12-06 status report) |
-| README install/`go get` snippets → v0.2.0                                                   | ⬜ `TODO`    | Med    | 10m    | post-release docs sync; release run §f29 (12-06 status report)         |
-| After the AGENTS.md slimming session lands, re-check the Testing-Conventions bullet placement/context survived the reorg | ⬜ `TODO` | Low | 5m | 16-58 filesource-backoff report §f28; documentation re-check |
-| Flaky-spec sweep: `watcher_internal_test.go:53` (300ms arming) same wall-clock hardening as FileSource | ⬜ `TODO` | Low | Med | 16-58 filesource-backoff report §f33; quality follow-up |
+| Task                                                                                                                     | Status       | Impact | Effort | Evidence                                                               |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------ | ------ | ------ | ---------------------------------------------------------------------- |
+| M26: overview endgame (replace vs coexist) + migration note                                                              | 🔵 `BLOCKED` | Med    | 30m    | owner question g2 unanswered                                           |
+| Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs                                                      | 🔵 `BLOCKED` | High   | 10m    | owner-only; README CI section documents the requirement                |
+| Forgejo repo visibility (lars/go-compliance → public?)                                                                   | 🔵 `BLOCKED` | Low    | 5m     | manual UI action, owner-only                                           |
+| `sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB)                                                         | 🔵 `BLOCKED` | Low    | 10m    | 23-40 §f25; owner machine hygiene                                      |
+| Delete the expendable 0.51 GB cache DB (`~/.cache/buildflow/cache.db`)                                                   | 🔵 `BLOCKED` | Low    | 5m     | 23-40 §f26; owner data deletion, never agent-executed                  |
+| Clean-dir `go get github.com/larsartmann/go-compliance@v0.2.0` (GONOSUMDB='*' then without)                              | ⬜ `TODO`    | High   | 5m     | post-tag consumer verification; release run §f11 (12-06 status report) |
+| README install/`go get` snippets → v0.2.0                                                                                | ⬜ `TODO`    | Med    | 10m    | post-release docs sync; release run §f29 (12-06 status report)         |
+| After the AGENTS.md slimming session lands, re-check the Testing-Conventions bullet placement/context survived the reorg | ⬜ `TODO`    | Low    | 5m     | 16-58 filesource-backoff report §f28; documentation re-check           |
+| Flaky-spec sweep: `watcher_internal_test.go:53` (300ms arming) same wall-clock hardening as FileSource                   | ⬜ `TODO`    | Low    | Med    | 16-58 filesource-backoff report §f33; quality follow-up                |

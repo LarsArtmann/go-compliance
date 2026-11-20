@@ -52,6 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Humanized relative times (2026-11-20): the fleet table's age column, header window-age, and the refresh-freshness/discovery stall messages render via `go-humanize` (`humanize.Time`) instead of hand-rolled duration strings — "3h0m0s ago" → "3 hours ago"; the fleet go-humanize-linter (H003) is at 0 findings. Threshold comparisons stay exact durations; only the rendering is humanized.
 - Citation-integrity repair (2026-11-20): the 30 wave-drifted `file:line` citations in the utilization reports re-anchored to verified current locations (the filestore/queries/handler file splits; lib-side cites path-qualified to kill basename shadows — `watcher.go` → `go-filewatcher/watcher.go`, `routes.go:280` → `go-health-dashboard/handlers.go:280`); `check-citations.sh`'s baseline ratchet actually fires now (the ACCEPTED lookup key carried literal spaces and never matched — proven with a baselined token printing ACCEPTED, then reverted).
 
 ### Deprecated
