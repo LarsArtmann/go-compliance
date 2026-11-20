@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dustin/go-humanize"
+
 	"github.com/larsartmann/go-filewatcher/v2"
 	"github.com/larsartmann/go-health"
 	"github.com/larsartmann/go-health/checks"

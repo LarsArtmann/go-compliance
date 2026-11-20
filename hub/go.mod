@@ -7,6 +7,7 @@ require (
 	github.com/LarsArtmann/go-daemon v0.4.1-0.20261103232705-e8e1a1fff502
 	github.com/a-h/templ v0.3.1100
 	github.com/charmbracelet/colorprofile v0.4.3
+	github.com/dustin/go-humanize v1.1.0
 	github.com/larsartmann/cmdguard/v5 v5.1.0
 	github.com/larsartmann/go-compliance v0.2.0
 	github.com/larsartmann/go-datastar v0.7.0
@@ -54,7 +55,6 @@ require (
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.7.0 // indirect
-	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.10.0 // indirect
