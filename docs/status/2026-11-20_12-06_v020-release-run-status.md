@@ -26,6 +26,7 @@
 ## Brutal self-review
 
 **What did I forget?**
+
 - The release-notes draft says "13-job matrix" — the parallel session made it **14** (brandid-lint). The CHANGELOG 0.2.0 section was cut BEFORE their commits, so it misses the brandid gate + the css-regen fix + the citation re-adjudication. A release cut on a live daemon-committed tip is stale the moment another session is active.
 - Did not give the citation subagent a **dprint/formatting constraint** — its edits currently leave 2 files unformatted, which will keep the dprint CI job red even after citations pass.
 - Did not check for an ACTIVE parallel session before planning (the untracked brutal-self-review status doc in the env snapshot was the tell; the 11:51 `.buildflow.yml` was the confirmation).
@@ -37,6 +38,7 @@
 **Ghost systems?** None created. Existing one noticed: `examples/reporter` demos the reporter SDK and is the only consumer-shaped doc for it — fine, wired via docs/guides/integrate.md.
 
 **Split brains found (this session):**
+
 1. hub/go.mod `require v0.2.0` + `replace => ../` + flake `postPatchExtra` sed repointing that replace at `_core_only` — THREE places encoding "how core resolves". The post-tag replace-drop collapses all three (already planned).
 2. TODO_LIST says "v0.1.1-class tag", I shipped v0.2.0 — number drift inside a recorded row (class ≠ pin, but the row text is now wrong).
 3. CHANGELOG/release-notes "13 jobs" vs ci.yml's 14 jobs.
@@ -50,48 +52,49 @@
 
 ## a) FULLY DONE
 
-| # | Item | Evidence |
-|---|------|----------|
-| 1 | CSS-freshness gate repaired (regenerated `app.min.css` + `library-custom.css`) | committed 199d349; regen rerun byte-stable |
-| 2 | Version determination: **v0.2.0 MINOR** | 62-commit delta reviewed; core API 15→15 exported symbols verified |
-| 3 | CHANGELOG `[0.2.0] - 2026-11-20` cut, `[Unreleased]` reset with placeholders | committed 69bc125 |
-| 4 | hub require → `go-compliance v0.2.0` via `go mod edit` | committed 69bc125; tidy zero-diff |
-| 5 | Hub vendorHash bootstrapped (both build passes + convergence) | `nix build` green; hash `t1Kx9BVB…` in flake.nix, committed |
-| 6 | `nix flake check` ALL PASSED (hub package + core-build + templ-gen + devShell) | command output this session |
-| 7 | Full test battery: core+hub build/vet/test `-race -count=1` | all ok, sequential |
-| 8 | Lint: golangci 0 issues both modules; templ fmt -fail; art-dupl no new clones; docs-gates 5/5 | all run this session |
-| 9 | BD003 brandid gate pre-verified for the parallel session's new CI job | `go run …brandid-lint@linter/v0.5.1 -rules BD003 .` exit 0 |
-| 10 | GitHub release notes drafted | `/tmp/release-notes.md` |
-| 11 | Citation drift root-caused and fix dispatched | subagent `roberto-citation-adjudicator`, stale 30→15 and falling |
-| 12 | Proxy baseline established | `@v/list` = v0.1.0 only |
+| #  | Item                                                                                          | Evidence                                                           |
+| -- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 1  | CSS-freshness gate repaired (regenerated `app.min.css` + `library-custom.css`)                | committed 199d349; regen rerun byte-stable                         |
+| 2  | Version determination: **v0.2.0 MINOR**                                                       | 62-commit delta reviewed; core API 15→15 exported symbols verified |
+| 3  | CHANGELOG `[0.2.0] - 2026-11-20` cut, `[Unreleased]` reset with placeholders                  | committed 69bc125                                                  |
+| 4  | hub require → `go-compliance v0.2.0` via `go mod edit`                                        | committed 69bc125; tidy zero-diff                                  |
+| 5  | Hub vendorHash bootstrapped (both build passes + convergence)                                 | `nix build` green; hash `t1Kx9BVB…` in flake.nix, committed        |
+| 6  | `nix flake check` ALL PASSED (hub package + core-build + templ-gen + devShell)                | command output this session                                        |
+| 7  | Full test battery: core+hub build/vet/test `-race -count=1`                                   | all ok, sequential                                                 |
+| 8  | Lint: golangci 0 issues both modules; templ fmt -fail; art-dupl no new clones; docs-gates 5/5 | all run this session                                               |
+| 9  | BD003 brandid gate pre-verified for the parallel session's new CI job                         | `go run …brandid-lint@linter/v0.5.1 -rules BD003 .` exit 0         |
+| 10 | GitHub release notes drafted                                                                  | `/tmp/release-notes.md`                                            |
+| 11 | Citation drift root-caused and fix dispatched                                                 | subagent `roberto-citation-adjudicator`, stale 30→15 and falling   |
+| 12 | Proxy baseline established                                                                    | `@v/list` = v0.1.0 only                                            |
 
 ## b) PARTIALLY DONE
 
-| # | Item | State |
-|---|------|-------|
-| 1 | **The release itself** | All prep committed (69bc125); NOT tagged, NOT pushed, NOT published |
-| 2 | Citation gate repair | 30→15 stale; subagent still running; dprint-clean pass still needed after |
-| 3 | CI green-on-tag-commit precondition | Red master; queued run on partial citation commit will fail; need push-after-fix cycle |
-| 4 | Release-notes accuracy | Drafted but contains the stale "13 jobs" claim; CHANGELOG missing 3 in-window items |
-| 5 | hub replace-drop (TODO_LIST row) | Planned + sequenced (post-tag), NOT executed |
-| 6 | Post-tag TODO_LIST/ROADMAP row updates | Planned, not started |
+| # | Item                                   | State                                                                                  |
+| - | -------------------------------------- | -------------------------------------------------------------------------------------- |
+| 1 | **The release itself**                 | All prep committed (69bc125); NOT tagged, NOT pushed, NOT published                    |
+| 2 | Citation gate repair                   | 30→15 stale; subagent still running; dprint-clean pass still needed after              |
+| 3 | CI green-on-tag-commit precondition    | Red master; queued run on partial citation commit will fail; need push-after-fix cycle |
+| 4 | Release-notes accuracy                 | Drafted but contains the stale "13 jobs" claim; CHANGELOG missing 3 in-window items    |
+| 5 | hub replace-drop (TODO_LIST row)       | Planned + sequenced (post-tag), NOT executed                                           |
+| 6 | Post-tag TODO_LIST/ROADMAP row updates | Planned, not started                                                                   |
 
 ## c) NOT STARTED
 
-| # | Item |
-|---|------|
-| 1 | Push master (github + forgejo) → CI green → annotated tag `v0.2.0` → push tag both remotes |
-| 2 | Post-push verification: proxy `.info`, pkg.go.dev fetch, clean-dir `go get` |
-| 3 | `gh release create v0.2.0` (notes + `--prerelease` decision pending) |
-| 4 | Retro-create v0.1.0 GitHub Release (v0.1.0 shipped tag-only, zero notes on GitHub) |
+| # | Item                                                                                                           |
+| - | -------------------------------------------------------------------------------------------------------------- |
+| 1 | Push master (github + forgejo) → CI green → annotated tag `v0.2.0` → push tag both remotes                     |
+| 2 | Post-push verification: proxy `.info`, pkg.go.dev fetch, clean-dir `go get`                                    |
+| 3 | `gh release create v0.2.0` (notes + `--prerelease` decision pending)                                           |
+| 4 | Retro-create v0.1.0 GitHub Release (v0.1.0 shipped tag-only, zero notes on GitHub)                             |
 | 5 | Consumer propagation: md-go-validator + BuildFlow bound core at v0.1.0 → bump to v0.2.0 (go-ecosystem-upgrade) |
-| 6 | Canonical plain `buildflow` full run (AGENTS.md canonical gate — skipped this session) |
-| 7 | AGENTS.md memory updates: require-bump-vendorHash lesson; release-on-live-repo protocol |
-| 8 | docs-health HARVEST of this report's §f into TODO_LIST (blocked: "wait for instructions") |
+| 6 | Canonical plain `buildflow` full run (AGENTS.md canonical gate — skipped this session)                         |
+| 7 | AGENTS.md memory updates: require-bump-vendorHash lesson; release-on-live-repo protocol                        |
+| 8 | docs-health HARVEST of this report's §f into TODO_LIST (blocked: "wait for instructions")                      |
 
 ## d) TOTALLY FUCKED UP
 
 Nothing destroyed or corrupted. The honest entries:
+
 1. **Release latency:** ~1h into "publish", still untagged — inherited red CI + live parallel sessions, but the run is objectively late.
 2. **The frozen-tag blind spot:** CI never runs on tag refs and flake-check no-ops without FLAKE_PAT — the ecosystem's two hardest invariants (tag CI green, vendorHash correct) have NO mechanical protection. v0.2.0 relies entirely on my local ritual.
 3. **Release-notes/CHANGELOG cut on a moving tip** — already stale by one feature (brandid gate).
@@ -109,6 +112,7 @@ Nothing destroyed or corrupted. The honest entries:
 ## f) Up to 50 things to get done next (ordered: in-flight → release path → follow-ups → hardening)
 
 **In-flight (finish before anything else):**
+
 1. Citation subagent completes → verify stale=0, exit 0
 2. `dprint fmt` pass over the subagent's edited reports (dprint gate currently 2 files unformatted)
 3. Re-run citation gate + dprint + docs-gates together post-fix

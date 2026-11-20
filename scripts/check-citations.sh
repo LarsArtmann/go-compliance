@@ -95,7 +95,7 @@ check_one() { # $1=doc $2=citation
 		return
 	fi
 
-	if [ -n "${ACCEPTED[$doc | $cite]:-}" ]; then
+	if [ -n "${ACCEPTED[$doc|$cite]:-}" ]; then
 		printf 'ACCEPTED\t%s\t%s\tbaseline entry (adjudicated drift)\n' "$doc" "$cite"
 		accepted=$((accepted + 1))
 		return
