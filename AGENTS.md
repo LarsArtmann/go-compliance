@@ -5,10 +5,10 @@
 **go-compliance** is a fleet compliance hub: a frozen v1 wire contract
 (byte-compatible with `buildflow compliance --json`), a source-agnostic
 evidence fold + state model (`compliant` / `failing` / `stale` /
-`never-covered`), and a realtime dashboard that projects evidence into the
+`never-covered`), and a realtime dashboard projecting evidence into the
 browser via SSE + DataStar patches. Two modules: **core** (root, public
-deps only — the publishable library) and **hub** (`hub/`, the server +
-CLI). Coordinates: `go.work`; per-module work uses `GOWORK=off`.
+deps only) and **hub** (server + CLI). Coordinates: `go.work`; per-module
+work uses `GOWORK=off`.
 
 ## Commands
 
@@ -88,51 +88,20 @@ BuildFlow runs: the second run hits SQLITE_BUSY on every checkpoint write
 
 ## Dedup Audit (art-dupl)
 
-- Audit with `art-dupl -t 1 --type-aware`; target "0 shown". Accept
-  leftover intentional clones with `// art-dupl:accept <why>` — gofmt
-  normalizes the directive to the spaced form and art-dupl still honors
-  it, but it must sit within 5 lines ABOVE the clone start (function-doc
-  distance is too far). Every suppression should be pinned by a directive
-  so future audits only ever litigate NEW clones (2026-11-18 audit).
-- CI gate (2026-11-18): `.art-dupl-baseline.json` is committed and
-  `dupl-gate` runs `art-dupl -t 1 --type-aware check --baseline-path
-  .art-dupl-baseline.json .` (tool pinned v0.9.1-0.20261017225421). The
-  baseline ratchets known hashes; only NEW clones fail CI. Accept
-  directives document WHY a clone is intentional; the baseline records
-  THAT it exists. After a deliberate refactor that grows duplication
-  knowingly, regenerating the baseline is a decision, not a fix.
-- Single homes for shared policies: SQL query + IO-error wrap =
-  `cache.Store.queryRows` + `wrapIterateErr` (hub/internal/cache); the
-  worst-steps defaulting rule = `worstStepLimitOrDefault` (fold.go);
-  dashboard filter validation delegates to `State.IsValid` so new core
-  states are filterable without touching routes.go.
-- Re-open triggers: a 4th cache query site (extract the scan-callback
-  collector then); accept directives are line-proximity fragile (5-line
-  window) — expect drift after refactors near them, re-audit on sight.
-- One `// art-dupl:accept` directive suppresses its WHOLE clone group
-  (both occurrences — observed empirically on the refresher group;
-  mechanism undocumented upstream, don't rely on per-occurrence
-  behavior).
+- Audit `art-dupl -t 1 --type-aware`; accept intentional clones with
+  `// art-dupl:accept <why>` within 5 lines ABOVE the clone start. CI
+  `dupl-gate` ratchets `.art-dupl-baseline.json` — only NEW clones fail
+  (accept directives are the WHY, the baseline is the THAT).
+- Full policy (single homes, re-open triggers, whole-group suppression
+  semantics): `docs/notes/dedup-audit-policy.md`.
 
 ## docs-health annotate writer
 
-- Keys into reports with MULTIPLE numbered sections MUST use the
-  `N@substring` disambiguator — a number-only key strikes the FIRST
-  matching item number across sections (one repair cycle burned
-  2026-11-19). Always `emit-keys` + `--dry-run` the first spec against
-  an unfamiliar file shape.
-- The writer (`go run
-  /home/lars/.config/crush/skills/docs-health/assets/annotate.go`) owns
-  the row gates: `repair <tsv>` (spec `path\tlines\tkind\tvalue`; kinds
-  h/v/p/w/n/r/s; line-addressed, dry-run first, atomic), `check-rows
-  [--strict]`, `bare-rows`, `emit-keys`, `status-items`, `self-test`.
-  The installed `docs-gates` binary (fleet pin `e305834`, verified
-  2026-11-20) lacks ONLY the `rows` verb — its freshness surface is
-  complete (`--pre-flight`, `--margins`, `--dump-items`,
-  `--explain-item`, `--audit-all`, `--audit-max`, `--replace`,
-  `--duplicates`, `--land-parity`). Use the writer aliases for the row
-  gates until the fleet pin bumps; battery stays `docs-gates run .`
-  (5 gates).
+- Multi-section report keys MUST use the `N@substring` disambiguator;
+  always `emit-keys` + `--dry-run` first (a repair cycle burned 2026-11-19).
+- Writer verb inventory + the `docs-gates` fleet-pin surface:
+  `docs/notes/docs-health-annotate-writer.md`. Battery stays
+  `docs-gates run .` (5 gates).
 
 ## Testing Conventions
 
@@ -143,12 +112,10 @@ BuildFlow runs: the second run hits SQLITE_BUSY on every checkpoint write
   NEVER by polling an `httptest.ResponseRecorder` from another goroutine
   — the recorder is unsynchronized and `-race` flags it (fixed
   2026-11-18). A real request lifecycle is the only honest shape.
-- Wall-clock specs (backoff/TTL/debounce): keep the work INSIDE the
-  asserted window microsecond-scale (tiny documents, never fixture IO —
-  a 170KB fixture write inside FileSource's 50ms window flaked the
-  2026-11-20 BuildFlow test-race run) and sleep ≥2× the TTL for the
-  expiry side. Plant a CORRUPT document mid-window so a broken backoff
-  fails with ErrParse instead of silently passing.
+- Wall-clock specs (backoff/TTL/debounce): work INSIDE the asserted
+  window stays microsecond-scale (never fixture IO — a 170KB write flaked
+  a race run); sleep ≥2× the TTL for expiry; plant a CORRUPT document
+  mid-window so broken backoff fails with ErrParse, not a silent pass.
 - Cross-package test helpers live in `hub/internal/testsupport`
   (external `_test` packages cannot share `_test.go` code);
   `testsupport.WaitForSubscriber(hub)` before publishing to a fresh SSE
@@ -159,27 +126,14 @@ BuildFlow runs: the second run hits SQLITE_BUSY on every checkpoint write
 
 ## Library Utilization Audit (2026-11-19)
 
-`docs/review/libs/` holds 22 per-library utilization reports + `index.html`
-(fleet run: 5 sub-agent groups + T15 completion reports for go-branded-id
-and go-sqlitestore, both ADOPTED). Verdict line: go-health / go-sse /
-go-error-family(core) / go-branded-id / go-sqlitestore ADOPTED;
-go-filewatcher ADOPTED 2026-11-19 (plan T3, was the audit's
-NOT-ADOPTED-but-should); templ-components recovering after the T9 pass
-(errorpage/ThemeToggle/compiled CSS); cmdguard/go-datastar/go-output/
-go-daemon UNDERUSED (go-daemon surface widened by the waves); 9
-NOT-ADOPTED-justified (each with a recorded flip trigger in its report). Actionable findings routed to
-TODO_LIST (4 High/Med + 7 Low rows).
-Re-review triggers: a NOT-ADOPTED lib's flip trigger fires, a pinned dep
-moves a major, or new fleet-wide consumers change the leverage math. For
-NOT-adopted libs the report score is counterfactual (100 = zero unmet need).
-Citation integrity: `scripts/check-citations.sh` verifies every
-`file:line` cite in the reports against the tree (ratchet via
-`docs/review/libs/.citations-baseline` — rerun after ANY refactor that
-moves cited code; new drift fails, baselined drift prints ACCEPTED).
-Tag-watch hook: when a reviewed lib (starting with go-daemon) cuts a new
-tag, append an executed-addendum to its report the next time it is
-touched — the reports pin versions in their verdicts and go stale
-silently otherwise.
+- `docs/review/libs/` = 22 reports + index; verdicts and re-review
+  triggers (flip trigger, major bump, new fleet consumers) live in the
+  reports; details: `docs/notes/library-audit-notes.md`.
+- Citation integrity: `scripts/check-citations.sh` gate — rerun after
+  ANY refactor that moves cited code (ratchet:
+  `.citations-baseline`; new drift fails, baselined prints ACCEPTED).
+- Tag-watch: a reviewed lib's new tag → executed-addendum to its report
+  next touch (verdicts pin versions, they stale silently otherwise).
 
 ## Live Architecture (M27)
 
@@ -261,6 +215,5 @@ regression test.
 ## Fixture (frozen v1 contract)
 
 `testdata/buildflow-v1-fixture.json` pins 341 redacted repos of real
-producer output; `scripts/refresh-fixture.sh` header documents the full
-refresh ritual (golden byte-exactness, the @341 benchmark shape,
-baseline re-recording).
+producer output; `scripts/refresh-fixture.sh` documents the refresh
+ritual (golden byte-exactness, @341 benchmark shape, baseline re-record).
