@@ -191,7 +191,10 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
-      - run: go run github.com/larsartmann/go-branded-id/linter/cmd/brandid-lint@linter/v0.5.1 -rules BD003 .
+      # @v0.5.1 (canonical module version of the `linter` module) — the
+      # tag form `@linter/v0.5.1` is a disallowed version string for
+      # `go run pkg@version` (first real CI execution failed on it).
+      - run: go run github.com/larsartmann/go-branded-id/linter/cmd/brandid-lint@v0.5.1 -rules BD003 .
 
   css-freshness:
     name: dashboard CSS freshness gate
