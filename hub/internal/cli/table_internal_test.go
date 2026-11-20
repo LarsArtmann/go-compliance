@@ -52,4 +52,25 @@ var _ = Describe("table cell helpers", func() {
 		Entry("exact-width names pass through", "abcdef", 6, "abcdef"),
 		Entry("long names cut with an ellipsis", "a-very-long-repository-name", 24, "a-very-long-repository-…"),
 	)
+
+	DescribeTable("--sort-by parsing",
+		func(raw string, expectedErr bool) {
+			order, err := parseSortBy(raw)
+			if expectedErr {
+				Expect(err).To(MatchError(ContainSubstring("invalid --sort-by value")))
+				Expect(order).To(Equal(sortBy("")))
+
+				return
+			}
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(order).To(Equal(sortBy(raw)))
+		},
+		Entry("findings", "findings", false),
+		Entry("failures", "failures", false),
+		Entry("name", "name", false),
+		Entry("empty means the flag default", "", false),
+		Entry("importance is producer-only", "importance", true),
+		Entry("garbage rejected", "bogus", true),
+	)
 })
