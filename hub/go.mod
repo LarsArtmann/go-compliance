@@ -8,7 +8,7 @@ require (
 	github.com/a-h/templ v0.3.1100
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/larsartmann/cmdguard/v5 v5.1.0
-	github.com/larsartmann/go-compliance v0.1.0
+	github.com/larsartmann/go-compliance v0.2.0
 	github.com/larsartmann/go-datastar v0.7.0
 	github.com/larsartmann/go-datastar/datastartest v0.7.0
 	github.com/larsartmann/go-datastar/static v0.8.0

@@ -8,6 +8,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Nothing yet.
+
+### Changed
+
+- Nothing yet.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.2.0] - 2026-11-20
+
+### Added
+
 - Post-audit Pareto waves (2026-11-19): truth & safety tier — discovery SSE parsing moved to `daemon.ParseSSEData` (multi-line `data:` reassembly, over-cap loud failure, no fake EOF); unix-socket bind is probe-first (`daemon.IsSocketAlive` health probe; a live sibling's socket is never stolen, pinned by a written-first repro test); hub exits carry the go-error-family sysexits contract (transient IO = 75, rejection = 1, internal = 69; README table + verify one-liner).
 - Realtime promise kept: go-filewatcher adopted (dir-watch on SQLite `-wal`/`-shm` sidecars + evidence-file renames, 200ms debounce, name-set filter; cross-process writes refresh in ~1-2s instead of the 5-min safety net, which stays as backstop) with an `evidence-watch` readiness check and a cross-process spec under `-race`.
 - Version/de-dup window: go-sse v0.7.0, go-datastar v0.7.0 + datastartest + static v0.8.0; `datastar.ScriptHandler` serves the SDK bundle (ETag/304, version-pinned URL kills the 24h stale-JS window); hand-rolled `ringStore` deleted in favor of `datastar.MemoryStore`.
