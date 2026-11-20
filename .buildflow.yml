@@ -1,0 +1,9 @@
+# BuildFlow Configuration
+# See: https://github.com/larsartmann/buildflow
+#
+# This repo is otherwise auto-detected (no .buildflow.yml needed); this file
+# exists only to opt into the branded-ID linter's primitive-ID rule.
+
+tool_options:
+  brandid-lint:
+    rules: BD003
