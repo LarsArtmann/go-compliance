@@ -35,17 +35,17 @@ cd "$root"
 baseline_file="docs/review/libs/.citations-baseline"
 declare -A ACCEPTED
 if [ -f "$baseline_file" ]; then
-  while IFS=$'\t' read -r bdoc bcite _; do
-    [ -z "${bdoc:-}" ] && continue
-    case "$bdoc" in \#*) continue ;; esac
-    ACCEPTED["$bdoc|$bcite"]=1
-  done <"$baseline_file"
+	while IFS=$'\t' read -r bdoc bcite _; do
+		[ -z "${bdoc:-}" ] && continue
+		case "$bdoc" in \#*) continue ;; esac
+		ACCEPTED["$bdoc|$bcite"]=1
+	done <"$baseline_file"
 fi
 
 if [ $# -gt 0 ]; then
-  targets=("$@")
+	targets=("$@")
 else
-  targets=(docs/review/libs/*.md)
+	targets=(docs/review/libs/*.md)
 fi
 
 CITE_RE='[A-Za-z0-9_][A-Za-z0-9_./-]*\.(go|templ|md|yml|yaml|json|nix|sh|sql|css|ts|js):[0-9]+(-[0-9]+)?'
@@ -54,17 +54,17 @@ CITE_RE='[A-Za-z0-9_][A-Za-z0-9_./-]*\.(go|templ|md|yml|yaml|json|nix|sh|sql|css
 # must survive runner-image drift. The regex is ERE-compatible by design
 # and both tools emit -o matches identically for it.
 extract_cites() { # $1=regex $2=file -> matches on stdout
-  if command -v rg >/dev/null 2>&1; then
-    rg -o "$1" "$2"
-  else
-    grep -oE "$1" "$2"
-  fi
+	if command -v rg >/dev/null 2>&1; then
+		rg -o "$1" "$2"
+	else
+		grep -oE "$1" "$2"
+	fi
 }
 
 declare -A BY_BASENAME
 while IFS= read -r f; do
-  b="${f##*/}"
-  BY_BASENAME[$b]="${BY_BASENAME[$b]:-}$f"$'\n'
+	b="${f##*/}"
+	BY_BASENAME[$b]="${BY_BASENAME[$b]:-}$f"$'\n'
 done < <(git ls-files)
 
 stale=0
@@ -74,56 +74,59 @@ ok=0
 accepted=0
 
 check_one() { # $1=doc $2=citation
-  local doc="$1" cite="$2" file part start end
-  file="${cite%%:*}"
-  part="${cite#*:}"
-  start="${part%%-*}"
-  if [[ "$part" == *-* ]]; then end="${part#*-}"; else end="$start"; fi
+	local doc="$1" cite="$2" file part start end
+	file="${cite%%:*}"
+	part="${cite#*:}"
+	start="${part%%-*}"
+	if [[ "$part" == *-* ]]; then end="${part#*-}"; else end="$start"; fi
 
-  local -a candidates=()
-  if [[ "$file" == */* ]]; then
-    [ -f "$file" ] && candidates=("$file")
-  else
-    while IFS= read -r m; do
-      [ -n "$m" ] && candidates+=("$m")
-    done <<<"${BY_BASENAME[$file]:-}"
-  fi
+	local -a candidates=()
+	if [[ "$file" == */* ]]; then
+		[ -f "$file" ] && candidates=("$file")
+	else
+		while IFS= read -r m; do
+			[ -n "$m" ] && candidates+=("$m")
+		done <<<"${BY_BASENAME[$file]:-}"
+	fi
 
-  if [ ${#candidates[@]} -eq 0 ]; then
-    printf 'EXTERNAL\t%s\t%s\tno in-repo file; presumed library-side cite\n' "$doc" "$cite"
-    external=$((external + 1))
-    return
-  fi
+	if [ ${#candidates[@]} -eq 0 ]; then
+		printf 'EXTERNAL\t%s\t%s\tno in-repo file; presumed library-side cite\n' "$doc" "$cite"
+		external=$((external + 1))
+		return
+	fi
 
-  if [ -n "${ACCEPTED[$doc|$cite]:-}" ]; then
-    printf 'ACCEPTED\t%s\t%s\tbaseline entry (adjudicated drift)\n' "$doc" "$cite"
-    accepted=$((accepted + 1))
-    return
-  fi
+	if [ -n "${ACCEPTED[$doc | $cite]:-}" ]; then
+		printf 'ACCEPTED\t%s\t%s\tbaseline entry (adjudicated drift)\n' "$doc" "$cite"
+		accepted=$((accepted + 1))
+		return
+	fi
 
-  local best="" c lines
-  for c in "${candidates[@]}"; do
-    lines=$(wc -l <"$c")
-    if [ "$start" -le "$lines" ] && [ "$end" -le "$lines" ]; then
-      best="$c ($lines lines)"
-      break
-    fi
-  done
-  if [ -n "$best" ]; then
-    ok=$((ok + 1))
-  else
-    printf 'STALE\t%s\t%s\tresolved candidates out of range: %s\n' \
-      "$doc" "$cite" "$(printf '%s ' "${candidates[@]}")"
-    stale=$((stale + 1))
-  fi
-  checked=$((checked + 1))
+	local best="" c lines
+	for c in "${candidates[@]}"; do
+		lines=$(wc -l <"$c")
+		if [ "$start" -le "$lines" ] && [ "$end" -le "$lines" ]; then
+			best="$c ($lines lines)"
+			break
+		fi
+	done
+	if [ -n "$best" ]; then
+		ok=$((ok + 1))
+	else
+		printf 'STALE\t%s\t%s\tresolved candidates out of range: %s\n' \
+			"$doc" "$cite" "$(printf '%s ' "${candidates[@]}")"
+		stale=$((stale + 1))
+	fi
+	checked=$((checked + 1))
 }
 
 for doc in "${targets[@]}"; do
-  [ -f "$doc" ] || { echo "no such report: $doc" >&2; exit 2; }
-  while IFS= read -r cite; do
-    [ -n "$cite" ] && check_one "$doc" "$cite"
-  done < <(extract_cites "$CITE_RE" "$doc" | sort -u)
+	[ -f "$doc" ] || {
+		echo "no such report: $doc" >&2
+		exit 2
+	}
+	while IFS= read -r cite; do
+		[ -n "$cite" ] && check_one "$doc" "$cite"
+	done < <(extract_cites "$CITE_RE" "$doc" | sort -u)
 done
 
 echo "--"

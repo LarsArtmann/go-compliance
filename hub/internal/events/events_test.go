@@ -111,7 +111,7 @@ var _ = Describe("events hub endpoint", func() {
 
 	It("sends the current snapshot first, then live updates", func() {
 		hub := events.NewHub()
-		Expect(hub.PublishSnapshot(rowsFor("fleet", compliance.StateCompliant))).To(Equal("1"))
+		Expect(hub.PublishSnapshot(rowsFor("fleet", compliance.StateCompliant))).To(Equal(sse.NewEventID("1")))
 
 		handler := hub.Handler()
 
@@ -145,10 +145,10 @@ var _ = Describe("events hub endpoint", func() {
 
 		received := ssetest.CollectN(GinkgoTB(), hub.Handler(), 1,
 			ssetest.WithPath("/events"),
-			ssetest.WithLastEventID(sse.NewEventID(first)),
+			ssetest.WithLastEventID(first),
 		)
 
-		Expect(received[0].ID).To(Equal("2"))
+		Expect(received[0].ID).To(Equal(sse.NewEventID("2")))
 		ssetest.RequireEventType(GinkgoTB(), received[0], events.EventUpdate)
 		ssetest.RequireDataContains(GinkgoTB(), received[0], `"state":"failing"`)
 	})
@@ -218,7 +218,7 @@ var _ = Describe("events hub endpoint", func() {
 		second, err := hub.PublishUpdate(nil, nil, []string{"gone"})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(first).To(Equal("1"))
-		Expect(second).To(Equal("2"))
+		Expect(first).To(Equal(sse.NewEventID("1")))
+		Expect(second).To(Equal(sse.NewEventID("2")))
 	})
 })

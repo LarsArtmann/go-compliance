@@ -19,10 +19,10 @@ root="$(git rev-parse --show-toplevel)"
 cd "$root"
 
 for tool in tailwindcss go; do
-  command -v "$tool" >/dev/null || {
-    echo "✗ missing tool '$tool' — run inside 'nix develop' (the devshell pins the version CI verifies)" >&2
-    exit 1
-  }
+	command -v "$tool" >/dev/null || {
+		echo "✗ missing tool '$tool' — run inside 'nix develop' (the devshell pins the version CI verifies)" >&2
+		exit 1
+	}
 done
 
 echo "• library class inventory"

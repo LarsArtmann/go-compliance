@@ -59,7 +59,7 @@ type Update struct {
 // plus the typed payload (exactly one of Snapshot or Update is set).
 type Published struct {
 	Name     string
-	ID       string
+	ID       sse.EventID
 	Data     string
 	Snapshot *Snapshot
 	Update   *Update
@@ -154,7 +154,9 @@ func (h *Hub) Rows() []RepoRow {
 }
 
 // PublishSnapshot broadcasts the full state and records it for replay.
-func (h *Hub) PublishSnapshot(rows []RepoRow) (string, error) {
+// The returned EventID is the SSE id: field clients echo back as
+// Last-Event-ID on reconnect.
+func (h *Hub) PublishSnapshot(rows []RepoRow) (sse.EventID, error) {
 	snapshot := Snapshot{
 		GeneratedAt: time.Now().UTC(),
 		Rows:        rows,
@@ -169,7 +171,7 @@ func (h *Hub) PublishSnapshot(rows []RepoRow) (string, error) {
 
 // PublishUpdate broadcasts an explicit diff and records it for replay. The
 // diff must already describe the transition from the Hub's current rows.
-func (h *Hub) PublishUpdate(added, changed []RepoRow, removed []string) (string, error) {
+func (h *Hub) PublishUpdate(added, changed []RepoRow, removed []string) (sse.EventID, error) {
 	update := Update{
 		GeneratedAt: time.Now().UTC(),
 		Added:       added,
@@ -259,22 +261,22 @@ func (h *Hub) setRows(rows []RepoRow) {
 	}
 }
 
-func (h *Hub) publish(eventName string, payload any, snapshot *Snapshot, update *Update) (string, error) {
+func (h *Hub) publish(eventName string, payload any, snapshot *Snapshot, update *Update) (sse.EventID, error) {
 	data, err := json.Marshal(payload, marshalOpts)
 	if err != nil {
-		return "", compliance.NewInternalError(err, "encode %s event", eventName)
+		return sse.EventID{}, compliance.NewInternalError(err, "encode %s event", eventName)
 	}
 
 	id := h.seq.Add(1)
 	event := Published{
 		Name:     eventName,
-		ID:       strconv.FormatUint(id, 10),
+		ID:       sse.NewEventID(strconv.FormatUint(id, 10)),
 		Data:     string(data),
 		Snapshot: snapshot,
 		Update:   update,
 	}
 
-	h.store.Append(sse.Event{Event: eventName, Data: event.Data, ID: sse.NewEventID(event.ID)})
+	h.store.Append(sse.Event{Event: eventName, Data: event.Data, ID: event.ID})
 	h.broadcaster.Broadcast(event)
 
 	return event.ID, nil

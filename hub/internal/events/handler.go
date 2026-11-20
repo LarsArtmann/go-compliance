@@ -55,7 +55,7 @@ func (h *Hub) Handler() http.Handler {
 				}
 
 				if stream.Send(
-					sse.Event{Event: published.Name, Data: published.Data, ID: sse.NewEventID(published.ID)},
+					sse.Event{Event: published.Name, Data: published.Data, ID: published.ID},
 				) != nil {
 					return
 				}
