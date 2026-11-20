@@ -188,6 +188,90 @@ var _ = Describe("fleet table", func() {
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("allowed"))
 	})
+
+	// Two failing repos whose canonical order (failures desc) contradicts
+	// both the name and the findings order, plus a compliant repo: the
+	// sort-key tests can retiebreak INSIDE the state rank without ever
+	// being able to violate it.
+	writeSortFixture := func() string {
+		report := compliance.BuildV1Report([]compliance.RepoEvidence{
+			{
+				Repo: compliance.NewRepoName("alpha-failing"), Runs: 10, Failures: 5,
+				LastRunAt: time.Now().Add(-2 * time.Hour), LastRunVerdict: compliance.VerdictFailed,
+				FindingSeverities: map[string]int{"error": 1},
+			},
+			{
+				Repo: compliance.NewRepoName("zeta-failing"), Runs: 10, Failures: 2,
+				LastRunAt: time.Now().Add(-2 * time.Hour), LastRunVerdict: compliance.VerdictFailed,
+				FindingSeverities: map[string]int{"error": 9},
+			},
+			{
+				Repo: compliance.NewRepoName("compliant-repo"), Runs: 5,
+				LastRunAt: time.Now().Add(-3 * time.Hour), LastRunVerdict: compliance.VerdictPassed,
+				FindingSeverities: map[string]int{"info": 12},
+			},
+		}, time.Now().Add(-7*24*time.Hour), compliance.DefaultStaleAfter, "test", time.Now())
+
+		encoded, err := compliance.MarshalV1(report)
+		Expect(err).NotTo(HaveOccurred())
+
+		path := filepath.Join(dir, "compliance-sort.json")
+		Expect(os.WriteFile(path, encoded, 0o644)).To(Succeed())
+
+		return path
+	}
+
+	renderCSV := func(extraArgs ...string) []string {
+		args := append([]string{"table", "--file", writeSortFixture(), "--format", "csv"}, extraArgs...)
+
+		Expect(cli.Run(context.Background(), args, &out, &errW)).To(Succeed())
+
+		rows := []string{}
+		for line := range strings.SplitSeq(strings.TrimPrefix(out.String(), "REPO,STATE,ERR,WARN,INFO,FINDINGS,RUNS,FAILS,RATE,VERDICT,LAST RUN\n"), "\n") {
+			if line != "" {
+				rows = append(rows, strings.SplitN(line, ",", 2)[0])
+			}
+		}
+
+		return rows
+	}
+
+	It("keeps the canonical worst-first order by default (failures desc inside the state rank)", func() {
+		rows := renderCSV()
+
+		Expect(rows).To(Equal([]string{"alpha-failing", "zeta-failing", "compliant-repo"}),
+			"canonical order: failures desc inside the state rank, state rank primary")
+	})
+
+	It("--sort-by findings retiebreaks by the FINDINGS cell inside the state rank", func() {
+		rows := renderCSV("--sort-by", "findings")
+
+		Expect(rows).To(Equal([]string{"zeta-failing", "alpha-failing", "compliant-repo"}),
+			"zeta has 9 findings vs alpha's 1; the compliant repo's 12 findings still rank last")
+	})
+
+	It("--sort-by name retiebreaks alphabetically inside the state rank", func() {
+		rows := renderCSV("--sort-by", "name")
+
+		Expect(rows).To(Equal([]string{"alpha-failing", "zeta-failing", "compliant-repo"}),
+			"alpha precedes zeta despite fewer failures; state rank still primary")
+	})
+
+	It("--sort-by keeps the styled and machine views in the same order", func() {
+		path := writeSortFixture()
+
+		Expect(cli.Run(context.Background(), []string{"table", "--file", path, "--sort-by", "findings"}, &out, &errW)).To(Succeed())
+
+		styled := out.String()
+		Expect(strings.Index(styled, "zeta-failing")).To(BeNumerically("<", strings.Index(styled, "alpha-failing")))
+	})
+
+	It("rejects an unsupported --sort-by at the flag boundary", func() {
+		err := cli.Run(context.Background(),
+			[]string{"table", "--file", writeSortFixture(), "--sort-by", "importance"}, &out, &errW)
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("allowed"))
+	})
 })
 
 // columnStarts returns the rune positions of the box-drawing column

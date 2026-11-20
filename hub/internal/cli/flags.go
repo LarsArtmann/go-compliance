@@ -34,12 +34,15 @@ type ServeFlags struct {
 }
 
 // TableFlags extends the query flags with the table command's output
-// format. The supported set is exactly the formats whose go-output
-// sub-modules table.go imports for self-registration.
+// format and the --sort-by tiebreak. The supported format set is exactly
+// the formats whose go-output sub-modules table.go imports for
+// self-registration; --sort-by mirrors the producer's flag semantics
+// (tiebreak INSIDE the state rank, state always sorts first).
 type TableFlags struct {
 	QueryFlags
 
 	Format string `default:"table" flag:"format" help:"Output format for the fleet table" values:"table,json,jsonl,yaml,toml,csv,tsv,markdown,html,xml,asciidoc"`
+	SortBy string `default:"failures" flag:"sort-by" help:"Tiebreak inside the state rank (state always sorts first): findings, failures, name" values:"findings,failures,name"`
 }
 
 // resolveSource builds the Source the flags select. The cache store is

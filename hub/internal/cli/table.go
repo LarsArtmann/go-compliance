@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sort"
 	"strconv"
 	"time"
 	"unicode/utf8"
@@ -59,8 +60,13 @@ func runTable(out, _ io.Writer) func(context.Context, *Config, TableFlags) error
 			return err
 		}
 
+		order, err := parseSortBy(flags.SortBy)
+		if err != nil {
+			return err
+		}
+
 		if format != output.FormatTable {
-			return renderTableData(out, format, evidence, since, staleAfter)
+			return renderTableData(out, format, evidence, since, staleAfter, order)
 		}
 
 		colors := newColorService(output.ColorModeAuto)
@@ -79,9 +85,11 @@ func runTable(out, _ io.Writer) func(context.Context, *Config, TableFlags) error
 
 		tbl := gotable.New(gotable.WithColorMode(colors.colorMode())).SetHeaders(tableHeaders...)
 
-		// Worst-first: the report builder's sort (state rank, then
-		// failures desc, then name) is the triage invariant.
+		// Worst-first base order: the report builder's sort (state rank,
+		// then failures desc, then name) is the triage invariant;
+		// --sort-by only re-tiebreaks INSIDE the state rank.
 		report := compliance.BuildV1Report(evidence, since, staleAfter, Version, time.Now())
+		sortReposBy(report.Repos, order, severityTotalsByRepo(evidence))
 
 		severitiesByRepo := make(map[string]map[string]int, len(evidence))
 		for _, record := range evidence {
@@ -109,6 +117,71 @@ func runTable(out, _ io.Writer) func(context.Context, *Config, TableFlags) error
 
 		return nil
 	}
+}
+
+// sortBy is a parsed table --sort-by value: the tiebreak INSIDE the
+// state rank, mirroring the producer's flag semantics (minus the
+// producer-only importance key, which the hub has no metadata for).
+type sortBy string
+
+const (
+	sortByFindings sortBy = "findings"
+	sortByFailures sortBy = "failures"
+	sortByName     sortBy = "name"
+)
+
+// parseSortBy validates a --sort-by value. cmdguard's values tag guards
+// the CLI; this guards embedders calling runTable directly.
+func parseSortBy(raw string) (sortBy, error) {
+	switch sortBy(raw) {
+	case sortByFindings, sortByFailures, sortByName:
+		return sortBy(raw), nil
+	default:
+		return "", compliance.NewValidationError(
+			"invalid --sort-by value %q (supported: findings, failures, name)", raw)
+	}
+}
+
+// sortReposBy re-orders the report rows for the table's --sort-by flag:
+// the STATE RANK STAYS PRIMARY (the triage invariant the producer
+// shares), the chosen key breaks ties inside a rank, and equal keys keep
+// BuildV1Report's canonical order (failures desc, then name) because the
+// sort is stable over already-canonicalized rows.
+func sortReposBy(repos []compliance.V1Repo, order sortBy, findingsByRepo map[string]int) {
+	sort.SliceStable(repos, func(i, j int) bool {
+		if rankI, rankJ := compliance.State(repos[i].State).Rank(), compliance.State(repos[j].State).Rank(); rankI != rankJ {
+			return rankI < rankJ
+		}
+
+		switch order {
+		case sortByFindings:
+			if fi, fj := findingsByRepo[repos[i].Repo], findingsByRepo[repos[j].Repo]; fi != fj {
+				return fi > fj
+			}
+		case sortByName:
+			return repos[i].Repo < repos[j].Repo
+		case sortByFailures:
+			// the canonical order already sorts failures desc, then name
+		}
+
+		return false
+	})
+}
+
+// severityTotalsByRepo maps every repo to its latest run's total finding
+// count — the FINDINGS cell's number — so the --sort-by findings tiebreak
+// sorts by the same value the table displays.
+func severityTotalsByRepo(evidence []compliance.RepoEvidence) map[string]int {
+	totals := make(map[string]int, len(evidence))
+	for _, record := range evidence {
+		total := 0
+		for _, n := range record.FindingSeverities {
+			total += n
+		}
+		totals[record.Repo.Get()] = total
+	}
+
+	return totals
 }
 
 // supportedTableFormats is the registry-backed set table.go can render:
@@ -157,9 +230,10 @@ func parseTableFormat(raw string) (output.Format, error) {
 // order as the styled view.
 func renderTableData(
 	out io.Writer, format output.Format, evidence []compliance.RepoEvidence,
-	since time.Time, staleAfter time.Duration,
+	since time.Time, staleAfter time.Duration, order sortBy,
 ) error {
 	report := compliance.BuildV1Report(evidence, since, staleAfter, Version, time.Now())
+	sortReposBy(report.Repos, order, severityTotalsByRepo(evidence))
 
 	severitiesByRepo := make(map[string]map[string]int, len(evidence))
 	for _, record := range evidence {
