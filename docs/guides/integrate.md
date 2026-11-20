@@ -74,6 +74,24 @@ compliance-hub table --source file --file compliance.json
 compliance-hub serve --source file --file compliance.json
 ```
 
+## Health checks (serve)
+
+`serve` exposes `/healthz` `/readyz` `/startupz` `/version` for systemd,
+Kubernetes, or a scraping dashboard, backed by five named checks:
+
+| Check               | Criticality | Meaning                                                        |
+| ------------------- | ----------- | -------------------------------------------------------------- |
+| `evidence`          | critical    | The readiness gate: 503 until the first evidence publish       |
+| `cache-disk`        | optional    | 128 MiB free-space floor; only present with `--db`             |
+| `refresh-freshness` | warn        | The re-derive loop stalled past 10 minutes (view may be stale) |
+| `discovery`         | warn        | The fleet daemon connection stalled past 10 minutes            |
+| `sse-backpressure`  | warn        | New dashboard patch drops (self-clearing, delta-based)         |
+
+A warn degrades `/readyz` to 200-with-warnings, never 503: a stale view is
+degraded truth, not service loss. Only a failed `evidence` check (or
+startup) gates readiness. If you scrape for fleet monitoring, key on the
+check names — they are contract-tested and stable for federation consumers.
+
 ## Rules of thumb
 
 - Record from ONE place in the runner (the end), not per step — unless you
