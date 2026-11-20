@@ -143,6 +143,12 @@ BuildFlow runs: the second run hits SQLITE_BUSY on every checkpoint write
   NEVER by polling an `httptest.ResponseRecorder` from another goroutine
   — the recorder is unsynchronized and `-race` flags it (fixed
   2026-11-18). A real request lifecycle is the only honest shape.
+- Wall-clock specs (backoff/TTL/debounce): keep the work INSIDE the
+  asserted window microsecond-scale (tiny documents, never fixture IO —
+  a 170KB fixture write inside FileSource's 50ms window flaked the
+  2026-11-20 BuildFlow test-race run) and sleep ≥2× the TTL for the
+  expiry side. Plant a CORRUPT document mid-window so a broken backoff
+  fails with ErrParse instead of silently passing.
 - Cross-package test helpers live in `hub/internal/testsupport`
   (external `_test` packages cannot share `_test.go` code);
   `testsupport.WaitForSubscriber(hub)` before publishing to a fresh SSE
