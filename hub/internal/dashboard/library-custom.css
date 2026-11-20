@@ -535,10 +535,8 @@ textarea:autofill {
  */
 @media (pointer: coarse) {
   input:where(
-    :not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
-        [type="hidden"]
-      )
-  ),
+      :not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"])
+    ),
   textarea {
     font-size: max(1rem, 1em);
   }
@@ -576,8 +574,10 @@ input[type="range"][data-tc-slider] {
   --tc-slider-dir: to left;
 }
 
-@supports (opacity: progress(1, 0, 100)) and
-  (opacity: attr(data-tc-value type(<number>), 1)) {
+@supports (opacity: progress(1, 0, 100)) and (opacity: attr(
+      data-tc-value type(<number>),
+      1
+    )) {
   input[type="range"][data-tc-slider] {
     --tc-slider-value: attr(value type(<number>), 0);
     --tc-slider-min: attr(min type(<number>), 0);
@@ -587,8 +587,7 @@ input[type="range"][data-tc-slider] {
           var(--tc-slider-value),
           var(--tc-slider-min),
           var(--tc-slider-max)
-        ) *
-        100%
+        ) * 100%
     );
   }
 
