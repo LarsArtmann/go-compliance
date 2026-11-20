@@ -197,6 +197,12 @@
           packages = {
             default = compliance-hub;
             inherit compliance-hub;
+            # Locked-nixpkgs tailwind for the css-freshness gate: the
+            # registry-resolved `nix shell nixpkgs#tailwindcss_4` moved its
+            # store build under the same 4.3.5 version and re-wrapped the
+            # compiled CSS (2026-11-20 red-tag incident); pinning the tool
+            # to this flake's lockfile makes regen byte-stable everywhere.
+            tailwindcss = pkgs.tailwindcss_4;
           };
 
           checks = {
