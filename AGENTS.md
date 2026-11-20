@@ -34,6 +34,13 @@ author commits manually, never push unless asked; expect "file modified
 since read" edit races (re-read and retry, or use asserted python
 replaces).
 
+The canonical gate is plain `buildflow` (auto-detected — this repo needs
+no `.buildflow.yml`); manual per-tool runs are drill-downs, never
+replacements (a manual-green sweep missed 79 findings + 2 failed steps in
+the 2026-11-18 BuildFlow full run). Never overlap concurrent full
+BuildFlow runs: the second run hits SQLITE_BUSY on every checkpoint write
+(lost timings, unusable `--resume`).
+
 ## Module Rules
 
 - **Core keeps zero private deps.** Hub's only private dep is go-daemon
