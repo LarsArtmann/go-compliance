@@ -66,6 +66,20 @@ nix develop -c bash -c 'cd hub && GOWORK=off go run ./cmd/compliance-hub \
   serve --source file --file compliance.json'
 ```
 
+### Fleet table
+
+`compliance-hub table` renders the triage view: worst-first by state rank,
+then failures. BuildFlow muscle memory carries over:
+
+```bash
+compliance-hub table --source cache --db hub.db --sort-by findings
+```
+
+`--sort-by` retiebreaks INSIDE the state rank exactly like the producer's
+flag (`findings`, `failures` (default), `name`; the producer's `importance`
+key is producer-metadata-only). `--format` renders the same columns as
+JSON, JSONL, YAML, TOML, CSV, TSV, markdown, HTML, XML, and AsciiDoc.
+
 ### Health surface (packaged service)
 
 `serve` exposes the standard probe routes for systemd, Kubernetes, or a

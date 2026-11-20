@@ -232,8 +232,12 @@ var _ = Describe("fleet table", func() {
 		Expect(cli.Run(context.Background(), args, &out, &errW)).To(Succeed())
 
 		rows := []string{}
-		for line := range strings.SplitSeq(strings.TrimPrefix(out.String(), "REPO,STATE,ERR,WARN,INFO,FINDINGS,RUNS,FAILS,RATE,VERDICT,LAST RUN\n"), "\n") {
-			if line != "" {
+
+		// Skip the header line by position — its column identity is
+		// already pinned by the --format csv spec above (no second copy
+		// of the header string here).
+		for i, line := range strings.Split(strings.TrimSpace(out.String()), "\n") {
+			if i > 0 && line != "" {
 				rows = append(rows, strings.SplitN(line, ",", 2)[0])
 			}
 		}
@@ -265,7 +269,9 @@ var _ = Describe("fleet table", func() {
 	It("--sort-by keeps the styled and machine views in the same order", func() {
 		path := writeSortFixture()
 
-		Expect(cli.Run(context.Background(), []string{"table", "--file", path, "--sort-by", "findings"}, &out, &errW)).To(Succeed())
+		Expect(
+			cli.Run(context.Background(), []string{"table", "--file", path, "--sort-by", "findings"}, &out, &errW),
+		).To(Succeed())
 
 		styled := out.String()
 		Expect(strings.Index(styled, "zeta-failing")).To(BeNumerically("<", strings.Index(styled, "alpha-failing")))

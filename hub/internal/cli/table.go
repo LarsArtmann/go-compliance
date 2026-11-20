@@ -149,7 +149,10 @@ func parseSortBy(raw string) (sortBy, error) {
 // sort is stable over already-canonicalized rows.
 func sortReposBy(repos []compliance.V1Repo, order sortBy, findingsByRepo map[string]int) {
 	sort.SliceStable(repos, func(i, j int) bool {
-		if rankI, rankJ := compliance.State(repos[i].State).Rank(), compliance.State(repos[j].State).Rank(); rankI != rankJ {
+		if rankI, rankJ := compliance.State(repos[i].State).
+			Rank(),
+			compliance.State(repos[j].State).
+				Rank(); rankI != rankJ {
 			return rankI < rankJ
 		}
 
@@ -180,6 +183,7 @@ func findingTotalsByRepo(evidence []compliance.RepoEvidence) map[string]int {
 		for _, n := range record.GateFindings {
 			total += n
 		}
+
 		totals[record.Repo.Get()] = total
 	}
 

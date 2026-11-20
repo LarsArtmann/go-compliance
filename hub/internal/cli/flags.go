@@ -41,7 +41,7 @@ type ServeFlags struct {
 type TableFlags struct {
 	QueryFlags
 
-	Format string `default:"table" flag:"format" help:"Output format for the fleet table" values:"table,json,jsonl,yaml,toml,csv,tsv,markdown,html,xml,asciidoc"`
+	Format string `default:"table"    flag:"format"  help:"Output format for the fleet table"                                                   values:"table,json,jsonl,yaml,toml,csv,tsv,markdown,html,xml,asciidoc"`
 	SortBy string `default:"failures" flag:"sort-by" help:"Tiebreak inside the state rank (state always sorts first): findings, failures, name" values:"findings,failures,name"`
 }
 
