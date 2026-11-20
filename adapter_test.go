@@ -90,21 +90,23 @@ var _ = Describe("FileSource", func() {
 
 	It("backs off repeated reads of a missing file", func() {
 		path := filepath.Join(dir, "absent.json")
-		source := compliance.NewFileSource(path).WithMissingBackoff(50 * time.Millisecond)
+		source := compliance.NewFileSource(path).WithMissingBackoff(100 * time.Millisecond)
 
 		_, err := source.QueryEvidence(context.Background(), time.Time{}, 0, "")
 		Expect(err).To(MatchError(compliance.ErrIO))
 
-		By("creating the file inside the backoff window")
+		By("planting a corrupt document inside the backoff window")
+		Expect(os.WriteFile(path, []byte("{nope"), 0o644)).To(Succeed())
+
+		_, err = source.QueryEvidence(context.Background(), time.Time{}, 0, "")
+		Expect(err).To(MatchError(compliance.ErrIO),
+			"the cached miss must still be served (a parse error would prove the disk was consulted)")
+
+		By("consulting the file again once the TTL expires")
+		time.Sleep(200 * time.Millisecond)
 
 		data, report := loadGoldenFixture()
 		Expect(os.WriteFile(path, data, 0o644)).To(Succeed())
-
-		_, err = source.QueryEvidence(context.Background(), time.Time{}, 0, "")
-		Expect(err).To(MatchError(compliance.ErrIO), "the cached miss must still be served")
-
-		By("retrying after the TTL expires")
-		time.Sleep(60 * time.Millisecond)
 
 		evidence, err := source.QueryEvidence(context.Background(), time.Time{}, 0, "")
 		Expect(err).NotTo(HaveOccurred())
