@@ -95,10 +95,10 @@ func buildHealthProbe(
 				return ErrRefreshNeverSucceeded
 			}
 
-			if age := time.Since(last); age > refreshFreshnessWarn {
-				return fmt.Errorf("%w: %s ago (warn threshold %s)",
-					ErrRefreshStale, age.Round(time.Second), refreshFreshnessWarn)
-			}
+		if time.Since(last) > refreshFreshnessWarn {
+			return fmt.Errorf("%w: last success %s (warn threshold %s)",
+				ErrRefreshStale, humanize.Time(last), refreshFreshnessWarn)
+		}
 
 			return nil
 		},
@@ -108,10 +108,10 @@ func buildHealthProbe(
 				return ErrDiscoveryNeverContacted
 			}
 
-			if age := time.Since(last); age > discoveryStaleWarn {
-				return fmt.Errorf("%w: %s ago (warn threshold %s)",
-					ErrDiscoverySilent, age.Round(time.Second), discoveryStaleWarn)
-			}
+		if time.Since(last) > discoveryStaleWarn {
+			return fmt.Errorf("%w: last contact %s (warn threshold %s)",
+				ErrDiscoverySilent, humanize.Time(last), discoveryStaleWarn)
+		}
 
 			return nil
 		},
