@@ -34,8 +34,9 @@ author commits manually, never push unless asked; expect "file modified
 since read" edit races (re-read and retry, or use asserted python
 replaces).
 
-The canonical gate is plain `buildflow` (auto-detected — this repo needs
-no `.buildflow.yml`); manual per-tool runs are drill-downs, never
+The canonical gate is plain `buildflow` (`.buildflow.yml` exists solely to
+opt into brandid-lint BD003 via `tool_options` — everything else is
+auto-detected); manual per-tool runs are drill-downs, never
 replacements (a manual-green sweep missed 79 findings + 2 failed steps in
 the 2026-11-18 BuildFlow full run). Never overlap concurrent full
 BuildFlow runs: the second run hits SQLITE_BUSY on every checkpoint write
@@ -43,6 +44,15 @@ BuildFlow runs: the second run hits SQLITE_BUSY on every checkpoint write
 
 ## Module Rules
 
+- **Branded IDs (brandid-lint BD003, adopted 2026-11-20)**: identifier-typed
+  fields/params use strong types — `RepoName`/`SourceName` (core) and
+  `sse.EventID` for `events.Published.ID` / `Publish*` returns (branded in
+  go-sse; construct via `sse.NewEventID`, unwrap with `.Get()` for display).
+  ssetest records the wire `id:` as a plain string, so SSE-ID test
+  expectations compare strings. Deliberate primitive-ID boundaries carry a
+  reasoned `//brandid-lint:ignore(BD003)` directive. Gate runs via BuildFlow
+  (`tool_options` in `.buildflow.yml`) and the CI `branded-ID gate` job
+  (pinned `linter/v0.5.1` — bump manually on new linter tags).
 - **Core keeps zero private deps.** Hub's only private dep is go-daemon
   (sd_notify), wired through `_local_deps` + the flake's `postPatchExtra`
   replace. New private deps need a STACK.md decision-log entry.
