@@ -80,7 +80,8 @@ BuildFlow runs: the second run hits SQLITE_BUSY on every checkpoint write
   the explicit `BaseProps: utils.BaseProps{...}` form.
 - **dashboard CSS**: compiled Tailwind artifact, NOT the Play CDN. After
   touching any dashboard `.templ`, adopting a templ-components component,
-  or bumping the pin: `scripts/regen-ui.sh` (locked `nix shell\n  .#tailwindcss`;
+  or bumping the pin: `scripts/regen-ui.sh` (locked tailwind:
+  `nix shell .#tailwindcss`;
   rebuilds `library-classes.txt` from go.mod truth + compiles
   `app.min.css`) and commit the three artifacts together — the CI
   `css-freshness` gate regenerates and diffs byte-fresh. New routes: serve
