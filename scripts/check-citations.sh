@@ -50,6 +50,17 @@ fi
 
 CITE_RE='[A-Za-z0-9_][A-Za-z0-9_./-]*\.(go|templ|md|yml|yaml|json|nix|sh|sql|css|ts|js):[0-9]+(-[0-9]+)?'
 
+# Citation extractor: ripgrep preferred, grep -ERE fallback — the gate
+# must survive runner-image drift. The regex is ERE-compatible by design
+# and both tools emit -o matches identically for it.
+extract_cites() { # $1=regex $2=file -> matches on stdout
+  if command -v rg >/dev/null 2>&1; then
+    rg -o "$1" "$2"
+  else
+    grep -oE "$1" "$2"
+  fi
+}
+
 declare -A BY_BASENAME
 while IFS= read -r f; do
   b="${f##*/}"
@@ -112,7 +123,7 @@ for doc in "${targets[@]}"; do
   [ -f "$doc" ] || { echo "no such report: $doc" >&2; exit 2; }
   while IFS= read -r cite; do
     [ -n "$cite" ] && check_one "$doc" "$cite"
-  done < <(rg -o "$CITE_RE" "$doc" | sort -u)
+  done < <(extract_cites "$CITE_RE" "$doc" | sort -u)
 done
 
 echo "--"

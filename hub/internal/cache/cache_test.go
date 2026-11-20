@@ -2,16 +2,68 @@ package cache_test
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"time"
 
+	errorfamily "github.com/larsartmann/go-error-family"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/cache"
 )
+
+var _ = Describe("SQL seam error paths", func() {
+	var store *cache.Store
+
+	BeforeEach(func() {
+		dbDir := mustTempDir()
+
+		DeferCleanup(func() { _ = os.RemoveAll(dbDir) })
+
+		var err error
+
+		store, err = cache.Open(context.Background(), filepath.Join(dbDir, "cache.db"))
+		Expect(err).NotTo(HaveOccurred())
+		DeferCleanup(func() { _ = store.Close() })
+	})
+
+	It("family-types a dead-store query as IO with the query context in the message", func() {
+		ctx := context.Background()
+
+		Expect(store.Close()).To(Succeed())
+
+		evidence, err := store.QueryEvidence(ctx, time.Now().Add(-time.Hour), 0, "")
+		Expect(err).To(HaveOccurred())
+		Expect(errors.Is(err, compliance.ErrIO)).To(BeTrue(), "the queryRows wrap home must keep the IO sentinel")
+		Expect(errorfamily.Classify(err)).To(Equal(errorfamily.Transient), "IO maps to the retryable family (exit 75)")
+		Expect(err.Error()).To(ContainSubstring("query window health"), "the what context must survive the wrap")
+		Expect(err.Error()).To(ContainSubstring("closed"), "the driver cause must survive the wrap")
+		Expect(evidence).To(BeNil())
+	})
+
+	It("family-types a dead-store write as IO with the repo in the message", func() {
+		ctx := context.Background()
+
+		Expect(store.Close()).To(Succeed())
+
+		err := store.WriteEvidence(ctx, compliance.NewRepoName("late-repo"), compliance.RunResult{
+			Verdict: compliance.VerdictPassed,
+		})
+		Expect(err).To(HaveOccurred())
+		Expect(errors.Is(err, compliance.ErrIO)).To(BeTrue())
+		Expect(errorfamily.Classify(err)).To(Equal(errorfamily.Transient))
+		Expect(err.Error()).To(ContainSubstring("late-repo"))
+	})
+
+	It("keeps the empty-fleet contract: a fresh cache queries to zero evidence, no error", func() {
+		evidence, err := store.QueryEvidence(context.Background(), time.Now().Add(-time.Hour), 0, "")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(evidence).To(BeEmpty(), "an empty store is an empty fleet, not a failure")
+	})
+})
 
 var _ = Describe("evidence cache", func() {
 	var store *cache.Store
