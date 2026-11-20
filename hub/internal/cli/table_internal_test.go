@@ -69,7 +69,7 @@ var _ = Describe("table cell helpers", func() {
 		Entry("findings", "findings", false),
 		Entry("failures", "failures", false),
 		Entry("name", "name", false),
-		Entry("empty means the flag default", "", false),
+		Entry("empty rejected (the flag default substitutes failures)", "", true),
 		Entry("importance is producer-only", "importance", true),
 		Entry("garbage rejected", "bogus", true),
 	)

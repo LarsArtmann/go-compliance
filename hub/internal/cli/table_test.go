@@ -192,23 +192,28 @@ var _ = Describe("fleet table", func() {
 	// Two failing repos whose canonical order (failures desc) contradicts
 	// both the name and the findings order, plus a compliant repo: the
 	// sort-key tests can retiebreak INSIDE the state rank without ever
-	// being able to violate it.
+	// being able to violate it. GateFindings (not severities) drive the
+	// findings tiebreak because the v1 wire contract cannot carry
+	// severities — file-sourced evidence round-trips gates only.
 	writeSortFixture := func() string {
 		report := compliance.BuildV1Report([]compliance.RepoEvidence{
 			{
 				Repo: compliance.NewRepoName("alpha-failing"), Runs: 10, Failures: 5,
 				LastRunAt: time.Now().Add(-2 * time.Hour), LastRunVerdict: compliance.VerdictFailed,
 				FindingSeverities: map[string]int{"error": 1},
+				GateFindings:      map[string]int{"lint": 1},
 			},
 			{
 				Repo: compliance.NewRepoName("zeta-failing"), Runs: 10, Failures: 2,
 				LastRunAt: time.Now().Add(-2 * time.Hour), LastRunVerdict: compliance.VerdictFailed,
 				FindingSeverities: map[string]int{"error": 9},
+				GateFindings:      map[string]int{"lint": 9},
 			},
 			{
 				Repo: compliance.NewRepoName("compliant-repo"), Runs: 5,
 				LastRunAt: time.Now().Add(-3 * time.Hour), LastRunVerdict: compliance.VerdictPassed,
 				FindingSeverities: map[string]int{"info": 12},
+				GateFindings:      map[string]int{"fmt": 12},
 			},
 		}, time.Now().Add(-7*24*time.Hour), compliance.DefaultStaleAfter, "test", time.Now())
 

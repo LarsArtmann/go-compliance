@@ -89,7 +89,7 @@ func runTable(out, _ io.Writer) func(context.Context, *Config, TableFlags) error
 		// then failures desc, then name) is the triage invariant;
 		// --sort-by only re-tiebreaks INSIDE the state rank.
 		report := compliance.BuildV1Report(evidence, since, staleAfter, Version, time.Now())
-		sortReposBy(report.Repos, order, severityTotalsByRepo(evidence))
+		sortReposBy(report.Repos, order, findingTotalsByRepo(evidence))
 
 		severitiesByRepo := make(map[string]map[string]int, len(evidence))
 		for _, record := range evidence {
@@ -168,14 +168,16 @@ func sortReposBy(repos []compliance.V1Repo, order sortBy, findingsByRepo map[str
 	})
 }
 
-// severityTotalsByRepo maps every repo to its latest run's total finding
-// count — the FINDINGS cell's number — so the --sort-by findings tiebreak
-// sorts by the same value the table displays.
-func severityTotalsByRepo(evidence []compliance.RepoEvidence) map[string]int {
+// findingTotalsByRepo maps every repo to its latest run's total finding
+// count so the --sort-by findings tiebreak sorts by the run's finding
+// count. The gate findings are the wire-portable rollup (the v1 contract
+// cannot carry severities, so file-sourced evidence has none); the cache
+// and buildflow sources carry the same totals in both shapes.
+func findingTotalsByRepo(evidence []compliance.RepoEvidence) map[string]int {
 	totals := make(map[string]int, len(evidence))
 	for _, record := range evidence {
 		total := 0
-		for _, n := range record.FindingSeverities {
+		for _, n := range record.GateFindings {
 			total += n
 		}
 		totals[record.Repo.Get()] = total
@@ -233,7 +235,7 @@ func renderTableData(
 	since time.Time, staleAfter time.Duration, order sortBy,
 ) error {
 	report := compliance.BuildV1Report(evidence, since, staleAfter, Version, time.Now())
-	sortReposBy(report.Repos, order, severityTotalsByRepo(evidence))
+	sortReposBy(report.Repos, order, findingTotalsByRepo(evidence))
 
 	severitiesByRepo := make(map[string]map[string]int, len(evidence))
 	for _, record := range evidence {
