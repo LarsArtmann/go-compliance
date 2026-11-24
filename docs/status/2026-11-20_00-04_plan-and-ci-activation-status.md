@@ -174,7 +174,7 @@ not duplicated. New items beyond the plan are marked ★._
 6. T7: embedder-docs five-checks sweep (7.1–7.3).
 7. T8: corpus drain — strike the done-subset of 23-09/23-40/00-53, owner
    digest, archive two (8.1–8.5).
-8. T9: docs-gates pin-vs-skill verdict (9.1–9.3).
+~~8. T9: docs-gates pin-vs-skill verdict (9.1–9.3).~~ done — 2026-11-20: T9 verdict recorded in AGENTS.md (fleet pin e305834 lacks ONLY the rows verb; its freshness surface is complete; writer aliases cover the row gates) + TODO_LIST carries the BLOCKED bump row
 9. T10: cmdguard next-tag readiness + upstream drafts (10.1–10.3).
 10. **→ 21-25 plan T11** — TODO/ROADMAP reconcile + FULL battery (11.1–11.4), executed with the wave that precedes it.
 11. ★ Re-run the FULL CI matrix once more after T2–T11 land (the run history

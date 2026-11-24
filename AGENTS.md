@@ -25,6 +25,7 @@ nix build .#compliance-hub                     # the server binary
 nix develop -c bash -c 'cd hub && GOWORK=off go build ./...'   # devShell hub build (the CI parity path)
 compliance-hub report --db /nonexistent/x.db 2>/dev/null; echo $?   # exit-code contract probe: expect 75 (transient IO); always redirect stderr + echo $? when probing exit codes; NEVER read $? after a pipe — the pipe's last command masks the real exit (3 strikes 2026-11-20: citation gate, brandid gate, CI watch all misread green)
 cd hub && go tool templ generate ./internal/dashboard/   # after ANY .templ edit; MUST run from hub/ (tool directive lives in hub/go.mod) — from the root it silently rewrites the embedded templ.Error FileName paths (hub/ prefix churn) instead of failing
+scripts/pre-release-check.sh vX.Y.Z   # release pre-flight (clean tree, CHANGELOG, notes file, BOTH remotes pushed, tag fresh, canonical buildflow, flake check, docs-gates — true exits); --verify re-checks post-release; sequence: docs/notes/release-runbook.md (script needs #!/usr/bin/env bash — /bin/bash does not exist on NixOS)
 ```
 
 Run `go test` invocations SEQUENTIALLY on this machine (shared

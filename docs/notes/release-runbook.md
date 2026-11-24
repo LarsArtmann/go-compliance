@@ -13,6 +13,8 @@ step, distilled from the v0.2.0 run (2026-11-20) and the v0.1.0 tag-only gap.
   not cut). It ships as the `compliance-hub` binary via the flake
   (`nix run .#compliance-hub`). STACK.md records the decision — do not
   re-litigate it in a release run.
+- **Tags are cut only when a code change justifies them** — no cosmetic
+  releases for release-page optics.
 
 ## Pre-tag sequence (in order, every step with a TRUE exit code)
 

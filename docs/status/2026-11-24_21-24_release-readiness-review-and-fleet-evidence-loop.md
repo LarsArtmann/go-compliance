@@ -120,7 +120,11 @@ tree at probe time).
 
 8. Add the evidence-record step to a systemd timer or BuildFlow post-step so the dashboard stays live without manual runs
 9. Consider `--discovery-file` wiring so never-covered repos appear in the fleet evidence (the discovery daemon client is built; the library-policy side can emit the inventory)
-10. Tag `v0.2.1` only when a code change justifies it — no cosmetic release for optics
+
+Policy note (not a task item): tags are cut only when a code change justifies
+them — no cosmetic releases for release-page optics; the pre-release script
+plus the tag-triggered CI make each future tag mechanical and honestly
+verified.
 
 **Docs:**
 
