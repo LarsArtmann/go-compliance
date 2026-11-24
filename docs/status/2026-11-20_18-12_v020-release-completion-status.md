@@ -120,7 +120,7 @@
 27. Tag-watch: go-daemon / go-filewatcher / go-branded-id new tags → executed-addenda to lib reports
 28. `library-classes.txt` @source inventory: confirm the scanner skips the module cache's `datastar` JS (belt-and-braces after the pin)
 29. Consider caching the tailwind store path in CI (`nix build .#tailwindcss` warm) — css job took 26-35s each run
-30. Retire `/tmp/test-core` scratch dirs (consumer-verify leftovers)
+~~30. Retire `/tmp/test-core` scratch dirs (consumer-verify leftovers)~~ done — resolved 2026-11-24: /tmp/test-core does not exist anymore (tmp cleanup retired the consumer-verify leftovers; nothing to delete)
 
 **Docs/docs-health:**
 31. Annotate the 12-06 release-run status report with its post-run resolutions (done-at verdicts; §f1-13 now history)

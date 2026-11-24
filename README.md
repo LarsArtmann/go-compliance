@@ -4,14 +4,42 @@ Fleet compliance evidence for every LarsArtmann project: one state model
 (`compliant` / `failing` / `stale` / `never-covered`), one frozen wire
 contract, a realtime WebUI, and adapters instead of per-project plumbing.
 
-> **Status: built, pre-release.** Core module and hub are built and tested: state
-> model, evidence fold, frozen v1 contract, reporter SDK, the hub service
-> with realtime WebUI, SQLite cache, and discovery adapter. See
-> [FEATURES.md](FEATURES.md) and [STACK.md](STACK.md).
+> **Status: released (v0.2.0, 2026-11-20).** The core module is on the module
+> proxy (`go get github.com/larsartmann/go-compliance@v0.2.0`); state model,
+> evidence fold, frozen v1 contract, reporter SDK, and the hub service with
+> realtime WebUI, SQLite cache, and discovery adapter are all built and
+> tested. The hub module is deliberately NOT go-get-able: it ships as the
+> `compliance-hub` binary via this repo's flake (no `hub/vX.Y.Z` tags by
+> decision). See [FEATURES.md](FEATURES.md) and [STACK.md](STACK.md).
 
 ![Fleet compliance table](docs/assets/terminal-table.svg)
 
 ![Realtime fleet dashboard](docs/assets/dashboard.png)
+
+## Install
+
+Consume the core module (reporter SDK, evidence contract, fold) as any Go
+dependency:
+
+```bash
+go get github.com/larsartmann/go-compliance@v0.2.0
+```
+
+One-liner integration in your code (`docs/guides/integrate.md` has the
+full walkthrough):
+
+```go
+import compliance "github.com/larsartmann/go-compliance"
+
+compliance.Record(compliance.WithFileWriter("/var/lib/overview/compliance.json"))
+```
+
+The `compliance-hub` binary is not `go install`-able (the hub module is
+untagged by design); run it from a checkout of this repo:
+
+```bash
+nix run .#compliance-hub -- serve --source file --file compliance.json
+```
 
 ## Architecture
 
@@ -118,7 +146,9 @@ Verify live: `compliance-hub report --db /nonexistent/x.db; echo $?` → `75`.
 build+test and lint (golangci-lint pinned to the devShell version), dprint,
 actionlint, stack-drift-check, docs-gates, `nix flake check`, the art-dupl
 clone gate, a templ fmt gate, the report citation gate, a cmdguard usage
-gate, and the dashboard CSS freshness gate.
+gate, the branded-ID gate (BD003 via pinned `linter/v0.5.1`), and the
+dashboard CSS freshness gate. Tag pushes (`v*`) re-run the same matrix on
+the frozen tag.
 
 The hub module and the flake build need one private dependency
 (`github.com/LarsArtmann/go-daemon`). CI reads it via a repository secret:
