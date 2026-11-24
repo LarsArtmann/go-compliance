@@ -52,27 +52,27 @@ tree at probe time).
 
 ## a) FULLY DONE
 
-| #  | Item                                      | Evidence                                                                                                                                          |
-| -- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1  | CSS freshness gate repaired at the source | pinned-tool regen committed (app.min.css −6576 lines, library-custom.css reflow); double-regen byte-stable; CI's pinned-rev path proven identical in the v0.2.0 run |
-| 2  | docs audit-all unharvested item cleared   | §f30 `/tmp/test-core` verified GONE (tmp cleanup), annotated resolved in the 18-12 report via annotate writer; `--audit-all` replay: 0 unharvested |
-| 3  | README release posture                    | status line "released (v0.2.0, 2026-11-20)" replaces "built, pre-release"; Install section (`go get @v0.2.0` + `compliance.Record` one-liner + hub nix-run posture); CI list names the branded-ID gate |
-| 4  | FEATURES CI row truth                     | 14-job matrix with real green executions recorded; tag-push re-run noted                                                                          |
-| 5  | Tag-triggered CI                          | `on.push.tags: ['v*']` added — the next tag gets its own CI verdict (the v0.2.0 tag never got one)                                                |
+| #  | Item                                      | Evidence                                                                                                                                                                                                                                                 |
+| -- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | CSS freshness gate repaired at the source | pinned-tool regen committed (app.min.css −6576 lines, library-custom.css reflow); double-regen byte-stable; CI's pinned-rev path proven identical in the v0.2.0 run                                                                                      |
+| 2  | docs audit-all unharvested item cleared   | §f30 `/tmp/test-core` verified GONE (tmp cleanup), annotated resolved in the 18-12 report via annotate writer; `--audit-all` replay: 0 unharvested                                                                                                       |
+| 3  | README release posture                    | status line "released (v0.2.0, 2026-11-20)" replaces "built, pre-release"; Install section (`go get @v0.2.0` + `compliance.Record` one-liner + hub nix-run posture); CI list names the branded-ID gate                                                   |
+| 4  | FEATURES CI row truth                     | 14-job matrix with real green executions recorded; tag-push re-run noted                                                                                                                                                                                 |
+| 5  | Tag-triggered CI                          | `on.push.tags: ['v*']` added — the next tag gets its own CI verdict (the v0.2.0 tag never got one)                                                                                                                                                       |
 | 6  | `scripts/pre-release-check.sh`            | pre-flight (clean tree, CHANGELOG, notes file, master pushed to BOTH remotes, tag freshness, plain-`buildflow`, flake check, docs-gates) + `--verify` (remotes@tag, proxy, GitHub release, clean-dir go get); shellcheck clean; smoke-tested honest-fail |
-| 7  | Release runbook                           | `docs/notes/release-runbook.md` — release shape, pre-tag order with the WHY, post-tag verify, sharp edges (vendorHash, css pin, tag CI)           |
-| 8  | Retro v0.1.0 GitHub release               | created from `docs/notes/v0.1.0-release-notes.md`, `--prerelease --latest=false`; releases page no longer a hole                                  |
-| 9  | Exit-code contract re-proven              | `report --db /nonexistent/x.db` → rc=75 on the current binary                                                                                     |
-| 10 | Consumer resolve verified                 | clean-dir `go get @v0.2.0` rc=0 (proxy checksums, no GONOSUMDB); TODO_LIST High row DONE                                                          |
-| 11 | Full battery green                        | buildflow rc=0; flake check rc=0; core + hub `-race` rc=0                                                                                          |
-| 12 | Q1 fleet evidence loop                    | library-policy `fleet --record` → 204 repos → `~/.local/state/overview/compliance.json` → hub `report --source file` rc=0; 47 compliant / 157 failing |
+| 7  | Release runbook                           | `docs/notes/release-runbook.md` — release shape, pre-tag order with the WHY, post-tag verify, sharp edges (vendorHash, css pin, tag CI)                                                                                                                  |
+| 8  | Retro v0.1.0 GitHub release               | created from `docs/notes/v0.1.0-release-notes.md`, `--prerelease --latest=false`; releases page no longer a hole                                                                                                                                         |
+| 9  | Exit-code contract re-proven              | `report --db /nonexistent/x.db` → rc=75 on the current binary                                                                                                                                                                                            |
+| 10 | Consumer resolve verified                 | clean-dir `go get @v0.2.0` rc=0 (proxy checksums, no GONOSUMDB); TODO_LIST High row DONE                                                                                                                                                                 |
+| 11 | Full battery green                        | buildflow rc=0; flake check rc=0; core + hub `-race` rc=0                                                                                                                                                                                                |
+| 12 | Q1 fleet evidence loop                    | library-policy `fleet --record` → 204 repos → `~/.local/state/overview/compliance.json` → hub `report --source file` rc=0; 47 compliant / 157 failing                                                                                                    |
 
 ## b) PARTIALLY DONE
 
-| # | Item                        | State                                                                                              |
-| - | --------------------------- | -------------------------------------------------------------------------------------------------- |
-| 1 | CI green on master          | all local gates green, but the two red CI runs (45089054502, 45030411650) predate these fixes; the next push must show 14/14 before any "green" claim is owner-visible |
-| 2 | TODO_LIST harvest of §c     | 3 rows ticked (go get, README snippets, install section); the remaining §c items (FLAKE_PAT, benchmark re-record, Forgejo mirror, consumer propagation) stay as rows |
+| # | Item                    | State                                                                                                                                                                  |
+| - | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | CI green on master      | all local gates green, but the two red CI runs (45089054502, 45030411650) predate these fixes; the next push must show 14/14 before any "green" claim is owner-visible |
+| 2 | TODO_LIST harvest of §c | 3 rows ticked (go get, README snippets, install section); the remaining §c items (FLAKE_PAT, benchmark re-record, Forgejo mirror, consumer propagation) stay as rows   |
 
 ## c) NOT STARTED
 
