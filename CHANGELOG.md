@@ -8,10 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Nothing yet.
+- Release posture (2026-11-24): `scripts/pre-release-check.sh` (pre-flight: clean tree, CHANGELOG section, notes file, master pushed to BOTH remotes, tag freshness, the canonical plain-`buildflow` gate, `nix flake check`, `docs-gates run .` — every gate with a true exit code; `--verify` mode: both remotes at the tagged commit, proxy `@v/list`, GitHub release, clean-dir `go get`) plus `docs/notes/release-runbook.md` distilling the v0.2.0 sequence; CI re-runs the full matrix on `v*` tag pushes so a tag's own CI verdict exists (the v0.2.0 tag froze a red run).
+- Retroactive v0.1.0 GitHub release page (`docs/notes/v0.1.0-release-notes.md`; the tag shipped notes-less on 2026-11-19).
+- README Install section: `go get github.com/larsartmann/go-compliance@v0.2.0`, the `compliance.Record` one-liner, and the hub's run-from-checkout posture (the hub module is deliberately not go-get-able — decision documented in-runbook and STACK.md).
 
 ### Changed
 
+- README status line now says released (v0.2.0, 2026-11-20) instead of "built, pre-release"; CI gate list includes the branded-ID gate (14 jobs); FEATURES CI row records real green runner executions.
+- Dashboard CSS artifacts regenerated with the pinned locked toolchain (`scripts/regen-ui.sh` via `nix shell .#tailwindcss`) — the committed artifacts had drifted back to an old-wrapped output (the css ping-pong); byte-stability re-proven with a double regen.
+- TODO_LIST: the clean-dir `go get @v0.2.0` row and the README install/snippet rows are DONE (verified 2026-11-24: rc=0 with branded-id 0.7.1 + error-family 0.12.0; exit-code probe re-run on the current binary → 75).
 - Hub consumes core like a consumer (2026-11-20, post-v0.2.0): the `replace go-compliance => ../` directory replace is dropped — `require v0.2.0` now resolves from the module proxy, go.sum carries its checksums, and the flake's `_core_only` postPatchExtra workaround is retired (vendorHash re-bootstrapped, `nix flake check` all-green).
 
 ### Deprecated
