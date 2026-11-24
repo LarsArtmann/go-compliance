@@ -25,7 +25,7 @@ templ FleetRow(row events.RepoRow) {
 	<tr data-repo={ row.Repo } data-show={ fmt.Sprintf("$stateFilter==='all' || $stateFilter==='%s'", row.State) }>
 		<td class="font-medium">{ row.Repo }</td>
 		<td>@StateBadge(row.State)</td>
-		<td>@severityCells(row.Severities)</td>
+		<td>@findingsCell(row)</td>
 		<td>
 			// RelativeTime defaults to AutoRefresh false here ON PURPOSE: the
 			// component couples that flag to emitting a per-instance <script>,
@@ -77,14 +77,26 @@ templ StateBadge(state compliance.State) {
 	})
 }
 
-// severityCells renders the latest run's severity counts inline: errors
-// red, warnings amber, the rest muted. Absent severities stay absent; the
-// order is canonical (ERR, WARN, INFO, then unknowns) so renders are
-// deterministic.
-templ severityCells(severities map[string]int) {
-	if len(severities) == 0 {
+// findingsCell renders what a row was flagged for. The severity breakdown
+// wins when the source carries one (the hub cache); file-backed evidence
+// arrives without it, because the frozen v1 wire has no severity field, and
+// falls back to the gate-findings count. A failing row must never read as
+// "no findings".
+templ findingsCell(row events.RepoRow) {
+	if len(row.Severities) > 0 {
+		@severityCells(row.Severities)
+	} else if row.Findings > 0 {
+		<span class="font-mono text-xs text-gray-600 dark:text-gray-300">{ findingsLabel(row.Findings) }</span>
+	} else {
 		<span class="text-gray-400">—</span>
 	}
+}
+
+// severityCells renders the latest run's severity counts inline: errors
+// red, warnings amber, the rest muted. The order is canonical (ERR, WARN,
+// INFO, then unknowns) so renders are deterministic; callers handle the
+// empty case.
+templ severityCells(severities map[string]int) {
 	for _, severity := range sortedSeverities(severities) {
 		{{ count := severities[severity] }}
 		{{ tone := severityTone(severity) }}

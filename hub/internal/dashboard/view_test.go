@@ -106,4 +106,44 @@ var _ = Describe("fleet page render", func() {
 		Expect(len(row)).To(BeNumerically("<", 2048),
 			"per-row patch budget breached: %d bytes; row: %s", len(row), row)
 	})
+
+	Describe("the findings cell", func() {
+		renderRow := func(row events.RepoRow) string {
+			GinkgoHelper()
+
+			var rendered bytes.Buffer
+			Expect(dashboard.FleetRow(row).Render(context.Background(), &rendered)).To(Succeed())
+
+			return rendered.String()
+		}
+
+		DescribeTable("shows what a row with findings was flagged for",
+			func(row events.RepoRow, want string) {
+				html := renderRow(row)
+
+				Expect(html).To(ContainSubstring(want), "html: %s", html)
+				Expect(html).NotTo(ContainSubstring("—"),
+					"a row with findings must never render as empty; html: %s", html)
+			},
+			Entry("a file-backed row with one finding falls back to its gate-findings count",
+				events.RepoRow{Repo: "single", State: compliance.StateFailing, Findings: 1},
+				"1 finding"),
+			Entry("a file-backed row with many findings",
+				events.RepoRow{Repo: "many", State: compliance.StateFailing, Findings: 85},
+				"85 findings"),
+			Entry("a cache-backed row keeps its severity breakdown",
+				events.RepoRow{
+					Repo:       "rich",
+					State:      compliance.StateFailing,
+					Findings:   3,
+					Severities: map[string]int{"error": 3},
+				},
+				"ERR 3"),
+		)
+
+		It("stays muted for a row that has no findings", func() {
+			Expect(renderRow(events.RepoRow{Repo: "clean", State: compliance.StateCompliant})).
+				To(ContainSubstring("—"))
+		})
+	})
 })

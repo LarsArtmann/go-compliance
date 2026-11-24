@@ -1,6 +1,18 @@
 package dashboard
 
-import "sort"
+import (
+	"sort"
+	"strconv"
+)
+
+// findingsLabel pluralizes the gate-findings count for the fallback cell.
+func findingsLabel(count int) string {
+	if count == 1 {
+		return "1 finding"
+	}
+
+	return strconv.Itoa(count) + " findings"
+}
 
 // severityLabel upper-cases a severity for the compact ERR/WARN/INFO cell
 // display, keeping unknown severities readable as-is.
