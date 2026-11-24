@@ -104,8 +104,8 @@ jobs:
       - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: go.mod
-      - name: Install art-dupl v0.9.1-0.20261017225421-93432fd910fb (devShell parity)
-        run: go install github.com/LarsArtmann/art-dupl/cmd/art-dupl@v0.9.1-0.20261017225421-93432fd910fb
+      - name: Install art-dupl v0.10.0 (devShell parity)
+        run: go install github.com/LarsArtmann/art-dupl/cmd/art-dupl@v0.10.0
       # Baseline ratchet: only clones NEW relative to .art-dupl-baseline.json
       # fail; intentional clones carry // art-dupl:accept directives.
       - run: art-dupl -t 1 --type-aware check --baseline-path .art-dupl-baseline.json .
