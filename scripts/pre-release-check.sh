@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Release guard for go-compliance. Encodes the lessons from the v0.2.0
 # release run (2026-11-20):
 #
