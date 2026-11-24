@@ -1,5 +1,9 @@
 # Status Report: go-compliance Release-Readiness Review — 2026-11-24 21:24 CET
 
+> **Superseded by `2026-11-24_21-34_full-readiness-status-a-to-g.md`** (same
+> session, fuller §a–§g, dprint gap disclosed). Kept for the point-in-time
+> record.
+
 **Session scope:** the owner's "READY" review — repair the red master CI (css
 freshness + docs gates), close the v0.2.0 release-posture holes, and answer
 the library-policy rollout-authority question (Q1) whose vehicle is THIS repo:
