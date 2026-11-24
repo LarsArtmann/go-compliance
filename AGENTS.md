@@ -137,6 +137,28 @@ BuildFlow runs: the second run hits SQLITE_BUSY on every checkpoint write
 - Tag-watch: a reviewed lib's new tag → executed-addendum to its report
   next touch (verdicts pin versions, they stale silently otherwise).
 
+## Dashboard LAN serve + templ-components adoption (2026-11-24)
+
+- **LAN serve recipe (verified live)**: `nix run .#compliance-hub -- serve
+  --source file --file ~/.local/state/overview/compliance.json --addr
+  192.168.1.150:8477` (reachable as `http://evo-x2.home.lan:8477` —
+  dnsblockd resolves it). The non-loopback warning is bind-posture.md's
+  documented speed bump, not an error. No firewall change needed: SystemNix
+  sets `trustedInterfaces = ["eno1"]`, so LAN traffic bypasses nftables;
+  bind to the LAN IP (NOT 0.0.0.0) to keep wifi/VPN untouched. NEVER sudo:
+  root lacks GOPRIVATE and the default evidence path is overview-owned —
+  run as lars with the XDG evidence file until the g2 path decision.
+- **templ-components verdict**: the hub is a good component-layer citizen
+  (layout.Base/ThemeScript/ThemeToggle, display.Table/StatCard/PageHeader/
+  RelativeTime, typed-tone Badge via `StateBadge` in `rows.templ`,
+  errorpage.NotFound404, datastar.SDKScript/LiveRegion). The generic look
+  is the DEFAULT THEME shipped unmodified — zero `@theme` overrides in the
+  consumer CSS, which is the library's sanctioned re-skin lever. `chips.templ`
+  is a JUSTIFIED hand-roll (Datastar signal-mode filtering; the library only
+  ships link/radio-mode FilterChips/SegmentedControl). Pin is v1.27.0 vs
+  released v1.27.2 (ScriptComponent `</script>` guard) — bump pending.
+  Report: `docs/status/2026-11-24_22-27_fleet-lan-serve-and-dashboard-ui-audit.md`.
+
 ## Live Architecture (M27)
 
 `refresher` (hub/internal/cli/refresher.go) owns liveness: trigger
