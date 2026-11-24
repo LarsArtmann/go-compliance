@@ -1,5 +1,7 @@
 # Fleet Governance 80/20 Execution Plan — library-policy ⇄ go-compliance
 
+**Superseded — [rev 2](2026-11-24_23-15_fleet-governance-80-20-execution-plan-rev2.md).** Verified against code on 2026-11-24 before execution: T17, T23, T24 and T25 were already done, T12 cannot work, and the premises of T01, T02, T07 and T10 were corrected. The errata table in rev 2 cites the evidence per item. The body below is the unmodified 22:36 snapshot apart from the inline verdicts.
+
 **Date:** 2026-11-24 22:36 CET · **Author:** Crush (glm-5.3-flash), pareto-planning skill · **Directive:** owner's 80/20 order (1% → 51%, 4% → 64%, 20% → 80%, rest → 100%); .md + mermaid per the standing owner instruction (precedent: 2026-11-19 plan).
 **Inputs read:** `TODO_LIST.md` (24 rows), `docs/status/2026-11-24_22-27_fleet-lan-serve-and-dashboard-ui-audit.md` §f (40 items), `docs/status/2026-11-24_21-34_full-readiness-status-a-to-g.md` (g1–g3), the 2026-11-19 pareto plan (conventions), live code + dashboard DOM/CSS verified this session.
 **Customer definition (for value sorting):** Lars the single fleet operator first — a governance loop that RUNS always, is SEEN always, and shows TRUSTWORTHY data at a glance. Embedders second, fleet-wide policy convergence third.
@@ -102,31 +104,31 @@ flowchart TD
 
 | #   | Task                                                                                                                 | Repo             | Min | Impact | Effort | Customer value                                              | Tier |
 | --- | -------------------------------------------------------------------------------------------------------------------- | ---------------- | --: | :----: | :----: | ----------------------------------------------------------- | :--: |
-| T01 | Deploy compliance-hub as systemd service (LAN-bound, hardened)                                                       | go-compliance    |  62 |  High  |  Med   | V4: dashboard runs 24/7, survives sessions                  |  1%  |
-| T02 | Fleet `--record` evidence timer (daily, fresh binary)                                                                | library-policy   |  52 |  High  |  Med   | V4+V5: evidence always fresh; stale/stale-after become real |  1%  |
+| T01 | Deploy compliance-hub as systemd service (LAN-bound, hardened) (rev 2: `systemctl --user` unit on a GC-rooted store path) | go-compliance | 62 | High | Med | V4: dashboard runs 24/7, survives sessions | 1% |
+| T02 | Fleet `--record` evidence timer (daily, fresh binary) (rev 2: freshness and staleness only; the file store replaces rows and keeps no run history) | library-policy | 52 | High | Med | V4+V5: evidence always fresh; stale/stale-after become real | 1% |
 | T03 | `@theme` re-skin pass — quiet palette (accent + muted severity ramp, light/dark)                                     | go-compliance    |  60 |  High  |  Med   | V3: stops looking like stock Tailwind                       |  1%  |
 | T04 | Dashboard hierarchy: failing-ratio hero + zero-cards → chips                                                         | go-compliance    |  44 |  High  |  Low   | V3: the 77% story lands in 2 seconds                        |  4%  |
 | T05 | templ-components → v1.27.2 + css regen + hub tests                                                                   | go-compliance    |  30 |  Med   |  Low   | V2: `</script>` escape guard + toast fix                    |  4%  |
 | T06 | Fleet discovery: skip dot-directories + regression test                                                              | library-policy   |  44 |  High  |  Low   | V5: junk repo (.bf-jscpd-worktree) leaves the table         |  4%  |
-| T07 | Reconcile Findings "—" vs failing verdict (root cause + fix)                                                         | both             |  44 |  High  |  Med   | V5: no contradicting rows — data trusted                    |  4%  |
+| T07 | Reconcile Findings "—" vs failing verdict (root cause + fix) (rev 2: findings-count fallback; the frozen v1 wire cannot carry severities) | both | 44 | High | Med | V5: no contradicting rows — data trusted | 4% |
 | T08 | Table density + severity coherence with the new ramp                                                                 | go-compliance    |  32 |  Med   |  Low   | V3: readable at 204 rows                                    | 20%  |
 | T09 | Typography: `tabular-nums` + weight scale (CSP-safe, quiet)                                                          | go-compliance    |  48 |  Med   |  Med   | V3: numbers align, feels intentional                        | 20%  |
-| T10 | Screenshot-based visual QA (headless render + vision check)                                                          | go-compliance    |  32 |  Med   |  Low   | V5: pixels verified, not just DOM                           | 20%  |
+| T10 | Screenshot-based visual QA (headless render + vision check) (rev 2: the harness, T10.1, runs before the first visual task) | go-compliance | 32 | Med | Low | V5: pixels verified, not just DOM | 20% |
 | T11 | Discovery daemon 400 investigation + fix/file                                                                        | go-compliance    |  32 |  Low   |  Low   | V2: WARN-free startup                                       | 20%  |
-| T12 | Discovery-file wiring (inventory → Never covered)                                                                    | both             |  32 |  Low   |  Low   | V5: coverage gap becomes visible                            | 20%  |
+| ~~T12~~ NOT-DO, removed in rev 2: never-covered derives from the discovery daemon snapshot (`hub/internal/cli/refresher.go:259-272`); the hub has no discovery-file flag (`hub/internal/cli/flags.go:22-23`) | ~~Discovery-file wiring (inventory → Never covered)~~ | ~~both~~ | ~~32~~ | ~~Low~~ | ~~Low~~ | ~~V5: coverage gap becomes visible~~ | ~~20%~~ |
 | T13 | Stale system-profile binary refresh (PATH)                                                                           | SystemNix        |  30 |  Med   |  Low   | V4: owner's `library-policy` works                          | 20%  |
 | T14 | Producer ldflags version stamp                                                                                       | library-policy   |  40 |  Med   |  Low   | V5: evidence shows real version                             | 20%  |
 | T15 | Fleet snapshot persisted to `docs/reports/`                                                                          | library-policy   |  30 |  Low   |  Low   | V5: compounding record (carried row)                        | 20%  |
 | T16 | LAN serve recipe → bind-posture appendix                                                                             | go-compliance    |  30 |  Low   |  Low   | V2: repeatable ops knowledge                                | 20%  |
-| T17 | Push master + verify 14/14 CI                                                                                        | go-compliance    |  30 |  High  |  Low   | V5: every green claim proven                                | 20%  |
+| ~~T17~~ done at `084f7ce`: nothing unpushed on either remote, CI run 45493394484 passed 14/14 | ~~Push master + verify 14/14 CI~~ | ~~go-compliance~~ | ~~30~~ | ~~High~~ | ~~Low~~ | ~~V5: every green claim proven~~ | ~~20%~~ |
 | T18 | Consumer sweep → core v0.2.0 (library-policy, md-go-validator, BuildFlow)                                            | 3 repos          |  85 |  Med   |  High  | V2: SDK currency (carried row)                              | 20%  |
 | T19 | Evidence path canonicalization (XDG default vs /var/lib)                                                             | both             |  30 |  Low   |  Low   | V2: one canonical path                                      | 100% |
 | T20 | Auth posture decision (LAN-trust acceptance or middleware plan)                                                      | go-compliance    |  48 |  Med   |  Med   | V5: exposed service posture honest                          | 100% |
 | T21 | Component upgrade pass: EmptyState/DataState + StatusBadge eval                                                      | go-compliance    |  46 |  Low   |  Low   | V1: empty views guide action                                | 100% |
 | T22 | Datastar signal-mode chip component in templ-components                                                              | templ-components |  84 |  Med   |  High  | V2: retires justified hand-roll, pays fleet forward         | 100% |
-| T23 | Policy debt batch: 7 CVE literals → `NewCVE` + companion_checker literal                                             | library-policy   |  48 |  Med   |  Low   | V2: type safety at the boundary                             | 100% |
-| T24 | Severity wire-fork fix (priority-0 sort / Moderate coercion)                                                         | library-policy   |  48 |  Med   |  Med   | V5: info-severity correctness                               | 100% |
-| T25 | M15 `WhenAnyPresent` migration (retire combo gate remnants)                                                          | library-policy   |  48 |  Med   |  High  | V2: SDK currency                                            | 100% |
+| ~~T23~~ done at library-policy `8f42c3a` (2026-11-20) | ~~Policy debt batch: 7 CVE literals → `NewCVE` + companion_checker literal~~ | ~~library-policy~~ | ~~48~~ | ~~Med~~ | ~~Low~~ | ~~V2: type safety at the boundary~~ | ~~100%~~ |
+| ~~T24~~ done 2026-11-20 (library-policy `TODO_LIST.md:160-170`, `enhanced/types.go:32-38`) | ~~Severity wire-fork fix (priority-0 sort / Moderate coercion)~~ | ~~library-policy~~ | ~~48~~ | ~~Med~~ | ~~Med~~ | ~~V5: info-severity correctness~~ | ~~100%~~ |
+| ~~T25~~ done 2026-11-20 (library-policy `TODO_LIST.md:90`, `192-199`) | ~~M15 `WhenAnyPresent` migration (retire combo gate remnants)~~ | ~~library-policy~~ | ~~48~~ | ~~Med~~ | ~~High~~ | ~~V2: SDK currency~~ | ~~100%~~ |
 | T26 | Hygiene batch: CHANGELOG rows, /tmp probes, css-drift check, M26 note, AGENTS re-check, flaky spec, index screenshot | go-compliance    |  90 |  Low   |  Low   | V2: books balanced                                          | 100% |
 | T27 | Owner-blocker batch ask: FLAKE_PAT, Forgejo visibility, benchmark re-record, DB VACUUM/deletes, docs-gates pin       | go-compliance    |  15 |  Med   |  Low   | V2: unblocks CI + hygiene, one ask                          | 100% |
 
@@ -194,9 +196,9 @@ Total: 27 tasks ≈ 20.2 h of focused work (1,214 min).
 | T11.1 | Capture daemon request + server logs at startup                             |  10 |
 | T11.2 | Read discovery daemon API contract (socket protocol)                        |  10 |
 | T11.3 | Fix request shape or file upstream note                                     |  12 |
-| T12.1 | Decide inventory source (fleet list file path)                              |  10 |
-| T12.2 | Wire `--discovery-file`/env into producer + hub serve units                 |  12 |
-| T12.3 | Verify Never-covered column populates                                       |  10 |
+| ~~T12.1~~ NOT-DO, removed in rev 2: never-covered derives from the discovery daemon snapshot (`hub/internal/cli/refresher.go:259-272`); the hub has no discovery-file flag (`hub/internal/cli/flags.go:22-23`) | ~~Decide inventory source (fleet list file path)~~ | ~~10~~ |
+| ~~T12.2~~ NOT-DO, removed in rev 2: never-covered derives from the discovery daemon snapshot (`hub/internal/cli/refresher.go:259-272`); the hub has no discovery-file flag (`hub/internal/cli/flags.go:22-23`) | ~~Wire `--discovery-file`/env into producer + hub serve units~~ | ~~12~~ |
+| ~~T12.3~~ NOT-DO, removed in rev 2: never-covered derives from the discovery daemon snapshot (`hub/internal/cli/refresher.go:259-272`); the hub has no discovery-file flag (`hub/internal/cli/flags.go:22-23`) | ~~Verify Never-covered column populates~~ | ~~10~~ |
 | T13.1 | `nix build` current master binary; confirm fleet subcommand                 |  10 |
 | T13.2 | SystemNix pin bump or `~/.local/bin` shadow (owner sudo assist)             |  12 |
 | T13.3 | Verify PATH binary has `fleet`                                              |   8 |
@@ -210,9 +212,9 @@ Total: 27 tasks ≈ 20.2 h of focused work (1,214 min).
 | T16.1 | Write bind-posture appendix: explicit --addr, trustedInterfaces, dnsblockd  |  12 |
 | T16.2 | Cross-link from release runbook + AGENTS                                    |   8 |
 | T16.3 | docs-gates green                                                            |  10 |
-| T17.1 | Review the ~9 unpushed commits (log/diff sanity)                            |  10 |
-| T17.2 | Push origin + github master                                                 |  10 |
-| T17.3 | `gh run watch` to 14/14; record verdict in report                           |  10 |
+| ~~T17.1~~ NOT-DO, moot: the commits were already pushed | ~~Review the ~9 unpushed commits (log/diff sanity)~~ | ~~10~~ |
+| ~~T17.2~~ done at `084f7ce` | ~~Push origin + github master~~ | ~~10~~ |
+| ~~T17.3~~ done: run 45493394484 at `084f7ce` passed 14/14 | ~~`gh run watch` to 14/14; record verdict in report~~ | ~~10~~ |
 | T18.1 | library-policy: bump core v0.2.0 + flake input + vendorHash                 |  20 |
 | T18.2 | library-policy build + test + fleet smoke                                   |  15 |
 | T18.3 | md-go-validator: same bump + gates                                          |  20 |
@@ -241,18 +243,18 @@ Total: 27 tasks ≈ 20.2 h of focused work (1,214 min).
 | T22.5 | Migrate hub chips.templ to the new component                                                                     |  12 |
 | T22.6 | templ-components gates + bump hub pin                                                                            |  12 |
 | T22.7 | Regenerate hub css; visual check                                                                                 |  12 |
-| T23.1 | Route 7 CVE literals through `policy.NewCVE` (policies/security.go)                                              |  12 |
-| T23.2 | Fix `companion_checker.go:60` invalid Finding literal                                                            |  12 |
-| T23.3 | Tests + gendoc --check + lint                                                                                    |  12 |
-| T23.4 | doc-sync gate green                                                                                              |  12 |
-| T24.1 | Fix `severityOrder` map miss (Info = priority 0)                                                                 |  12 |
-| T24.2 | Fix ParseSeverityLevel Moderate coercion round-trip                                                              |  12 |
-| T24.3 | Tests for both + fleet smoke                                                                                     |  12 |
-| T24.4 | Update routed TODO rows + report verdicts                                                                        |  12 |
-| T25.1 | Inventory combo gate remnants (ADR-0009 leftovers)                                                               |  12 |
-| T25.2 | Migrate combos to `WhenAnyPresent`                                                                               |  12 |
-| T25.3 | Gate-matrix tests green (eco_combo_matrix)                                                                       |  12 |
-| T25.4 | Fleet diff: combos still fire (health+webserver, cqrs+hypermedia)                                                |  12 |
+| ~~T23.1~~ done at library-policy `8f42c3a` | ~~Route 7 CVE literals through `policy.NewCVE` (policies/security.go)~~ | ~~12~~ |
+| ~~T23.2~~ NOT-DO, nothing to fix: `companion_checker.go:60` is a blank line and the file has no `Finding` literal | ~~Fix `companion_checker.go:60` invalid Finding literal~~ | ~~12~~ |
+| ~~T23.3~~ done with T23 at library-policy `8f42c3a` | ~~Tests + gendoc --check + lint~~ | ~~12~~ |
+| ~~T23.4~~ NOT-DO, moot: T23 landed on 2026-11-20 | ~~doc-sync gate green~~ | ~~12~~ |
+| ~~T24.1~~ done 2026-11-20 (library-policy `TODO_LIST.md:167-170`) | ~~Fix `severityOrder` map miss (Info = priority 0)~~ | ~~12~~ |
+| ~~T24.2~~ done 2026-11-20 (library-policy `TODO_LIST.md:167-170`) | ~~Fix ParseSeverityLevel Moderate coercion round-trip~~ | ~~12~~ |
+| ~~T24.3~~ done 2026-11-20 (library-policy `TODO_LIST.md:167-170`) | ~~Tests for both + fleet smoke~~ | ~~12~~ |
+| ~~T24.4~~ done 2026-11-20 (library-policy `TODO_LIST.md:160-170` is struck) | ~~Update routed TODO rows + report verdicts~~ | ~~12~~ |
+| ~~T25.1~~ done 2026-11-20 (library-policy `TODO_LIST.md:192-199`) | ~~Inventory combo gate remnants (ADR-0009 leftovers)~~ | ~~12~~ |
+| ~~T25.2~~ done 2026-11-20 (library-policy `TODO_LIST.md:197-199`) | ~~Migrate combos to `WhenAnyPresent`~~ | ~~12~~ |
+| ~~T25.3~~ done 2026-11-20 (library-policy `TODO_LIST.md:197-199`) | ~~Gate-matrix tests green (eco_combo_matrix)~~ | ~~12~~ |
+| ~~T25.4~~ NOT-DO, superseded: the rev-2 evidence timer (T02) records every repo's findings daily | ~~Fleet diff: combos still fire (health+webserver, cqrs+hypermedia)~~ | ~~12~~ |
 | T26.1 | CHANGELOG rows for docs/session artifacts                                                                        |  10 |
 | T26.2 | /tmp probe cleanup (dash.html, app.min.css copies, old binaries)                                                 |  10 |
 | T26.3 | CI css-drift check (toolchain pin vs flake.lock) script                                                          |  12 |
