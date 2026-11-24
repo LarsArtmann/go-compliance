@@ -30,7 +30,10 @@ NC='\033[0m'
 
 step() { printf "${GREEN}==>%s %s${NC}\n" "" "$1"; }
 warn() { printf "${YELLOW}WARNING: %s${NC}\n" "$1"; }
-die() { printf "${RED}FAIL: %s${NC}\n" "$1" >&2; exit 1; }
+die() {
+	printf "${RED}FAIL: %s${NC}\n" "$1" >&2
+	exit 1
+}
 
 usage() {
 	echo "usage: $0 <version> | $0 --verify <version>"
@@ -41,16 +44,16 @@ usage() {
 MODE="preflight"
 VERSION=""
 case "${1:-}" in
-	--verify)
-		MODE="verify"
-		VERSION="${2:-}"
-		;;
-	v*)
-		VERSION="${1:-}"
-		;;
-	*)
-		usage
-		;;
+--verify)
+	MODE="verify"
+	VERSION="${2:-}"
+	;;
+v*)
+	VERSION="${1:-}"
+	;;
+*)
+	usage
+	;;
 esac
 [ -n "$VERSION" ] || usage
 
@@ -71,8 +74,8 @@ if [ "$MODE" = "verify" ]; then
 	step "Checking the module proxy serves the tag"
 	proxy_info="$(go list -m -versions github.com/larsartmann/go-compliance 2>/dev/null)"
 	case "$proxy_info" in
-		*"$VERSION"*) echo "    proxy @v/list contains $VERSION" ;;
-		*) die "proxy @v/list does not contain $VERSION (got: $proxy_info)" ;;
+	*"$VERSION"*) echo "    proxy @v/list contains $VERSION" ;;
+	*) die "proxy @v/list does not contain $VERSION (got: $proxy_info)" ;;
 	esac
 
 	step "Checking the GitHub release exists"

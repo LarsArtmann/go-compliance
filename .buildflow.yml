@@ -2,7 +2,14 @@
 # See: https://github.com/larsartmann/buildflow
 #
 # This repo is otherwise auto-detected (no .buildflow.yml needed); this file
-# exists only to opt into the branded-ID linter's primitive-ID rule.
+# carries the non-default opt-ins and exclusions only.
+
+# Generated dashboard artifacts (scripts/regen-ui.sh; the CI css-freshness
+# gate diffs them byte-fresh). A prettier pass must never rewrite them: on
+# 2026-11-24 `buildflow format` expanded app.min.css to 6.5k lines.
+exclude:
+  - hub/internal/dashboard/app.min.css
+  - hub/internal/dashboard/library-custom.css
 
 tool_options:
   brandid-lint:
