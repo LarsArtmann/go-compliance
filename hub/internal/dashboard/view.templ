@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/larsartmann/templ-components/datastar"
 	"github.com/larsartmann/templ-components/display"
@@ -12,39 +13,28 @@ import (
 )
 
 // View renders the full fleet compliance page: Base shell (no HTMX —
-// DataStar owns realtime), stat cards over the state counts, and a
-// LiveRegion whose stream patches the stat strip and the fleet table.
+// DataStar owns realtime), the fleet summary whose chips filter the table,
+// and a LiveRegion whose stream patches the summary and the fleet table.
 templ View(model ViewModel) {
 	@layout.Base(layout.PageProps{
 		Title:       model.Title,
 		CSSPath:     model.CSSSrc,
 		HTMXVersion: "",
+		Favicon:     faviconHref,
 		HeadContent: headContent(model),
 	}) {
 		@layout.Container(layout.DefaultContainerProps()) {
 			<div class="py-8">
 				@display.PageHeader(display.PageHeaderProps{
-					Title:    model.Title,
-					Subtitle: "Real-time gate compliance across the fleet",
+					Title:  model.Title,
+					Action: pageStatus(model.RenderedAt),
 				})
-				<div id={ StatCardsID } class="mt-6">
-					@StatCards(events.CountStates(model.Rows), len(model.Rows))
-				</div>
-				<div class="mt-6 flex flex-wrap items-center justify-between gap-2" data-signals={ fmt.Sprintf("{\"stateFilter\":\"%s\"}", model.StateFilter) }>
-					@StateFilterChips(model.StateFilter)
-					<div class="flex items-center gap-3">
-						// The one AutoRefresh=true RelativeTime on the page: it
-						// ships the singleton 30s tick script that keeps every
-						// data-tc-relative cell (rows included) honest, and its
-						// own text going stale is the dead-stream signal.
-						<span class="text-xs text-gray-400 dark:text-gray-500">
-							rendered
-							@display.RelativeTime(display.RelativeTimeProps{Time: model.RenderedAt, AutoRefresh: true})
-						</span>
-						@layout.ThemeToggle("Toggle dark mode", "")
+				<div data-signals={ fmt.Sprintf("{\"stateFilter\":\"%s\"}", model.StateFilter) }>
+					<div id={ FleetSummaryID }>
+						@FleetSummary(events.CountStates(model.Rows), len(model.Rows), model.StateFilter)
 					</div>
 				</div>
-				<div class="mt-4">
+				<div class="mt-6">
 					@datastar.LiveRegion(datastar.LiveRegionProps{
 						BaseProps: utils.BaseProps{ID: FleetRegionID},
 						URL:       model.StreamURL,
@@ -61,6 +51,21 @@ templ View(model ViewModel) {
 			</div>
 		}
 	}
+}
+
+// pageStatus sits at the right of the title: the one AutoRefresh=true
+// RelativeTime on the page and the theme toggle. It ships the singleton 30s
+// tick script that keeps every data-tc-relative cell (rows included)
+// honest, and its own text going stale is the dead-stream signal. It stays
+// outside every patched region, so the script is never re-sent.
+templ pageStatus(renderedAt time.Time) {
+	<div class="flex items-center gap-3">
+		<span class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+			<span>rendered</span>
+			@display.RelativeTime(display.RelativeTimeProps{Time: renderedAt, AutoRefresh: true})
+		</span>
+		@layout.ThemeToggle("Toggle dark mode", "")
+	</div>
 }
 
 // headContent loads the DataStar SDK (self-hosted when ScriptSrc is set)
@@ -81,17 +86,23 @@ templ headContent(model ViewModel) {
 
 // fleetTable renders the fleet table with the patchable tbody: the stream
 // targets the BodyID region (inner mode) and individual rows via their
-// data-repo selectors.
+// data-repo selectors. The fleet-table container lets the stylesheet stack
+// the rows once the table gets narrower than its columns.
 templ fleetTable(rows []events.RepoRow) {
-	@display.Table(display.TableProps{
-		Headers:     []string{"Repo", "State", "Findings", "Last run"},
-		Striped:     true,
-		Hover:       true,
-		CellPadding: display.TableCellPaddingCompact,
-		LazyRows:    true,
-		BodyID:      DefaultRowsSelector[1:],
-		Body:        fleetRowsBody(rows),
-	})
+	<div class="@container">
+		@display.Table(display.TableProps{
+			BaseProps: utils.BaseProps{
+				Class:     fleetTableClass,
+				AriaLabel: "Fleet compliance by repository",
+			},
+			Headers:     []string{"Repo", "State", "Findings", "Last run"},
+			Hover:       true,
+			CellPadding: display.TableCellPaddingCompact,
+			LazyRows:    true,
+			BodyID:      DefaultRowsSelector[1:],
+			Body:        fleetRowsBody(rows),
+		})
+	</div>
 }
 
 templ fleetRowsBody(rows []events.RepoRow) {

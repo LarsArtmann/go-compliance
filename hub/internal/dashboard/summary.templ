@@ -1,0 +1,49 @@
+package dashboard
+
+import "fmt"
+
+// FleetSummary is the two-second story above the table: the failing ratio
+// as one sentence, the state split as one bar, and the state filter whose
+// chips carry the counts they select. The patch stream re-renders the whole
+// region on every state change.
+templ FleetSummary(counts map[string]int, total int, selected string) {
+	<div class="flex flex-col gap-4">
+		@fleetHeadline(counts, total)
+		@stateBar(counts, total)
+		@StateFilterChips(selected, counts, total)
+	</div>
+}
+
+// fleetHeadline states the failing ratio in one sentence; the figure is
+// the only colored word.
+templ fleetHeadline(counts map[string]int, total int) {
+	{{ story := newFleetStory(counts, total) }}
+	<p class="flex flex-wrap items-baseline gap-x-1.5 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl dark:text-gray-100">
+		if story.Figure == "" {
+			{ story.Lead }
+		} else {
+			if story.Lead != "" {
+				<span>{ story.Lead }</span>
+			}
+			<span class={ story.figureClass() }>{ story.Figure }</span>
+			<span>{ story.Tail }</span>
+		}
+	</p>
+}
+
+// stateBar shows how the fleet splits across the states, worst first. Each
+// share grows in proportion to its count, so the shares always add up.
+templ stateBar(counts map[string]int, total int) {
+	if total > 0 {
+		{{ segments := stateSegments(counts) }}
+		<div
+			class="flex h-1.5 w-full gap-px overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"
+			role="img"
+			aria-label={ stateBarLabel(segments, total) }
+		>
+			for _, segment := range segments {
+				<span class={ segment.Class } style={ fmt.Sprintf("flex:%d 1 0%%", segment.Count) } aria-hidden="true"></span>
+			}
+		</div>
+	}
+}
