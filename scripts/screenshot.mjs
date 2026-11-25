@@ -1,8 +1,9 @@
 // screenshot.mjs drives a headless chromium over the DevTools protocol and
 // captures the compliance dashboard in three views: light, dark, and a
 // narrow phone-width viewport. Every view lands as a viewport PNG plus a
-// full-page PNG and one row in dom-truth.json. Console errors and uncaught
-// page exceptions are collected into console-errors.json and fail the run.
+// full-page PNG and one row in dom-truth.json. Failed requests, console
+// errors, and uncaught page exceptions are written to console-errors.json
+// and fail the run.
 //
 // Usage: node scripts/screenshot.mjs <url> <outDir>
 // Environment: CHROMIUM_BIN (chromium binary path), SETTLE_MS (default 2500).
@@ -21,9 +22,6 @@ const chromiumBin = process.env.CHROMIUM_BIN || "chromium";
 const maxCaptureCssPx = 16000;
 const profileDir = join(outDir, "chromium-profile");
 
-mkdirSync(outDir, { recursive: true });
-rmSync(profileDir, { recursive: true, force: true });
-
 const views = [
 	{ name: "dashboard-light", width: 1440, height: 900, scale: 1, scheme: "light" },
 	{ name: "dashboard-dark", width: 1440, height: 900, scale: 1, scheme: "dark" },
@@ -31,6 +29,9 @@ const views = [
 ];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+mkdirSync(outDir, { recursive: true });
+rmSync(profileDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
 
 const chrome = spawn(
 	chromiumBin,
@@ -49,10 +50,58 @@ const chrome = spawn(
 const chromeStderr = [];
 chrome.stderr.on("data", (chunk) => chromeStderr.push(String(chunk)));
 
-const shutdownChrome = () => {
-	chrome.kill("SIGKILL");
-	rmSync(profileDir, { recursive: true, force: true });
-};
+const pageErrors = [];
+const browserNoise = [];
+let ws = null;
+let nextID = 1;
+const pending = new Map();
+
+function handleMessage(message) {
+	const msg = JSON.parse(message.data);
+	if (msg.id && pending.has(msg.id)) {
+		const { resolve, reject } = pending.get(msg.id);
+		pending.delete(msg.id);
+		if (msg.error) reject(new Error(msg.error.message));
+		else resolve(msg.result);
+		return;
+	}
+	if (msg.method === "Network.responseReceived" && msg.params.response.status >= 400) {
+		pageErrors.push(`${msg.params.response.status} ${msg.params.response.url}`);
+		return;
+	}
+	if (msg.method === "Network.loadingFailed" && !msg.params.canceled && msg.params.errorText !== "net::ERR_ABORTED") {
+		pageErrors.push(`request failed: ${msg.params.errorText}`);
+		return;
+	}
+	if (msg.method === "Runtime.exceptionThrown") {
+		const details = msg.params.exceptionDetails;
+		pageErrors.push(`exception ${details.url ?? ""}:${details.lineNumber ?? 0} ${details.exception?.description ?? details.text}`);
+		return;
+	}
+	if (msg.method === "Runtime.consoleAPICalled" && msg.params.type === "error") {
+		pageErrors.push(`console.error ${msg.params.args.map((arg) => arg.value ?? arg.description ?? "").join(" ")}`);
+		return;
+	}
+	if (msg.method === "Log.entryAdded" && msg.params.entry.level === "error") {
+		const text = `${msg.params.entry.source}: ${msg.params.entry.text}`;
+		// Chromium's own extension-channel chatter, not the page's.
+		if (/^other: Unchecked runtime\.lastError/.test(text)) browserNoise.push(text);
+		else if (msg.params.entry.source !== "network") pageErrors.push(text);
+	}
+}
+
+function send(method, params = {}, sessionId) {
+	const id = nextID++;
+	return new Promise((resolve, reject) => {
+		pending.set(id, { resolve, reject });
+		ws.send(JSON.stringify({ id, method, params, sessionId }));
+	});
+}
+
+async function evaluate(expression, sessionId) {
+	const result = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);
+	return result.result.value;
+}
 
 async function readDevToolsEndpoint() {
 	const deadline = Date.now() + 30000;
@@ -66,53 +115,6 @@ async function readDevToolsEndpoint() {
 		await sleep(200);
 	}
 	throw new Error(`chromium published no DevTools endpoint within 30s: ${chromeStderr.join("").slice(-800)}`);
-}
-
-const { port, path } = await readDevToolsEndpoint();
-const ws = new WebSocket(`ws://127.0.0.1:${port}${path}`);
-await new Promise((resolve, reject) => {
-	ws.onopen = resolve;
-	ws.onerror = () => reject(new Error("DevTools websocket connect failed"));
-});
-
-let nextID = 1;
-const pending = new Map();
-const consoleErrors = [];
-const pageExceptions = [];
-
-ws.onmessage = (message) => {
-	const msg = JSON.parse(message.data);
-	if (msg.id && pending.has(msg.id)) {
-		const { resolve, reject } = pending.get(msg.id);
-		pending.delete(msg.id);
-		if (msg.error) reject(new Error(msg.error.message));
-		else resolve(msg.result);
-		return;
-	}
-	if (msg.method === "Runtime.exceptionThrown") {
-		pageExceptions.push(msg.params.exceptionDetails?.exception?.description ?? msg.params.exceptionDetails?.text);
-		return;
-	}
-	if (msg.method === "Runtime.consoleAPICalled" && msg.params.type === "error") {
-		consoleErrors.push(msg.params.args.map((arg) => arg.value ?? arg.description ?? "").join(" "));
-		return;
-	}
-	if (msg.method === "Log.entryAdded" && msg.params.entry.level === "error") {
-		consoleErrors.push(`${msg.params.entry.source}: ${msg.params.entry.text}`);
-	}
-};
-
-function send(method, params = {}, sessionId) {
-	const id = nextID++;
-	return new Promise((resolve, reject) => {
-		pending.set(id, { resolve, reject });
-		ws.send(JSON.stringify({ id, method, params, sessionId }));
-	});
-}
-
-async function evaluate(expression, sessionId) {
-	const result = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);
-	return result.result.value;
 }
 
 async function waitForPage(sessionId) {
@@ -133,6 +135,14 @@ async function capture(sessionId, name, clip) {
 	writeFileSync(join(outDir, `${name}.png`), Buffer.from(shot.data, "base64"));
 }
 
+async function shutdownChrome() {
+	if (ws) ws.close();
+	const exited = new Promise((resolve) => chrome.once("exit", resolve));
+	chrome.kill("SIGKILL");
+	await Promise.race([exited, sleep(5000)]);
+	rmSync(profileDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
+}
+
 const truthExpression = `JSON.stringify({
 	dark: document.documentElement.classList.contains("dark"),
 	title: document.title,
@@ -148,46 +158,59 @@ const truthExpression = `JSON.stringify({
 })`;
 
 const truth = [];
+let fatal = null;
 
-for (const view of views) {
-	const { targetId } = await send("Target.createTarget", { url: "about:blank" });
-	const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
+try {
+	const { port, path } = await readDevToolsEndpoint();
+	ws = new WebSocket(`ws://127.0.0.1:${port}${path}`);
+	ws.onmessage = handleMessage;
+	await new Promise((resolve, reject) => {
+		ws.onopen = resolve;
+		ws.onerror = () => reject(new Error("DevTools websocket connect failed"));
+	});
 
-	await send("Page.enable", {}, sessionId);
-	await send("Runtime.enable", {}, sessionId);
-	await send("Log.enable", {}, sessionId);
-	await send(
-		"Emulation.setDeviceMetricsOverride",
-		{ width: view.width, height: view.height, deviceScaleFactor: view.scale, mobile: view.scale > 1 },
-		sessionId,
-	);
-	await send(
-		"Emulation.setEmulatedMedia",
-		{ features: [{ name: "prefers-color-scheme", value: view.scheme }] },
-		sessionId,
-	);
+	for (const view of views) {
+		const { targetId } = await send("Target.createTarget", { url: "about:blank" });
+		const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
 
-	await send("Page.navigate", { url }, sessionId);
-	await waitForPage(sessionId);
-	await sleep(settleMs);
+		await send("Page.enable", {}, sessionId);
+		await send("Runtime.enable", {}, sessionId);
+		await send("Log.enable", {}, sessionId);
+		await send("Network.enable", {}, sessionId);
+		await send(
+			"Emulation.setDeviceMetricsOverride",
+			{ width: view.width, height: view.height, deviceScaleFactor: view.scale, mobile: false },
+			sessionId,
+		);
+		await send(
+			"Emulation.setEmulatedMedia",
+			{ features: [{ name: "prefers-color-scheme", value: view.scheme }] },
+			sessionId,
+		);
 
-	const facts = JSON.parse(await evaluate(truthExpression, sessionId));
-	const fullHeight = Math.min(facts.pageHeight, maxCaptureCssPx / view.scale);
+		await send("Page.navigate", { url }, sessionId);
+		await waitForPage(sessionId);
+		await sleep(settleMs);
 
-	await capture(sessionId, view.name, { width: view.width, height: view.height });
-	await capture(sessionId, `${view.name}-full`, { width: view.width, height: fullHeight });
-	truth.push({ view: view.name, scheme: view.scheme, ...facts });
+		const facts = JSON.parse(await evaluate(truthExpression, sessionId));
+		const fullHeight = Math.min(facts.pageHeight, maxCaptureCssPx / view.scale);
 
-	await send("Target.closeTarget", { targetId });
+		await capture(sessionId, view.name, { width: view.width, height: view.height });
+		await capture(sessionId, `${view.name}-full`, { width: view.width, height: fullHeight });
+		truth.push({ view: view.name, scheme: view.scheme, ...facts });
+
+		await send("Target.closeTarget", { targetId });
+	}
+} catch (error) {
+	fatal = error;
+} finally {
+	await shutdownChrome();
 }
-
-ws.close();
-shutdownChrome();
 
 writeFileSync(join(outDir, "dom-truth.json"), `${JSON.stringify(truth, null, 2)}\n`);
 writeFileSync(
 	join(outDir, "console-errors.json"),
-	`${JSON.stringify({ consoleErrors, pageExceptions }, null, 2)}\n`,
+	`${JSON.stringify({ pageErrors, browserNoise }, null, 2)}\n`,
 );
 
 for (const entry of truth) {
@@ -197,9 +220,12 @@ for (const entry of truth) {
 	);
 }
 
-const failures = [];
-if (consoleErrors.length > 0) failures.push(`${consoleErrors.length} console error(s)`);
-if (pageExceptions.length > 0) failures.push(`${pageExceptions.length} uncaught exception(s)`);
+if (fatal) {
+	console.error(`screenshot harness FAIL: ${fatal.message}`);
+	process.exit(1);
+}
+
+const failures = [...pageErrors];
 
 for (const entry of truth) {
 	const wantsDark = entry.scheme === "dark";
