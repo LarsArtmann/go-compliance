@@ -95,10 +95,7 @@ templ fleetTable(rows []events.RepoRow, selected string) {
 			BaseProps: utils.BaseProps{
 				Class:     fleetTableClass,
 				AriaLabel: "Fleet compliance by repository",
-				Attrs: templ.Attributes{
-					"data-show": tableShowExpression,
-					"style":     utils.Ternary(tableStartsHidden(rows, selected), "display:none", ""),
-				},
+				Attrs:     tableAttrs(rows, selected),
 			},
 			Headers:     []string{"Repo", "State", "Findings", "Last run"},
 			Hover:       true,
@@ -126,11 +123,17 @@ templ fleetTable(rows []events.RepoRow, selected string) {
 // repo (or selects nothing specific); a missing count reads as zero.
 const tableShowExpression = "$stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0"
 
-// tableStartsHidden reports whether the server-rendered rows are empty
-// because of a state selection; the stream and the signal fix it up after
-// that.
-func tableStartsHidden(rows []events.RepoRow, selected string) bool {
-	return len(rows) == 0 && selected != "all" && selected != "unknown"
+// tableAttrs carries the table's reactive visibility. The table starts
+// hidden when the server-rendered rows are empty because of a state
+// selection; the stream and the signal fix that up.
+func tableAttrs(rows []events.RepoRow, selected string) templ.Attributes {
+	attrs := templ.Attributes{"data-show": tableShowExpression}
+
+	if len(rows) == 0 && selected != "all" && selected != "unknown" {
+		attrs["style"] = "display:none"
+	}
+
+	return attrs
 }
 
 templ fleetRowsBody(rows []events.RepoRow) {

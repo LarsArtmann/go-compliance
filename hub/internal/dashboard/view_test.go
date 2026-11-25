@@ -163,7 +163,7 @@ var _ = Describe("fleet page render", func() {
 			Expect(dashboard.View(model).Render(context.Background(), &rendered)).To(Succeed())
 
 			html := rendered.String()
-			Expect(html).To(MatchRegexp(`<table[^>]*style="display:none"`))
+			Expect(html).To(MatchRegexp(`<table[^>]*style="display:none;?"`))
 			Expect(html).To(MatchRegexp(`data-show="\$stateFilter===&#39;stale&#39; &amp;&amp; !\$counts\[&#39;stale&#39;\]">\s*<div class="text-center py-8"><p[^>]*>No stale repos</p>`))
 			Expect(html).To(MatchRegexp(`data-show="\$stateFilter===&#39;compliant&#39; &amp;&amp; !\$counts\[&#39;compliant&#39;\]" style="display:none">`))
 		})
@@ -172,7 +172,7 @@ var _ = Describe("fleet page render", func() {
 			var rendered bytes.Buffer
 			Expect(dashboard.View(pageWith()).Render(context.Background(), &rendered)).To(Succeed())
 
-			Expect(rendered.String()).NotTo(ContainSubstring(`style="display:none"`))
+			Expect(rendered.String()).NotTo(MatchRegexp(`<table[^>]*style=`))
 			Expect(rendered.String()).To(ContainSubstring("No compliance evidence yet"))
 		})
 	})

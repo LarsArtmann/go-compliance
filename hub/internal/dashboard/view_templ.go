@@ -287,10 +287,7 @@ func fleetTable(rows []events.RepoRow, selected string) templ.Component {
 			BaseProps: utils.BaseProps{
 				Class:     fleetTableClass,
 				AriaLabel: "Fleet compliance by repository",
-				Attrs: templ.Attributes{
-					"data-show": tableShowExpression,
-					"style":     utils.Ternary(tableStartsHidden(rows, selected), "display:none", ""),
-				},
+				Attrs:     tableAttrs(rows, selected),
 			},
 			Headers:     []string{"Repo", "State", "Findings", "Last run"},
 			Hover:       true,
@@ -311,7 +308,7 @@ func fleetTable(rows []events.RepoRow, selected string) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templruntime.NewAttributeExpression(fmt.Sprintf("$stateFilter==='%s' && !$counts['%s']", chip.State, chip.State)).Resolve(ctx)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 113, Col: 93}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 110, Col: 93}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
 				if templ_7745c5c3_Err != nil {
@@ -353,11 +350,17 @@ func fleetTable(rows []events.RepoRow, selected string) templ.Component {
 // repo (or selects nothing specific); a missing count reads as zero.
 const tableShowExpression = "$stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0"
 
-// tableStartsHidden reports whether the server-rendered rows are empty
-// because of a state selection; the stream and the signal fix it up after
-// that.
-func tableStartsHidden(rows []events.RepoRow, selected string) bool {
-	return len(rows) == 0 && selected != "all" && selected != "unknown"
+// tableAttrs carries the table's reactive visibility. The table starts
+// hidden when the server-rendered rows are empty because of a state
+// selection; the stream and the signal fix that up.
+func tableAttrs(rows []events.RepoRow, selected string) templ.Attributes {
+	attrs := templ.Attributes{"data-show": tableShowExpression}
+
+	if len(rows) == 0 && selected != "all" && selected != "unknown" {
+		attrs["style"] = "display:none"
+	}
+
+	return attrs
 }
 
 func fleetRowsBody(rows []events.RepoRow) templ.Component {
