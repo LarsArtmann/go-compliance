@@ -29,6 +29,7 @@ github.com/larsartmann/cmdguard/flightrecorder v0.2.0/go.mod h1:40VOQtP2KnL7EW6n
 github.com/larsartmann/cmdguard/glamour v0.3.0/go.mod h1:+icuwX3rYSMMzkd/QBETu5+dZ2lGqmgezFLZfPJQHRE=
 github.com/larsartmann/cmdguard/spinner v0.3.0/go.mod h1:AeRdUPkWMHHqKDjabxK74gD23iHKDV9aOi6UX+puyNc=
 github.com/larsartmann/templ-components/charts/echarts v1.27.0/go.mod h1:MX72P5O4y+C19/TCn6mL3AxVWS4LdVxV57CHX6UKFOo=
+github.com/larsartmann/templ-components/charts/echarts v1.27.2/go.mod h1:qslBtSf0oMLrj4iieYYxyPnGHEoypv6oVizjhC+YsFw=
 github.com/microcosm-cc/bluemonday v1.0.27/go.mod h1:jFi9vgW+H7c3V0lb6nR74Ib/DIB5OBs92Dimizgw2cA=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
