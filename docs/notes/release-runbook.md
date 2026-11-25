@@ -12,7 +12,10 @@ step, distilled from the v0.2.0 run (2026-11-20) and the v0.1.0 tag-only gap.
 - **Hub module** (`hub/`): deliberately NEVER tagged (`hub/vX.Y.Z` tags are
   not cut). It ships as the `compliance-hub` binary via the flake
   (`nix run .#compliance-hub`). STACK.md records the decision — do not
-  re-litigate it in a release run.
+  re-litigate it in a release run. On this host the hub runs as a systemd
+  user unit that `scripts/deploy-hub.sh` installs from the committed tree
+  (Appendix A of `docs/decisions/bind-posture.md`), so a redeploy, not a
+  tag, ships a hub change.
 - **Tags are cut only when a code change justifies them** — no cosmetic
   releases for release-page optics.
 

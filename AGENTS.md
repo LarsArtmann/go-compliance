@@ -68,7 +68,7 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
 - **templ**: generator pinned by the hub tool directive (v0.3.1100);
   generated `*_templ.go` files are committed. Run `go tool templ generate`
   from `hub/` ONLY: from the repo root it silently rewrites every
-  `templ.Error` FileName to a `hub/`-prefixed path (bit two sessions on
+  `templ.Error` FileName to a `hub/`-prefixed path (it bit two sessions on
   2026-11-24/25; the CI templ gate now regenerates and diffs). Never import
   `github.com/a-h/templ` in a `.templ` file. The templ LSP `embedlit` hint
   is a false positive: keep `BaseProps: utils.BaseProps{...}` explicit.
