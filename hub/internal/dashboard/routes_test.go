@@ -205,6 +205,29 @@ var _ = Describe("routes and content negotiation", func() {
 		Expect(revalidated.Code).To(Equal(http.StatusNotModified))
 	})
 
+	It("serves the site icon the page links, so browsers log no 404", func() {
+		board := newBoardWithRows()
+		mux := http.NewServeMux()
+		board.RegisterRoutes(mux)
+
+		icon := httptest.NewRecorder()
+		mux.ServeHTTP(icon, httptest.NewRequest(http.MethodGet, "/favicon.svg", nil))
+		Expect(icon.Code).To(Equal(http.StatusOK))
+		Expect(icon.Header().Get("Content-Type")).To(Equal("image/svg+xml"))
+		Expect(icon.Body.String()).To(HavePrefix("<svg"))
+
+		conditional := httptest.NewRequest(http.MethodGet, "/favicon.svg", nil)
+		conditional.Header.Set("If-None-Match", icon.Header().Get("ETag"))
+
+		revalidated := httptest.NewRecorder()
+		mux.ServeHTTP(revalidated, conditional)
+		Expect(revalidated.Code).To(Equal(http.StatusNotModified))
+
+		page := httptest.NewRecorder()
+		mux.ServeHTTP(page, httptest.NewRequest(http.MethodGet, "/", nil))
+		Expect(page.Body.String()).To(ContainSubstring(`<link rel="icon" href="/favicon.svg"/>`))
+	})
+
 	It("returns the styled 404 for unknown paths, not the dashboard", func() {
 		board := newBoardWithRows()
 		mux := http.NewServeMux()

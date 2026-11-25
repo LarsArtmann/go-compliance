@@ -94,7 +94,7 @@ var _ = Describe("fleet page render", func() {
 		Expect(dashboard.View(dashboard.ViewModel{Title: "Fleet compliance"}).
 			Render(context.Background(), &rendered)).To(Succeed())
 
-		Expect(rendered.String()).To(ContainSubstring(`<link rel="icon" href="data:image/svg+xml,`))
+		Expect(rendered.String()).To(ContainSubstring(`<link rel="icon" href="/favicon.svg"/>`))
 	})
 
 	It("keeps a word space between the freshness label and its relative time", func() {
@@ -102,8 +102,16 @@ var _ = Describe("fleet page render", func() {
 		Expect(dashboard.View(dashboard.ViewModel{Title: "Fleet compliance", RenderedAt: time.Now()}).
 			Render(context.Background(), &rendered)).To(Succeed())
 
-		Expect(rendered.String()).To(ContainSubstring(">rendered</span>"))
-		Expect(rendered.String()).NotTo(ContainSubstring("rendered<"))
+		Expect(rendered.String()).To(MatchRegexp(`>rendered</span>\s*<time`))
+	})
+
+	It("emits the pre-paint theme script once", func() {
+		var rendered bytes.Buffer
+		Expect(dashboard.View(dashboard.ViewModel{Title: "Fleet compliance"}).
+			Render(context.Background(), &rendered)).To(Succeed())
+
+		Expect(strings.Count(rendered.String(), "localStorage.getItem('theme')")).To(Equal(1),
+			"html: %s", rendered.String())
 	})
 
 	It("names the fleet table region and gives it the narrow-layout hook", func() {

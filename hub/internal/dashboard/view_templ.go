@@ -161,7 +161,7 @@ func View(model ViewModel) templ.Component {
 			Title:       model.Title,
 			CSSPath:     model.CSSSrc,
 			HTMXVersion: "",
-			Favicon:     faviconHref,
+			Favicon:     faviconRoute,
 			HeadContent: headContent(model),
 		}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
@@ -217,10 +217,10 @@ func pageStatus(renderedAt time.Time) templ.Component {
 	})
 }
 
-// headContent loads the DataStar SDK (self-hosted when ScriptSrc is set)
-// and the pre-paint theme script. Styling is the compiled Tailwind artifact
-// linked via PageProps.CSSPath — the Play CDN and its inline tailwind.config
-// block are gone (CSP debt paid, 2026-11-19).
+// headContent loads the DataStar SDK (self-hosted when ScriptSrc is set).
+// The pre-paint theme script and the stylesheet link come from Base
+// (PageProps.CSSPath); the Play CDN and its inline tailwind.config block are
+// gone (CSP debt paid, 2026-11-19).
 func headContent(model ViewModel) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -251,10 +251,6 @@ func headContent(model ViewModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		}
-		templ_7745c5c3_Err = layout.ThemeScript("").Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
 		}
 		return nil
 	})

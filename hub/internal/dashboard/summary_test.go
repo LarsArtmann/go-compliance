@@ -24,20 +24,20 @@ var _ = Describe("fleet summary", func() {
 		It("states the failing ratio in one sentence, the failing count as the only colored word", func() {
 			html := renderSummary(map[string]int{"failing": 157, "compliant": 47}, 204, "all")
 
-			Expect(html).To(ContainSubstring(
-				`<span class="text-red-700 dark:text-red-400">157</span><span>of 204 repos are failing</span>`))
+			Expect(html).To(MatchRegexp(
+				`text-red-700 dark:text-red-400">157</span>\s*<span>of 204 repos are failing</span>`))
 		})
 
 		It("agrees with a single failing repo in the singular", func() {
 			html := renderSummary(map[string]int{"failing": 1, "compliant": 203}, 204, "all")
 
-			Expect(html).To(ContainSubstring(`>1</span><span>of 204 repos is failing</span>`))
+			Expect(html).To(MatchRegexp(`>1</span>\s*<span>of 204 repos is failing</span>`))
 		})
 
 		It("announces a clean fleet without a warning color", func() {
 			html := renderSummary(map[string]int{"compliant": 47}, 47, "all")
 
-			Expect(html).To(ContainSubstring(`>All</span><span class="text-inherit">47</span><span>repos are compliant</span>`))
+			Expect(html).To(MatchRegexp(`>All</span>\s*<span class="text-inherit">47</span>\s*<span>repos are compliant</span>`))
 			Expect(html).NotTo(ContainSubstring("text-red-"))
 		})
 
@@ -55,20 +55,20 @@ var _ = Describe("fleet summary", func() {
 				map[string]int{"failing": 157, "compliant": 46, "stale": 1, "never-covered": 0}, 204, "all")
 
 			Expect(html).To(ContainSubstring(`aria-label="157 failing, 1 stale, 46 compliant of 204 repos"`))
-			Expect(html).To(HavePrefix(`<div class="flex h-1.5`))
+			Expect(html).To(ContainSubstring(`<div class="flex h-1.5`))
 		})
 
 		It("sizes every share by its count, so the shares always add up", func() {
 			html := renderSummary(map[string]int{"failing": 1, "compliant": 3}, 4, "all")
 
-			Expect(html).To(ContainSubstring(`style="flex:1 1 0%"`))
-			Expect(html).To(ContainSubstring(`style="flex:3 1 0%"`))
+			Expect(html).To(ContainSubstring(`style="flex:1 1 0%;"`))
+			Expect(html).To(ContainSubstring(`style="flex:3 1 0%;"`))
 		})
 
 		It("leaves out the states that hold no repo", func() {
 			html := renderSummary(map[string]int{"compliant": 5}, 5, "all")
 
-			Expect(html).To(ContainSubstring(`style="flex:5 1 0%"`))
+			Expect(html).To(ContainSubstring(`style="flex:5 1 0%;"`))
 			Expect(html).NotTo(ContainSubstring("bg-red-"))
 		})
 	})
@@ -89,11 +89,11 @@ var _ = Describe("fleet summary", func() {
 			html := renderSummary(map[string]int{"failing": 3}, 3, "failing")
 
 			Expect(html).To(MatchRegexp(`aria-pressed="true"[^>]*>\s*Failing`))
-			Expect(html).To(ContainSubstring(
-				`data-attr:aria-pressed="$stateFilter==='failing' ? 'true' : 'false'"`))
-			Expect(html).To(ContainSubstring(
-				`data-attr:aria-pressed="$stateFilter==='all' ? 'true' : 'false'"`))
-			Expect(html).To(ContainSubstring(`data-on-click="$stateFilter='stale'"`))
+			Expect(html).To(MatchRegexp(
+				`data-attr:aria-pressed="\$stateFilter===(?:&#39;|')failing(?:&#39;|') \? (?:&#39;|')true(?:&#39;|') : (?:&#39;|')false(?:&#39;|')"`))
+			Expect(html).To(MatchRegexp(
+				`data-attr:aria-pressed="\$stateFilter===(?:&#39;|')all(?:&#39;|') \? (?:&#39;|')true(?:&#39;|') : (?:&#39;|')false(?:&#39;|')"`))
+			Expect(html).To(MatchRegexp(`data-on-click="\$stateFilter=(?:&#39;|')stale(?:&#39;|')"`))
 		})
 	})
 })

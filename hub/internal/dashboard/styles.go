@@ -60,7 +60,7 @@ func cachedAsset(body []byte, contentType string) http.Handler {
 		w.Header().Set("Cache-Control", "public, max-age=86400, immutable")
 		w.Header().Set("ETag", etag)
 
-		if match := r.Header().Get("If-None-Match"); match != "" &&
+		if match := r.Header.Get("If-None-Match"); match != "" &&
 			strings.Contains(match, etag) {
 			w.WriteHeader(http.StatusNotModified)
 
