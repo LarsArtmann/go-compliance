@@ -1,6 +1,7 @@
 [Unit]
 Description=compliance-hub — fleet compliance dashboard (go-compliance)
 Documentation=https://github.com/LarsArtmann/go-compliance/blob/master/docs/decisions/bind-posture.md
+StartLimitIntervalSec=0
 
 [Service]
 Type=notify
@@ -9,7 +10,6 @@ WatchdogSec=30s
 ExecStart=@BIN@ serve --source file --file %h/.local/state/overview/compliance.json --addr @ADDR@
 Restart=on-failure
 RestartSec=5s
-StartLimitIntervalSec=0
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict

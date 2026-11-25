@@ -63,6 +63,11 @@ fi
 
 mkdir -p "$unit_dir"
 sed -e "s|@BIN@|$bin|g" -e "s|@ADDR@|$addr|g" "$template" >"$unit_dir/$unit_name"
+verify_output="$(systemd-analyze --user verify "$unit_dir/$unit_name" 2>&1 || true)"
+if [ -n "$verify_output" ]; then
+	fail "systemd-analyze rejected the rendered unit:
+$verify_output"
+fi
 systemctl --user daemon-reload
 systemctl --user enable "$unit_name" >/dev/null 2>&1
 systemctl --user restart "$unit_name"
@@ -81,7 +86,13 @@ if [ "$ready" -ne 1 ]; then
 	fail "the hub did not answer 200 on $probe within 20s"
 fi
 
-echo "✓ compliance-hub $version"
+unit_state="$(systemctl --user is-active "$unit_name" 2>/dev/null || true)"
+if [ "$unit_state" != "active" ]; then
+	systemctl --user status "$unit_name" --no-pager -n 20 >&2 || true
+	fail "the unit is '$unit_state' after the restart"
+fi
+
+echo "✓ $version"
 echo "  binary:  $bin"
 echo "  unit:    $unit_dir/$unit_name"
 echo "  page:    http://$addr/"
