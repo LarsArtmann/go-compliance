@@ -39,7 +39,10 @@ templ View(model ViewModel) {
 						BaseProps: utils.BaseProps{ID: FleetRegionID},
 						URL:       model.StreamURL,
 						AutoStart: true,
-						Live:      datastar.LivePolite,
+						// The region wraps a 200-row table: a live region would
+						// announce every patched row to assistive technology.
+						// The headline and the freshness line carry the story.
+						Live: datastar.LiveOff,
 						// A hub restart ends the SSE stream with a clean EOF;
 						// RetryAlways reconnects across restarts (the failure
 						// counter resets on every successful connect).

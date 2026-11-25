@@ -54,6 +54,8 @@ var _ = Describe("fleet page render", func() {
 		Expect(html).To(ContainSubstring("<title>Fleet compliance</title>"))
 		Expect(html).To(ContainSubstring(`id="fleet-summary"`))
 		Expect(html).To(ContainSubstring(`id="fleet-region"`))
+		Expect(html).NotTo(ContainSubstring(`aria-live="polite" aria-atomic=`),
+			"a 200-row table must not be a live region; html: %s", html)
 		Expect(html).To(ContainSubstring(`id="fleet-rows"`))
 		Expect(html).To(ContainSubstring(`data-repo="go-finding"`))
 		Expect(html).To(ContainSubstring("of 1 repo is failing"))
@@ -164,7 +166,7 @@ var _ = Describe("fleet page render", func() {
 			Expect(dashboard.View(model).Render(context.Background(), &rendered)).To(Succeed())
 
 			html := rendered.String()
-			Expect(html).To(MatchRegexp(`<table[^>]*style="display:none;?"`))
+			Expect(html).To(MatchRegexp(`<div data-show="[^"]*" style="display:none"><div class="overflow-x-auto`))
 			Expect(html).To(MatchRegexp(`data-show="\$stateFilter===&#39;stale&#39; &amp;&amp; !\$counts\[&#39;stale&#39;\]">\s*<div class="text-center py-8"><p[^>]*>No stale repos</p>`))
 			Expect(html).To(MatchRegexp(`data-show="\$stateFilter===&#39;compliant&#39; &amp;&amp; !\$counts\[&#39;compliant&#39;\]" style="display:none">`))
 		})
@@ -173,7 +175,7 @@ var _ = Describe("fleet page render", func() {
 			var rendered bytes.Buffer
 			Expect(dashboard.View(pageWith()).Render(context.Background(), &rendered)).To(Succeed())
 
-			Expect(rendered.String()).NotTo(MatchRegexp(`<table[^>]*style=`))
+			Expect(rendered.String()).NotTo(MatchRegexp(`style="display:none"><div class="overflow-x-auto`))
 			Expect(rendered.String()).To(ContainSubstring("No compliance evidence yet"))
 		})
 	})
