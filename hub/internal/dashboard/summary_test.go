@@ -98,7 +98,7 @@ var _ = Describe("fleet summary", func() {
 
 			Expect(html).To(MatchRegexp(
 				`data-attr:aria-pressed="\$stateFilter===(?:&#39;|')failing(?:&#39;|') \? (?:&#39;|')true(?:&#39;|') : (?:&#39;|')false(?:&#39;|')"`))
-			Expect(html).To(MatchRegexp(`data-on-click="\$stateFilter=(?:&#39;|')stale(?:&#39;|')"`))
+			Expect(html).To(MatchRegexp(`data-on:click="\$stateFilter=(?:&#39;|')stale(?:&#39;|')"`))
 
 			// DataStar's class action toggles an object of class names to
 			// booleans; a class string would be iterated character by

@@ -137,8 +137,9 @@ var _ = Describe("routes and content negotiation", func() {
 		mux.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/", nil))
 
 		body := recorder.Body.String()
-		Expect(body).To(ContainSubstring(`data-on-click="$stateFilter=&#39;failing&#39;"`))
-		Expect(body).To(ContainSubstring(`data-on-click="$stateFilter=&#39;all&#39;"`))
+		Expect(body).To(ContainSubstring(`data-on:click="$stateFilter=&#39;failing&#39;"`))
+		Expect(body).To(ContainSubstring(`data-on:click="$stateFilter=&#39;all&#39;"`))
+		Expect(body).NotTo(ContainSubstring(`data-on-click=`))
 		Expect(body).To(ContainSubstring(`aria-pressed="true"`))
 		Expect(strings.Count(body, `data-show="$stateFilter===&#39;all&#39;`)).To(Equal(2))
 	})

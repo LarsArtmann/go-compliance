@@ -31,7 +31,7 @@ templ StateFilterChips(selected string, counts map[string]int, total int) {
 		for _, chip := range filterChips {
 			<button
 				type="button"
-				data-on-click={ fmt.Sprintf("$stateFilter='%s'", chip.State) }
+				data-on:click={ fmt.Sprintf("$stateFilter='%s'", chip.State) }
 				data-class={ chipClassExpression(chip.State) }
 				data-attr:aria-pressed={ fmt.Sprintf("$stateFilter==='%s' ? 'true' : 'false'", chip.State) }
 				class={ chipBaseClass, utils.Ternary(chip.State == selected, chipSelectedClass, chipUnselectedClass) }
