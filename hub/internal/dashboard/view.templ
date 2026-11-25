@@ -29,9 +29,9 @@ templ View(model ViewModel) {
 					Title:  model.Title,
 					Action: pageStatus(model.RenderedAt),
 				})
-				<div data-signals={ fmt.Sprintf("{\"stateFilter\":\"%s\"}", model.StateFilter) }>
+				<div data-signals={ filterSignalsJSON(model.Counts, model.Total, model.StateFilter) }>
 					<div id={ FleetSummaryID }>
-						@FleetSummary(events.CountStates(model.Rows), len(model.Rows), model.StateFilter)
+						@FleetSummary(model.Counts, model.Total, model.StateFilter)
 					</div>
 				</div>
 				<div class="mt-6">
@@ -45,7 +45,7 @@ templ View(model ViewModel) {
 						// counter resets on every successful connect).
 						Retry: datastar.RetryAlways,
 					}) {
-						@fleetTable(model.Rows)
+						@fleetTable(model.Rows, model.StateFilter)
 					}
 				</div>
 			</div>
@@ -86,13 +86,19 @@ templ headContent(model ViewModel) {
 // fleetTable renders the fleet table with the patchable tbody: the stream
 // targets the BodyID region (inner mode) and individual rows via their
 // data-repo selectors. The fleet-table container lets the stylesheet stack
-// the rows once the table gets narrower than its columns.
-templ fleetTable(rows []events.RepoRow) {
+// the rows once the table gets narrower than its columns. A selection that
+// holds no repo hides the table and says so; the table stays in the DOM
+// because the stream patches its body.
+templ fleetTable(rows []events.RepoRow, selected string) {
 	<div class="@container">
 		@display.Table(display.TableProps{
 			BaseProps: utils.BaseProps{
 				Class:     fleetTableClass,
 				AriaLabel: "Fleet compliance by repository",
+				Attrs: templ.Attributes{
+					"data-show": tableShowExpression,
+					"style":     utils.Ternary(tableStartsHidden(rows, selected), "display:none", ""),
+				},
 			},
 			Headers:     []string{"Repo", "State", "Findings", "Last run"},
 			Hover:       true,
@@ -101,15 +107,38 @@ templ fleetTable(rows []events.RepoRow) {
 			BodyID:      DefaultRowsSelector[1:],
 			Body:        fleetRowsBody(rows),
 		})
+		for _, chip := range filterChips {
+			if chip.State != "all" {
+				<div
+					data-show={ fmt.Sprintf("$stateFilter==='%s' && !$counts['%s']", chip.State, chip.State) }
+					if !(len(rows) == 0 && chip.State == selected) {
+						style="display:none"
+					}
+				>
+					@display.SimpleEmptyState(chip.Empty)
+				</div>
+			}
+		}
 	</div>
+}
+
+// tableShowExpression keeps the table visible while the selection holds a
+// repo (or selects nothing specific); a missing count reads as zero.
+const tableShowExpression = "$stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0"
+
+// tableStartsHidden reports whether the server-rendered rows are empty
+// because of a state selection; the stream and the signal fix it up after
+// that.
+func tableStartsHidden(rows []events.RepoRow, selected string) bool {
+	return len(rows) == 0 && selected != "all" && selected != "unknown"
 }
 
 templ fleetRowsBody(rows []events.RepoRow) {
 	@FleetRows(rows)
 	if len(rows) == 0 {
 		<tr>
-			<td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">
-				No compliance evidence yet — waiting for the first refresh.
+			<td colspan="4">
+				@display.SimpleEmptyState("No compliance evidence yet. The first refresh publishes it here.")
 			</td>
 		</tr>
 	}

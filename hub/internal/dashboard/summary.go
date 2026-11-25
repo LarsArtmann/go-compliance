@@ -1,6 +1,7 @@
 package dashboard
 
 import (
+	"encoding/json/v2"
 	"strconv"
 	"strings"
 
@@ -109,4 +110,31 @@ func chipCount(state string, counts map[string]int, total int) int {
 	}
 
 	return counts[state]
+}
+
+// filterSignals is the page's initial signal seed. It carries the counts
+// as well as the selection, so no reactive expression reads a missing
+// signal before the stream connects.
+type filterSignals struct {
+	Selected string         `json:"stateFilter"`
+	Total    int            `json:"total"`
+	Counts   map[string]int `json:"counts"`
+}
+
+// filterSignalsJSON encodes the initial signal seed, or "" if encoding
+// failed (the page then starts without a seed and the stream supplies it).
+func filterSignalsJSON(counts map[string]int, total int, selected string) string {
+	if counts == nil {
+		counts = map[string]int{}
+	}
+
+	encoded, err := json.Marshal(
+		filterSignals{Selected: selected, Total: total, Counts: counts},
+		json.Deterministic(true),
+	)
+	if err != nil {
+		return ""
+	}
+
+	return string(encoded)
 }

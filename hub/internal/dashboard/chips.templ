@@ -6,19 +6,21 @@ import (
 	"github.com/larsartmann/templ-components/utils"
 )
 
-// filterChip is the chip model: the signal value it selects and its label.
+// filterChip is the chip model: the signal value it selects, its label, and
+// what the table says when the selection holds no repo.
 type filterChip struct {
 	State string
 	Label string
+	Empty string
 }
 
 // filterChips is ordered worst-first to mirror the table ordering.
 var filterChips = []filterChip{
 	{State: "all", Label: "All"},
-	{State: "failing", Label: "Failing"},
-	{State: "stale", Label: "Stale"},
-	{State: "never-covered", Label: "Never covered"},
-	{State: "compliant", Label: "Compliant"},
+	{State: "failing", Label: "Failing", Empty: "No failing repos"},
+	{State: "stale", Label: "Stale", Empty: "No stale repos"},
+	{State: "never-covered", Label: "Never covered", Empty: "No never-covered repos"},
+	{State: "compliant", Label: "Compliant", Empty: "No compliant repos"},
 }
 
 // StateFilterChips renders the state filter as zero-navigation buttons: each

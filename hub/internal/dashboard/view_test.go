@@ -15,6 +15,19 @@ import (
 )
 
 var _ = Describe("fleet page render", func() {
+	// pageWith builds a view model over the whole fleet, the way the page
+	// handler does, so the summary speaks for every row.
+	pageWith := func(rows ...events.RepoRow) dashboard.ViewModel {
+		GinkgoHelper()
+
+		return dashboard.ViewModel{
+			Title:  "Fleet compliance",
+			Rows:   rows,
+			Counts: events.CountStates(rows),
+			Total:  len(rows),
+		}
+	}
+
 	It("renders the shell, fleet summary, live region, and patch targets", func() {
 		model := dashboard.ViewModel{
 			Title:     "Fleet compliance",
@@ -29,7 +42,9 @@ var _ = Describe("fleet page render", func() {
 				LastRunAt:   time.Date(2026, 11, 17, 20, 0, 0, 0, time.UTC),
 				LastVerdict: compliance.VerdictFailed,
 			}},
-		}
+			}
+			model.Counts = events.CountStates(model.Rows)
+			model.Total = len(model.Rows)
 
 		var rendered bytes.Buffer
 		Expect(dashboard.View(model).Render(context.Background(), &rendered)).To(Succeed())
@@ -116,11 +131,50 @@ var _ = Describe("fleet page render", func() {
 
 	It("names the fleet table region and gives it the narrow-layout hook", func() {
 		var rendered bytes.Buffer
-		Expect(dashboard.View(dashboard.ViewModel{Title: "Fleet compliance"}).
+		Expect(dashboard.View(pageWith(events.RepoRow{Repo: "one"})).
 			Render(context.Background(), &rendered)).To(Succeed())
 
 		Expect(rendered.String()).To(ContainSubstring(`aria-label="Fleet compliance by repository"`))
 		Expect(rendered.String()).To(ContainSubstring("fleet-table"))
+	})
+
+	It("seeds the filter and the counts, so no expression reads a missing signal", func() {
+		model := pageWith(
+			events.RepoRow{Repo: "broken", State: compliance.StateFailing},
+			events.RepoRow{Repo: "ok", State: compliance.StateCompliant},
+		)
+		model.StateFilter = "failing"
+
+		var rendered bytes.Buffer
+		Expect(dashboard.View(model).Render(context.Background(), &rendered)).To(Succeed())
+
+		Expect(rendered.String()).To(ContainSubstring(
+			`data-signals="{&#34;stateFilter&#34;:&#34;failing&#34;,&#34;total&#34;:2,&#34;counts&#34;:{&#34;compliant&#34;:1,&#34;failing&#34;:1}}"`))
+		Expect(rendered.String()).To(MatchRegexp(`>Failing\s*<span[^>]*>1</span>`))
+	})
+
+	Describe("a state selection that holds no repo", func() {
+		It("hides the table at first paint and names the empty selection", func() {
+			model := pageWith(events.RepoRow{Repo: "broken", State: compliance.StateFailing})
+			model.StateFilter = "stale"
+			model.Rows = nil
+
+			var rendered bytes.Buffer
+			Expect(dashboard.View(model).Render(context.Background(), &rendered)).To(Succeed())
+
+			html := rendered.String()
+			Expect(html).To(MatchRegexp(`<table[^>]*style="display:none"`))
+			Expect(html).To(MatchRegexp(`data-show="\$stateFilter===&#39;stale&#39; &amp;&amp; !\$counts\[&#39;stale&#39;\]">\s*<div class="text-center py-8"><p[^>]*>No stale repos</p>`))
+			Expect(html).To(MatchRegexp(`data-show="\$stateFilter===&#39;compliant&#39; &amp;&amp; !\$counts\[&#39;compliant&#39;\]" style="display:none">`))
+		})
+
+		It("keeps the table visible for the all selection, even with no evidence", func() {
+			var rendered bytes.Buffer
+			Expect(dashboard.View(pageWith()).Render(context.Background(), &rendered)).To(Succeed())
+
+			Expect(rendered.String()).NotTo(ContainSubstring(`style="display:none"`))
+			Expect(rendered.String()).To(ContainSubstring("No compliance evidence yet"))
+		})
 	})
 
 	It("keeps row patches script-free and inside the patch budget", func() {

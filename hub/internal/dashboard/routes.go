@@ -115,6 +115,8 @@ func (d *Dashboard) pageHandler(routes Routes) http.Handler {
 			ScriptSrc:   versionedScriptSrc(routes.Script),
 			CSSSrc:      versionedCSSHref(routes.CSS),
 			Rows:        filterRowsByState(rows, stateFilter),
+			Counts:      events.CountStates(rows),
+			Total:       len(rows),
 			StateFilter: stateFilterOrAll(stateFilter),
 			RenderedAt:  time.Now(),
 		}

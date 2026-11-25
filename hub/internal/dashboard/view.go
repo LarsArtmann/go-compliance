@@ -19,8 +19,13 @@ type ViewModel struct {
 	// (embedders that own styling).
 	CSSSrc string
 	// Rows is the initial fleet state, rendered server-side so the page
-	// paints before the stream connects.
+	// paints before the stream connects. StateFilter may have narrowed it.
 	Rows []events.RepoRow
+	// Counts and Total describe the WHOLE fleet, whatever StateFilter
+	// narrowed Rows to: the headline and the chips always speak for the
+	// fleet.
+	Counts map[string]int
+	Total  int
 	// StateFilter is the initially-selected filter chip ("all" when
 	// empty); it seeds the stateFilter signal and filters the rows.
 	StateFilter string

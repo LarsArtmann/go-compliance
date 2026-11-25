@@ -125,7 +125,11 @@ var _ = Describe("routes and content negotiation", func() {
 		body := recorder.Body.String()
 		Expect(body).To(ContainSubstring("data-repo=\"broken\""))
 		Expect(body).NotTo(ContainSubstring("data-repo=\"ok\""))
-		Expect(body).To(ContainSubstring(`data-signals="{&#34;stateFilter&#34;:&#34;failing&#34;}"`))
+		Expect(body).To(ContainSubstring(`data-signals="{&#34;stateFilter&#34;:&#34;failing&#34;,&#34;total&#34;:2,`))
+
+		// The summary speaks for the whole fleet, not the narrowed rows.
+		Expect(body).To(ContainSubstring(`>1</span> <span>of 2 repos is failing</span>`))
+		Expect(body).To(MatchRegexp(`>Compliant\s*<span[^>]*>1</span>`))
 	})
 
 	It("renders filter chips wired to the stateFilter signal", func() {
