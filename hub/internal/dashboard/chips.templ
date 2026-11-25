@@ -1,6 +1,10 @@
 package dashboard
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/larsartmann/templ-components/utils"
+)
 
 // filterChip is the chip model: the signal value it selects and its label.
 type filterChip struct {
@@ -28,9 +32,9 @@ templ StateFilterChips(selected string, counts map[string]int, total int) {
 			<button
 				type="button"
 				data-on-click={ fmt.Sprintf("$stateFilter='%s'", chip.State) }
-				data-class={ fmt.Sprintf("$stateFilter==='%s' ? '%s' : '%s'", chip.State, chipSelectedClass, chipUnselectedClass) }
+				data-class={ chipClassExpression(chip.State) }
 				data-attr:aria-pressed={ fmt.Sprintf("$stateFilter==='%s' ? 'true' : 'false'", chip.State) }
-				class={ chipBaseClass }
+				class={ chipBaseClass, utils.Ternary(chip.State == selected, chipSelectedClass, chipUnselectedClass) }
 				aria-pressed={ fmt.Sprintf("%t", chip.State == selected) }
 			>
 				{ chip.Label }
@@ -38,6 +42,15 @@ templ StateFilterChips(selected string, counts map[string]int, total int) {
 			</button>
 		}
 	</div>
+}
+
+// chipClassExpression swaps a chip between its selected and unselected
+// looks as the filter signal changes. DataStar's class action expects an
+// object of class names to booleans; a plain class string would be iterated
+// character by character.
+func chipClassExpression(state string) string {
+	return fmt.Sprintf("{ '%s': $stateFilter==='%s', '%s': $stateFilter!=='%s' }",
+		chipSelectedClass, state, chipUnselectedClass, state)
 }
 
 const (

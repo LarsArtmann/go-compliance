@@ -94,7 +94,7 @@ var _ = Describe("fleet page render", func() {
 		Expect(dashboard.View(dashboard.ViewModel{Title: "Fleet compliance"}).
 			Render(context.Background(), &rendered)).To(Succeed())
 
-		Expect(rendered.String()).To(ContainSubstring(`<link rel="icon" href="/favicon.svg"/>`))
+		Expect(rendered.String()).To(ContainSubstring(`<link rel="icon" href="/favicon.svg">`))
 	})
 
 	It("keeps a word space between the freshness label and its relative time", func() {

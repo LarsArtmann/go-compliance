@@ -97,51 +97,68 @@
   }
 }
 
+/* The fleet table reads as magnitudes, so the findings column is
+   right-aligned like a number column. Unlayered on purpose: it overrides
+   the library's utilities. */
+.fleet-table th:nth-child(3),
+.fleet-table td:nth-child(3) {
+  text-align: right;
+}
+
 /* The fleet table keeps four columns while they fit. Narrower than that,
-   each row stacks: the repo and its state, then the findings, then the
-   last run. The table semantics stay; only the boxes move. */
-@layer components {
-  @container (width < 40rem) {
-    .fleet-table thead {
-      display: none;
-    }
+   each row stacks: the repo and its state, then the findings and the last
+   run on one line. A last-run cell that lists its worst steps takes its
+   own line. The table semantics stay; only the boxes move. */
+@container (width < 40rem) {
+  .fleet-table thead {
+    display: none;
+  }
 
-    .fleet-table table,
-    .fleet-table tbody {
-      display: block;
-    }
+  .fleet-table table,
+  .fleet-table tbody {
+    display: block;
+  }
 
-    .fleet-table tbody > tr {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      column-gap: 0.75rem;
-      row-gap: 0.25rem;
-      padding: 0.625rem 1rem;
-    }
+  .fleet-table tbody > tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.75rem;
+    row-gap: 0.125rem;
+    padding: 0.625rem 1rem;
+  }
 
-    .fleet-table tbody > tr > td {
-      display: block;
-      padding: 0;
-    }
+  .fleet-table tbody > tr > td {
+    display: block;
+    padding: 0;
+  }
 
-    .fleet-table tbody > tr > td:nth-child(2) {
-      grid-column: 2;
-      grid-row: 1;
-      justify-self: end;
-    }
+  .fleet-table tbody > tr > td:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+  }
 
-    .fleet-table tbody > tr > td:nth-child(3),
-    .fleet-table tbody > tr > td:nth-child(4) {
-      grid-column: 1 / -1;
-    }
+  .fleet-table tbody > tr > td:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
 
-    .fleet-table tbody > tr > td:nth-child(3) {
-      grid-row: 2;
-    }
+  .fleet-table tbody > tr > td:nth-child(3) {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: left;
+  }
 
-    .fleet-table tbody > tr > td:nth-child(4) {
-      grid-row: 3;
-    }
+  .fleet-table tbody > tr > td:nth-child(4) {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+
+  .fleet-table tbody > tr > td:nth-child(4).fleet-has-steps {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: start;
   }
 }
 

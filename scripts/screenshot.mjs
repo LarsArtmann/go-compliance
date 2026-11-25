@@ -149,7 +149,12 @@ const truthExpression = `JSON.stringify({
 	rows: document.querySelectorAll("#fleet-rows tr[data-repo]").length,
 	visibleRows: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => getComputedStyle(row).display !== "none").length,
 	visibleStates: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => getComputedStyle(row).display !== "none").reduce((counts, row) => { const state = row.children[1]?.textContent?.trim() ?? ""; counts[state] = (counts[state] ?? 0) + 1; return counts; }, {}),
-	statCards: [...document.querySelectorAll("#stat-cards > *")].map((card) => card.innerText.replace(/\\s+/g, " ").trim()),
+	statCards: [...document.querySelectorAll("#fleet-summary [role=group] button")].map((chip) => chip.innerText.replace(/\\s+/g, " ").trim()),
+	headline: (document.querySelector("#fleet-summary p")?.innerText ?? "").replace(/\\s+/g, " ").trim(),
+	barLabel: document.querySelector("#fleet-summary [role=img]")?.getAttribute("aria-label") ?? "",
+	favicon: document.querySelector("link[rel~='icon']")?.getAttribute("href") ?? "",
+	rowDisplay: getComputedStyle(document.querySelector("#fleet-rows tr[data-repo]")).display,
+	theadDisplay: getComputedStyle(document.querySelector("#fleet-rows")).display === "none" ? "n/a" : getComputedStyle(document.querySelector("thead")).display,
 	findingsCells: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => (row.children[2]?.textContent ?? "").includes("finding")).length,
 	viewportWidth: window.innerWidth,
 	scrollWidth: document.documentElement.scrollWidth,
@@ -215,8 +220,9 @@ writeFileSync(
 
 for (const entry of truth) {
 	console.log(
-		`${entry.view}: dark=${entry.dark} rows=${entry.rows} visible=${entry.visibleRows} ` +
-			`cards=[${entry.statCards.join(" | ")}] width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight}`,
+		`${entry.view}: dark=${entry.dark} rows=${entry.rows} visible=${entry.visibleRows} rowDisplay=${entry.rowDisplay} ` +
+			`headline="${entry.headline}" chips=[${entry.statCards.join(" | ")}] bar="${entry.barLabel}" favicon=${entry.favicon} ` +
+			`width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight}`,
 	);
 }
 

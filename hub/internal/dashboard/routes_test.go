@@ -225,7 +225,7 @@ var _ = Describe("routes and content negotiation", func() {
 
 		page := httptest.NewRecorder()
 		mux.ServeHTTP(page, httptest.NewRequest(http.MethodGet, "/", nil))
-		Expect(page.Body.String()).To(ContainSubstring(`<link rel="icon" href="/favicon.svg"/>`))
+		Expect(page.Body.String()).To(ContainSubstring(`<link rel="icon" href="/favicon.svg">`))
 	})
 
 	It("returns the styled 404 for unknown paths, not the dashboard", func() {

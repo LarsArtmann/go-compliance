@@ -78,22 +78,34 @@ var _ = Describe("fleet summary", func() {
 			html := renderSummary(map[string]int{"failing": 157, "compliant": 47}, 204, "all")
 
 			Expect(html).To(ContainSubstring(">All"))
-			Expect(html).To(MatchRegexp(`>All<[^<]*<span[^>]*>204</span>`))
-			Expect(html).To(MatchRegexp(`>Failing<[^<]*<span[^>]*>157</span>`))
-			Expect(html).To(MatchRegexp(`>Stale<[^<]*<span[^>]*>0</span>`))
-			Expect(html).To(MatchRegexp(`>Never covered<[^<]*<span[^>]*>0</span>`))
-			Expect(html).To(MatchRegexp(`>Compliant<[^<]*<span[^>]*>47</span>`))
+			Expect(html).To(MatchRegexp(`>All\s*<span[^>]*>204</span>`))
+			Expect(html).To(MatchRegexp(`>Failing\s*<span[^>]*>157</span>`))
+			Expect(html).To(MatchRegexp(`>Stale\s*<span[^>]*>0</span>`))
+			Expect(html).To(MatchRegexp(`>Never covered\s*<span[^>]*>0</span>`))
+			Expect(html).To(MatchRegexp(`>Compliant\s*<span[^>]*>47</span>`))
 		})
 
-		It("mark the initially selected state as pressed and keep it in step with the filter", func() {
+		It("show the selected state on first paint, without JavaScript", func() {
 			html := renderSummary(map[string]int{"failing": 3}, 3, "failing")
 
-			Expect(html).To(MatchRegexp(`aria-pressed="true"[^>]*>\s*Failing`))
+			Expect(html).To(MatchRegexp(` class="min-h-8[^"]*bg-accent-50[^"]*" aria-pressed="true">Failing`))
+			Expect(html).To(MatchRegexp(` class="min-h-8[^"]*bg-white[^"]*" aria-pressed="false">All`))
+			Expect(html).To(MatchRegexp(` class="min-h-8[^"]*bg-white[^"]*" aria-pressed="false">Compliant`))
+		})
+
+		It("keep the pressed state and the look in step with the filter signal", func() {
+			html := renderSummary(map[string]int{"failing": 3}, 3, "failing")
+
 			Expect(html).To(MatchRegexp(
 				`data-attr:aria-pressed="\$stateFilter===(?:&#39;|')failing(?:&#39;|') \? (?:&#39;|')true(?:&#39;|') : (?:&#39;|')false(?:&#39;|')"`))
-			Expect(html).To(MatchRegexp(
-				`data-attr:aria-pressed="\$stateFilter===(?:&#39;|')all(?:&#39;|') \? (?:&#39;|')true(?:&#39;|') : (?:&#39;|')false(?:&#39;|')"`))
 			Expect(html).To(MatchRegexp(`data-on-click="\$stateFilter=(?:&#39;|')stale(?:&#39;|')"`))
+
+			// DataStar's class action toggles an object of class names to
+			// booleans; a class string would be iterated character by
+			// character and the selection would never show.
+			Expect(html).To(MatchRegexp(
+				`data-class="\{ (?:&#39;|')border-accent-600 bg-accent-50[^"=]*: \$stateFilter===(?:&#39;|')failing(?:&#39;|'), `+
+					`(?:&#39;|')border-gray-200 bg-white[^"=]*: \$stateFilter!==(?:&#39;|')failing(?:&#39;|') \}"`))
 		})
 	})
 })

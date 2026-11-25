@@ -5,6 +5,7 @@ import (
 
 	"github.com/dustin/go-humanize/english"
 	"github.com/larsartmann/templ-components/display"
+	"github.com/larsartmann/templ-components/utils"
 
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
@@ -24,10 +25,10 @@ templ FleetRows(rows []events.RepoRow) {
 // remove it.
 templ FleetRow(row events.RepoRow) {
 	<tr data-repo={ row.Repo } data-show={ fmt.Sprintf("$stateFilter==='all' || $stateFilter==='%s'", row.State) }>
-		<td class="font-medium [overflow-wrap:anywhere]">{ row.Repo }</td>
-		<td>@StateBadge(row.State)</td>
-		<td class="tabular-nums">@findingsCell(row)</td>
-		<td>
+		<td class={ cellClass }>{ row.Repo }</td>
+		<td class={ cellClass }>@StateBadge(row.State)</td>
+		<td class={ cellClass + " tabular-nums" }>@findingsCell(row)</td>
+		<td class={ utils.Class(cellClass, lastRunCellClass(row)) }>
 			// RelativeTime defaults to AutoRefresh false here ON PURPOSE: the
 			// component couples that flag to emitting a per-instance <script>,
 			// and rows re-render inside every DataStar patch. The
@@ -56,6 +57,20 @@ templ FleetRow(row events.RepoRow) {
 			}
 		</td>
 	</tr>
+}
+
+// cellClass is the fleet row cell padding: one step tighter than the
+// header, so a 200-row fleet stays scannable without cramped text.
+const cellClass = "px-4 py-1.5"
+
+// lastRunCellClass marks a last-run cell that also lists its worst steps:
+// the stacked narrow layout gives such a cell its own line.
+func lastRunCellClass(row events.RepoRow) string {
+	if len(row.WorstSteps) > 0 {
+		return "fleet-has-steps"
+	}
+
+	return ""
 }
 
 // StateBadge maps a compliance state onto its semantic badge.
