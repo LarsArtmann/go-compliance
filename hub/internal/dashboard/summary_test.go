@@ -104,7 +104,7 @@ var _ = Describe("fleet summary", func() {
 			// booleans; a class string would be iterated character by
 			// character and the selection would never show.
 			Expect(html).To(MatchRegexp(
-				`data-class="\{ (?:&#39;|')border-accent-600 bg-accent-50[^"=]*: \$stateFilter===(?:&#39;|')failing(?:&#39;|'), `+
+				`data-class="\{ (?:&#39;|')border-accent-600 bg-accent-50[^"=]*: \$stateFilter===(?:&#39;|')failing(?:&#39;|'), ` +
 					`(?:&#39;|')border-gray-200 bg-white[^"=]*: \$stateFilter!==(?:&#39;|')failing(?:&#39;|') \}"`))
 		})
 	})

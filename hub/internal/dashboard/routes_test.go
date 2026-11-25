@@ -145,7 +145,8 @@ var _ = Describe("routes and content negotiation", func() {
 		Expect(body).To(ContainSubstring(`data-on:click="$stateFilter=&#39;all&#39;"`))
 		Expect(body).NotTo(ContainSubstring(`data-on-click=`))
 		Expect(body).To(ContainSubstring(`aria-pressed="true"`))
-		Expect(strings.Count(body, `data-show="$stateFilter===&#39;all&#39; || $stateFilter===&#39;`)).To(Equal(2))
+		Expect(strings.Count(body, `data-show="$stateFilter===&#39;all&#39; || $stateFilter===&#39;failing&#39;"`)).To(Equal(1))
+		Expect(strings.Count(body, `data-show="$stateFilter===&#39;all&#39; || $stateFilter===&#39;compliant&#39;"`)).To(Equal(1))
 	})
 
 	It("supports custom route prefixes", func() {

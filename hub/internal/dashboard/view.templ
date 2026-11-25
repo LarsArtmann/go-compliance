@@ -91,19 +91,25 @@ templ headContent(model ViewModel) {
 // because the stream patches its body.
 templ fleetTable(rows []events.RepoRow, selected string) {
 	<div class="@container">
-		@display.Table(display.TableProps{
-			BaseProps: utils.BaseProps{
-				Class:     fleetTableClass,
-				AriaLabel: "Fleet compliance by repository",
-				Attrs:     tableAttrs(rows, selected),
-			},
-			Headers:     []string{"Repo", "State", "Findings", "Last run"},
-			Hover:       true,
-			CellPadding: display.TableCellPaddingCompact,
-			LazyRows:    true,
-			BodyID:      DefaultRowsSelector[1:],
-			Body:        fleetRowsBody(rows),
-		})
+		<div
+			data-show={ tableShowExpression }
+			if len(rows) == 0 && selected != "all" && selected != "unknown" {
+				style="display:none"
+			}
+		>
+			@display.Table(display.TableProps{
+				BaseProps: utils.BaseProps{
+					Class:     fleetTableClass,
+					AriaLabel: "Fleet compliance by repository",
+				},
+				Headers:     []string{"Repo", "State", "Findings", "Last run"},
+				Hover:       true,
+				CellPadding: display.TableCellPaddingCompact,
+				LazyRows:    true,
+				BodyID:      DefaultRowsSelector[1:],
+				Body:        fleetRowsBody(rows),
+			})
+		</div>
 		for _, chip := range filterChips {
 			if chip.State != "all" {
 				<div
@@ -122,19 +128,6 @@ templ fleetTable(rows []events.RepoRow, selected string) {
 // tableShowExpression keeps the table visible while the selection holds a
 // repo (or selects nothing specific); a missing count reads as zero.
 const tableShowExpression = "$stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0"
-
-// tableAttrs carries the table's reactive visibility. The table starts
-// hidden when the server-rendered rows are empty because of a state
-// selection; the stream and the signal fix that up.
-func tableAttrs(rows []events.RepoRow, selected string) templ.Attributes {
-	attrs := templ.Attributes{"data-show": tableShowExpression}
-
-	if len(rows) == 0 && selected != "all" && selected != "unknown" {
-		attrs["style"] = "display:none"
-	}
-
-	return attrs
-}
 
 templ fleetRowsBody(rows []events.RepoRow) {
 	@FleetRows(rows)

@@ -21,10 +21,11 @@ var _ = Describe("fleet page render", func() {
 		GinkgoHelper()
 
 		return dashboard.ViewModel{
-			Title:  "Fleet compliance",
-			Rows:   rows,
-			Counts: events.CountStates(rows),
-			Total:  len(rows),
+			Title:       "Fleet compliance",
+			Rows:        rows,
+			Counts:      events.CountStates(rows),
+			Total:       len(rows),
+			StateFilter: "all",
 		}
 	}
 
@@ -42,9 +43,9 @@ var _ = Describe("fleet page render", func() {
 				LastRunAt:   time.Date(2026, 11, 17, 20, 0, 0, 0, time.UTC),
 				LastVerdict: compliance.VerdictFailed,
 			}},
-			}
-			model.Counts = events.CountStates(model.Rows)
-			model.Total = len(model.Rows)
+		}
+		model.Counts = events.CountStates(model.Rows)
+		model.Total = len(model.Rows)
 
 		var rendered bytes.Buffer
 		Expect(dashboard.View(model).Render(context.Background(), &rendered)).To(Succeed())

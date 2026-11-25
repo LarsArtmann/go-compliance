@@ -156,6 +156,8 @@ const truthExpression = `JSON.stringify({
 	barLabel: document.querySelector("#fleet-summary [role=img]")?.getAttribute("aria-label") ?? "",
 	favicon: document.querySelector("link[rel~='icon']")?.getAttribute("href") ?? "",
 	rowDisplay: getComputedStyle(document.querySelector("#fleet-rows tr[data-repo]")).display,
+	tableDisplay: getComputedStyle(document.querySelector("#fleet-region table")).display,
+	emptyMessages: [...document.querySelectorAll("#fleet-region .text-center")].filter((el) => el.getClientRects().length > 0).map((el) => el.textContent.trim()),
 	findingsCells: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => (row.children[2]?.textContent ?? "").includes("finding")).length,
 	viewportWidth: window.innerWidth,
 	scrollWidth: document.documentElement.scrollWidth,
@@ -217,6 +219,7 @@ try {
 
 		if (view.name === "dashboard-light") {
 			filterChecks.push(await clickChip("Stale", sessionId));
+			await capture(sessionId, "dashboard-light-stale", { width: view.width, height: view.height });
 			filterChecks.push(await clickChip("Failing", sessionId));
 			await capture(sessionId, "dashboard-light-failing", { width: view.width, height: view.height });
 			filterChecks.push(await clickChip("All", sessionId));
@@ -263,12 +266,12 @@ if (filterChecks.length === 3) {
 	const [stale, failing, all] = filterChecks;
 	const light = truth.find((entry) => entry.view === "dashboard-light");
 
-	if (stale.visibleRows !== 0 || stale.pressedChips.join() !== "Stale" || !stale.pressedChipHighlighted) {
-		failures.push(`filter: after clicking Stale, ${stale.visibleRows} rows are visible and pressed=[${stale.pressedChips}]`);
+	if (stale.visibleRows !== 0 || stale.pressedChips.join() !== "Stale" || !stale.pressedChipHighlighted || stale.tableDisplay !== "none" || stale.emptyMessages.join() !== "No stale repos") {
+		failures.push(`filter: after clicking Stale, ${stale.visibleRows} rows are visible, table display is ${stale.tableDisplay}, messages are [${stale.emptyMessages}], pressed=[${stale.pressedChips}]`);
 	}
 
 	const failingWanted = light?.visibleStates.failing ?? 0;
-	if (failing.visibleRows !== failingWanted || Object.keys(failing.visibleStates).join() !== "failing" || failing.pressedChips.join() !== "Failing" || !failing.pressedChipHighlighted) {
+	if (failing.visibleRows !== failingWanted || Object.keys(failing.visibleStates).join() !== "failing" || failing.pressedChips.join() !== "Failing" || !failing.pressedChipHighlighted || failing.tableDisplay === "none" || failing.emptyMessages.length > 0) {
 		failures.push(`filter: after clicking Failing, ${failing.visibleRows} rows are visible (${JSON.stringify(failing.visibleStates)}), expected ${failingWanted} failing; pressed=[${failing.pressedChips}]`);
 	}
 
@@ -277,7 +280,7 @@ if (filterChecks.length === 3) {
 	}
 
 	for (const check of filterChecks) {
-		console.log(`filter ${check.clicked}: visible=${check.visibleRows} states=${JSON.stringify(check.visibleStates)} pressed=[${check.pressedChips}] highlighted=${check.pressedChipHighlighted}`);
+		console.log(`filter ${check.clicked}: visible=${check.visibleRows} table=${check.tableDisplay} messages=[${check.emptyMessages}] states=${JSON.stringify(check.visibleStates)} pressed=[${check.pressedChips}] highlighted=${check.pressedChipHighlighted}`);
 	}
 }
 
