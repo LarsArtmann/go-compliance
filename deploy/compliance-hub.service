@@ -1,5 +1,7 @@
-# compliance-hub systemd unit (upstream reference; the NixOS module in the
-# fleet config derives from this shape).
+# compliance-hub systemd unit: upstream reference for a system-level install
+# (distro package or a store path in place of /usr/bin/compliance-hub).
+# No NixOS module derives from it. This host runs the user unit instead:
+# deploy/compliance-hub.user.service, installed by scripts/deploy-hub.sh.
 #
 # Install to /etc/systemd/system/compliance-hub.service or drop into a
 # systemd unit search path, then:
@@ -16,6 +18,8 @@ Description=Fleet compliance hub (go-compliance)
 Documentation=https://github.com/LarsArtmann/go-compliance
 After=network-online.target
 Wants=network-online.target
+StartLimitBurst=5
+StartLimitIntervalSec=300
 
 [Service]
 Type=notify
@@ -26,12 +30,9 @@ NotifyAccess=main
 WatchdogSec=30s
 Restart=on-failure
 RestartSec=5s
-StartLimitBurst=5
-StartLimitIntervalSec=300
 
 DynamicUser=true
 ExecStart=/usr/bin/compliance-hub serve --source cache --db /var/lib/compliance/evidence.db --addr 127.0.0.1:8477
-Environment=GO_COMPLIANCE_EVIDENCE_FILE=/var/lib/overview/compliance.json
 
 StateDirectory=compliance
 RuntimeDirectory=compliance

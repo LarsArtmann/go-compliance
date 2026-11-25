@@ -1,0 +1,15 @@
+[Unit]
+Description=Fleet compliance evidence (library-policy fleet scan)
+Documentation=https://github.com/LarsArtmann/go-compliance/blob/master/docs/decisions/bind-posture.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/state/compliance-fleet/current/bin/library-policy fleet --record --evidence-file %h/.local/state/overview/compliance.json
+TimeoutStartSec=1h
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/state/overview
