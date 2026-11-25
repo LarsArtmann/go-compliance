@@ -31,6 +31,120 @@
    layout.ThemeToggle flips it. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Re-skin of the library's default theme, data first and quiet: one accent,
+   muted severity ramps, and the system font stack (no web font to load).
+   The severity ramps keep the library's palette names because its badges,
+   stat tiles, and bars are hardcoded to red/amber/green. */
+@theme {
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    "Noto Sans", "Liberation Sans", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  --color-accent-50: oklch(97.2% 0.014 255);
+  --color-accent-100: oklch(93.4% 0.03 255);
+  --color-accent-200: oklch(88.2% 0.055 255);
+  --color-accent-300: oklch(80.5% 0.09 255);
+  --color-accent-400: oklch(69.5% 0.13 256);
+  --color-accent-500: oklch(59.5% 0.16 256);
+  --color-accent-600: oklch(51.5% 0.17 257);
+  --color-accent-700: oklch(45.5% 0.165 258);
+  --color-accent-800: oklch(39.5% 0.14 259);
+  --color-accent-900: oklch(35% 0.11 260);
+  --color-accent-950: oklch(26% 0.075 261);
+
+  --color-red-50: oklch(97% 0.011 12);
+  --color-red-100: oklch(93.5% 0.025 14);
+  --color-red-200: oklch(88% 0.045 16);
+  --color-red-300: oklch(79% 0.08 18);
+  --color-red-400: oklch(68% 0.125 20);
+  --color-red-500: oklch(60% 0.165 22);
+  --color-red-600: oklch(53% 0.17 24);
+  --color-red-700: oklch(46.5% 0.155 25);
+  --color-red-800: oklch(40.5% 0.13 25);
+  --color-red-900: oklch(35.5% 0.105 25);
+  --color-red-950: oklch(23.5% 0.07 25);
+
+  --color-amber-50: oklch(98.5% 0.016 90);
+  --color-amber-100: oklch(96% 0.042 92);
+  --color-amber-200: oklch(92% 0.085 92);
+  --color-amber-300: oklch(87% 0.12 88);
+  --color-amber-400: oklch(81.5% 0.135 82);
+  --color-amber-500: oklch(76% 0.135 70);
+  --color-amber-600: oklch(65.5% 0.128 58);
+  --color-amber-700: oklch(54.5% 0.118 50);
+  --color-amber-800: oklch(42.5% 0.095 47);
+  --color-amber-900: oklch(37.5% 0.08 46);
+  --color-amber-950: oklch(25% 0.055 45);
+
+  --color-green-50: oklch(98% 0.013 155);
+  --color-green-100: oklch(96% 0.032 155);
+  --color-green-200: oklch(92% 0.06 154);
+  --color-green-300: oklch(86.5% 0.105 152);
+  --color-green-400: oklch(81.5% 0.138 150);
+  --color-green-500: oklch(71.5% 0.15 149);
+  --color-green-600: oklch(62% 0.133 149);
+  --color-green-700: oklch(52% 0.107 150);
+  --color-green-800: oklch(41.5% 0.082 151);
+  --color-green-900: oklch(36.5% 0.066 152);
+  --color-green-950: oklch(25% 0.045 153);
+}
+
+/* Tailwind's preflight leaves buttons at the default cursor. */
+@layer base {
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* The fleet table keeps four columns while they fit. Narrower than that,
+   each row stacks: the repo and its state, then the findings, then the
+   last run. The table semantics stay; only the boxes move. */
+@layer components {
+  @container (width < 40rem) {
+    .fleet-table thead {
+      display: none;
+    }
+
+    .fleet-table table,
+    .fleet-table tbody {
+      display: block;
+    }
+
+    .fleet-table tbody > tr {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 0.75rem;
+      row-gap: 0.25rem;
+      padding: 0.625rem 1rem;
+    }
+
+    .fleet-table tbody > tr > td {
+      display: block;
+      padding: 0;
+    }
+
+    .fleet-table tbody > tr > td:nth-child(2) {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+    }
+
+    .fleet-table tbody > tr > td:nth-child(3),
+    .fleet-table tbody > tr > td:nth-child(4) {
+      grid-column: 1 / -1;
+    }
+
+    .fleet-table tbody > tr > td:nth-child(3) {
+      grid-row: 2;
+    }
+
+    .fleet-table tbody > tr > td:nth-child(4) {
+      grid-row: 3;
+    }
+  }
+}
+
 :root {
   color-scheme: light;
 }

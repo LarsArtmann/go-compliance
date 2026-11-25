@@ -27,8 +27,8 @@ const (
 	heartbeatInterval = 15 * time.Second
 )
 
-// stateSignals is the signals payload patched on every state change:
-// stat cards and filter chips read it reactively.
+// stateSignals is the signals payload patched on every state change, so a
+// client can bind to the counts without parsing the summary markup.
 type stateSignals struct {
 	GeneratedAt string         `json:"generatedAt"`
 	Total       int            `json:"total"`
@@ -125,14 +125,14 @@ func (d *Dashboard) sendPublished(stream *sse.Stream, published events.Published
 	}
 }
 
-// sendState writes the signals patch (counts), the stat card strip, then
-// the full rows patch.
+// sendState writes the signals patch (counts), the fleet summary, then the
+// full rows patch.
 func (d *Dashboard) sendState(stream *sse.Stream, rows []events.RepoRow) bool {
 	if !d.sendSignals(stream, events.CountStates(rows), len(rows), time.Now()) {
 		return false
 	}
 
-	if !d.sendStatCards(stream, rows) {
+	if !d.sendSummary(stream, rows) {
 		return false
 	}
 
@@ -159,7 +159,7 @@ func (d *Dashboard) sendUpdate(stream *sse.Stream, update *events.Update) bool {
 		return false
 	}
 
-	if !d.sendStatCards(stream, d.hub.Rows()) {
+	if !d.sendSummary(stream, d.hub.Rows()) {
 		return false
 	}
 
@@ -196,10 +196,12 @@ func (d *Dashboard) sendUpdate(stream *sse.Stream, update *events.Update) bool {
 	return true
 }
 
-// sendStatCards re-renders the stat card strip from the given rows.
-func (d *Dashboard) sendStatCards(stream *sse.Stream, rows []events.RepoRow) bool {
-	patch, err := datastar.ElementsFromTempl(StatCards(events.CountStates(rows), len(rows)),
-		datastar.WithSelector("#"+StatCardsID),
+// sendSummary re-renders the fleet summary from the given rows. The chip
+// selection is a browser signal, so the patch carries no server-side
+// selection; DataStar re-applies it to the fresh chips.
+func (d *Dashboard) sendSummary(stream *sse.Stream, rows []events.RepoRow) bool {
+	patch, err := datastar.ElementsFromTempl(FleetSummary(events.CountStates(rows), len(rows), ""),
+		datastar.WithSelector("#"+FleetSummaryID),
 		datastar.WithMode(datastar.ElementPatchModeInner),
 	)
 	if err != nil {

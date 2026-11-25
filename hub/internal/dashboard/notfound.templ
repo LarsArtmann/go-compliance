@@ -14,6 +14,7 @@ templ NotFound(pageTitle string, cssPath string) {
 		Title:       pageTitle,
 		CSSPath:     cssPath,
 		HTMXVersion: "",
+		Favicon:     faviconHref,
 	}) {
 		<div class="py-16">
 			@errorpage.NotFound404(errorpage.DefaultNotFound404Props())

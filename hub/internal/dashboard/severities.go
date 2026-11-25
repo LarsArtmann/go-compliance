@@ -27,16 +27,17 @@ func severityLabel(severity string) string {
 	}
 }
 
-// severityTone picks the Tailwind text tone per severity: errors read red,
-// warnings amber, everything else muted.
+// severityTone picks the text tone per severity: errors red, warnings
+// amber, everything else muted. Every pair clears 4.5:1 on its surface in
+// both themes.
 func severityTone(severity string) string {
 	switch severity {
 	case "error", "critical":
-		return "text-red-600 dark:text-red-400"
+		return "text-red-700 dark:text-red-400"
 	case "warning":
-		return "text-amber-600 dark:text-amber-400"
+		return "text-amber-800 dark:text-amber-300"
 	default:
-		return "text-sky-600 dark:text-sky-400"
+		return "text-gray-600 dark:text-gray-300"
 	}
 }
 

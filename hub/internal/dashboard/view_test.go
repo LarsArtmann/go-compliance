@@ -15,7 +15,7 @@ import (
 )
 
 var _ = Describe("fleet page render", func() {
-	It("renders the shell, stat cards, live region, and patch targets", func() {
+	It("renders the shell, fleet summary, live region, and patch targets", func() {
 		model := dashboard.ViewModel{
 			Title:     "Fleet compliance",
 			StreamURL: "/compliance/events",
@@ -36,14 +36,14 @@ var _ = Describe("fleet page render", func() {
 
 		html := rendered.String()
 		Expect(html).To(ContainSubstring("<title>Fleet compliance</title>"))
-		Expect(html).To(ContainSubstring(`id="stat-cards"`))
+		Expect(html).To(ContainSubstring(`id="fleet-summary"`))
 		Expect(html).To(ContainSubstring(`id="fleet-region"`))
 		Expect(html).To(ContainSubstring(`id="fleet-rows"`))
 		Expect(html).To(ContainSubstring(`data-repo="go-finding"`))
-		Expect(html).To(ContainSubstring("Total repos"))
+		Expect(html).To(ContainSubstring("of 1 repo is failing"))
 		Expect(html).To(ContainSubstring("Never covered"))
-		Expect(html).To(ContainSubstring("ERR 3"))
-		Expect(html).To(ContainSubstring("worst step(s)"))
+		Expect(html).To(ContainSubstring("3 ERR"))
+		Expect(html).To(ContainSubstring("2 worst steps"))
 		Expect(html).To(ContainSubstring("<li>lint</li>"))
 		Expect(html).To(ContainSubstring(`src="/datastar.js"`))
 		Expect(html).To(ContainSubstring("/compliance/events"))
@@ -138,7 +138,7 @@ var _ = Describe("fleet page render", func() {
 					Findings:   3,
 					Severities: map[string]int{"error": 3},
 				},
-				"ERR 3"),
+				"3 ERR"),
 		)
 
 		It("stays muted for a row that has no findings", func() {

@@ -3,6 +3,7 @@ package dashboard
 import (
 	"fmt"
 
+	"github.com/dustin/go-humanize/english"
 	"github.com/larsartmann/templ-components/display"
 
 	"github.com/larsartmann/go-compliance"
@@ -23,9 +24,9 @@ templ FleetRows(rows []events.RepoRow) {
 // remove it.
 templ FleetRow(row events.RepoRow) {
 	<tr data-repo={ row.Repo } data-show={ fmt.Sprintf("$stateFilter==='all' || $stateFilter==='%s'", row.State) }>
-		<td class="font-medium">{ row.Repo }</td>
+		<td class="font-medium [overflow-wrap:anywhere]">{ row.Repo }</td>
 		<td>@StateBadge(row.State)</td>
-		<td>@findingsCell(row)</td>
+		<td class="tabular-nums">@findingsCell(row)</td>
 		<td>
 			// RelativeTime defaults to AutoRefresh false here ON PURPOSE: the
 			// component couples that flag to emitting a per-instance <script>,
@@ -44,7 +45,7 @@ templ FleetRow(row events.RepoRow) {
 			if len(row.WorstSteps) > 0 {
 				<details class="mt-1 text-xs">
 					<summary class="cursor-pointer select-none text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-						{ fmt.Sprintf("%d worst step(s)", len(row.WorstSteps)) }
+						{ fmt.Sprintf("%d %s", len(row.WorstSteps), english.PluralWord(len(row.WorstSteps), "worst step", "worst steps")) }
 					</summary>
 					<ul class="mt-1 list-inside list-disc space-y-0.5 text-left">
 						for _, step := range row.WorstSteps {
@@ -86,22 +87,23 @@ templ findingsCell(row events.RepoRow) {
 	if len(row.Severities) > 0 {
 		@severityCells(row.Severities)
 	} else if row.Findings > 0 {
-		<span class="font-mono text-xs text-gray-600 dark:text-gray-300">{ findingsLabel(row.Findings) }</span>
+		<span class="text-gray-600 dark:text-gray-300">{ findingsLabel(row.Findings) }</span>
 	} else {
 		<span class="text-gray-400">—</span>
 	}
 }
 
 // severityCells renders the latest run's severity counts inline: errors
-// red, warnings amber, the rest muted. The order is canonical (ERR, WARN,
-// INFO, then unknowns) so renders are deterministic; callers handle the
-// empty case.
+// red, warnings amber, the rest muted. Every token leads with its count,
+// like the findings fallback, so the column reads as magnitudes. The order
+// is canonical (ERR, WARN, INFO, then unknowns) so renders are
+// deterministic; callers handle the empty case.
 templ severityCells(severities map[string]int) {
 	for _, severity := range sortedSeverities(severities) {
 		{{ count := severities[severity] }}
 		{{ tone := severityTone(severity) }}
-		<span class={ fmt.Sprintf("mr-2 font-mono text-xs %s", tone) }>
-			{ fmt.Sprintf("%s %d", severityLabel(severity), count) }
+		<span class={ fmt.Sprintf("mr-3 %s", tone) }>
+			{ fmt.Sprintf("%d %s", count, severityLabel(severity)) }
 		</span>
 	}
 }
