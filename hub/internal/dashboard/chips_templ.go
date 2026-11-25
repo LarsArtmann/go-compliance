@@ -9,7 +9,11 @@ package dashboard
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/larsartmann/templ-components/utils"
+)
 
 // filterChip is the chip model: the signal value it selects and its label.
 type filterChip struct {
@@ -64,7 +68,7 @@ func StateFilterChips(selected string, counts map[string]int, total int) templ.C
 				var templ_7745c5c3_Var2 string
 				templ_7745c5c3_Var2, templ_7745c5c3_Err = templruntime.NewAttributeExpression(fmt.Sprintf("$stateFilter='%s'", chip.State)).Resolve(ctx)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 30, Col: 64}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 34, Col: 64}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var2)
 				if templ_7745c5c3_Err != nil {
@@ -75,9 +79,9 @@ func StateFilterChips(selected string, counts map[string]int, total int) templ.C
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var3 string
-				templ_7745c5c3_Var3, templ_7745c5c3_Err = templruntime.NewAttributeExpression(fmt.Sprintf("$stateFilter==='%s' ? '%s' : '%s'", chip.State, chipSelectedClass, chipUnselectedClass)).Resolve(ctx)
+				templ_7745c5c3_Var3, templ_7745c5c3_Err = templruntime.NewAttributeExpression(chipClassExpression(chip.State)).Resolve(ctx)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 31, Col: 117}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 35, Col: 48}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 				if templ_7745c5c3_Err != nil {
@@ -90,7 +94,7 @@ func StateFilterChips(selected string, counts map[string]int, total int) templ.C
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templruntime.NewAttributeExpression(fmt.Sprintf("$stateFilter==='%s' ? 'true' : 'false'", chip.State)).Resolve(ctx)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 32, Col: 94}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 36, Col: 94}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 				if templ_7745c5c3_Err != nil {
@@ -100,7 +104,7 @@ func StateFilterChips(selected string, counts map[string]int, total int) templ.C
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var5 = []any{chipBaseClass}
+				var templ_7745c5c3_Var5 = []any{chipBaseClass, utils.Ternary(chip.State == selected, chipSelectedClass, chipUnselectedClass)}
 				templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_ElementWriter, templ_7745c5c3_Var5...)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -121,7 +125,7 @@ func StateFilterChips(selected string, counts map[string]int, total int) templ.C
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templruntime.NewAttributeExpression(fmt.Sprintf("%t", chip.State == selected)).Resolve(ctx)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 34, Col: 60}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 38, Col: 60}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 				if templ_7745c5c3_Err != nil {
@@ -148,7 +152,7 @@ func StateFilterChips(selected string, counts map[string]int, total int) templ.C
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(chip.Label)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 36, Col: 16}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 40, Col: 16}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -161,7 +165,7 @@ func StateFilterChips(selected string, counts map[string]int, total int) templ.C
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", chipCount(chip.State, counts, total)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 37, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/chips.templ`, Line: 41, Col: 106}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -178,6 +182,15 @@ func StateFilterChips(selected string, counts map[string]int, total int) templ.C
 		}
 		return nil
 	})
+}
+
+// chipClassExpression swaps a chip between its selected and unselected
+// looks as the filter signal changes. DataStar's class action expects an
+// object of class names to booleans; a plain class string would be iterated
+// character by character.
+func chipClassExpression(state string) string {
+	return fmt.Sprintf("{ '%s': $stateFilter==='%s', '%s': $stateFilter!=='%s' }",
+		chipSelectedClass, state, chipUnselectedClass, state)
 }
 
 const (

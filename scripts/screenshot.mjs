@@ -150,20 +150,31 @@ const truthExpression = `JSON.stringify({
 	visibleRows: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => getComputedStyle(row).display !== "none").length,
 	visibleStates: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => getComputedStyle(row).display !== "none").reduce((counts, row) => { const state = row.children[1]?.textContent?.trim() ?? ""; counts[state] = (counts[state] ?? 0) + 1; return counts; }, {}),
 	statCards: [...document.querySelectorAll("#fleet-summary [role=group] button")].map((chip) => chip.innerText.replace(/\\s+/g, " ").trim()),
+	pressedChips: [...document.querySelectorAll("#fleet-summary [role=group] button")].filter((chip) => chip.getAttribute("aria-pressed") === "true").map((chip) => chip.innerText.trim().split(/\\s+/)[0]),
+	pressedChipHighlighted: [...document.querySelectorAll("#fleet-summary [role=group] button")].some((chip) => chip.getAttribute("aria-pressed") === "true" && chip.classList.contains("bg-accent-50")),
 	headline: (document.querySelector("#fleet-summary p")?.innerText ?? "").replace(/\\s+/g, " ").trim(),
 	barLabel: document.querySelector("#fleet-summary [role=img]")?.getAttribute("aria-label") ?? "",
 	favicon: document.querySelector("link[rel~='icon']")?.getAttribute("href") ?? "",
 	rowDisplay: getComputedStyle(document.querySelector("#fleet-rows tr[data-repo]")).display,
-	theadDisplay: getComputedStyle(document.querySelector("#fleet-rows")).display === "none" ? "n/a" : getComputedStyle(document.querySelector("thead")).display,
 	findingsCells: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => (row.children[2]?.textContent ?? "").includes("finding")).length,
 	viewportWidth: window.innerWidth,
 	scrollWidth: document.documentElement.scrollWidth,
 	pageHeight: document.documentElement.scrollHeight,
-	themeToggle: document.querySelectorAll("[data-theme-toggle]").length,
 })`;
 
 const truth = [];
+const filterChecks = [];
 let fatal = null;
+
+const clickChip = async (label, sessionId) => {
+	await evaluate(
+		`(() => { const chip = [...document.querySelectorAll("#fleet-summary [role=group] button")].find((button) => button.innerText.trim().startsWith(${JSON.stringify(label)})); if (!chip) throw new Error("no chip labelled ${label}"); chip.click(); })()`,
+		sessionId,
+	);
+	await sleep(500);
+
+	return { clicked: label, ...JSON.parse(await evaluate(truthExpression, sessionId)) };
+};
 
 try {
 	const { port, path } = await readDevToolsEndpoint();
@@ -204,6 +215,13 @@ try {
 		await capture(sessionId, `${view.name}-full`, { width: view.width, height: fullHeight });
 		truth.push({ view: view.name, scheme: view.scheme, ...facts });
 
+		if (view.name === "dashboard-light") {
+			filterChecks.push(await clickChip("Stale", sessionId));
+			filterChecks.push(await clickChip("Failing", sessionId));
+			await capture(sessionId, "dashboard-light-failing", { width: view.width, height: view.height });
+			filterChecks.push(await clickChip("All", sessionId));
+		}
+
 		await send("Target.closeTarget", { targetId });
 	}
 } catch (error) {
@@ -212,7 +230,7 @@ try {
 	await shutdownChrome();
 }
 
-writeFileSync(join(outDir, "dom-truth.json"), `${JSON.stringify(truth, null, 2)}\n`);
+writeFileSync(join(outDir, "dom-truth.json"), `${JSON.stringify({ views: truth, filterChecks }, null, 2)}\n`);
 writeFileSync(
 	join(outDir, "console-errors.json"),
 	`${JSON.stringify({ pageErrors, browserNoise }, null, 2)}\n`,
@@ -220,7 +238,7 @@ writeFileSync(
 
 for (const entry of truth) {
 	console.log(
-		`${entry.view}: dark=${entry.dark} rows=${entry.rows} visible=${entry.visibleRows} rowDisplay=${entry.rowDisplay} ` +
+		`${entry.view}: dark=${entry.dark} rows=${entry.rows} visible=${entry.visibleRows} rowDisplay=${entry.rowDisplay} pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted} ` +
 			`headline="${entry.headline}" chips=[${entry.statCards.join(" | ")}] bar="${entry.barLabel}" favicon=${entry.favicon} ` +
 			`width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight}`,
 	);
@@ -238,6 +256,29 @@ for (const entry of truth) {
 	if (entry.dark !== wantsDark) failures.push(`${entry.view}: expected ${entry.scheme}, got ${entry.dark ? "dark" : "light"}`);
 	if (entry.rows === 0 && process.env.ALLOW_EMPTY !== "1") failures.push(`${entry.view}: no fleet rows rendered`);
 	if (entry.scrollWidth > entry.viewportWidth) failures.push(`${entry.view}: horizontal overflow (${entry.scrollWidth} > ${entry.viewportWidth})`);
+	if (entry.pressedChips.join() !== "All" || !entry.pressedChipHighlighted) failures.push(`${entry.view}: the All chip must read as selected on first paint (pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted})`);
+}
+
+if (filterChecks.length === 3) {
+	const [stale, failing, all] = filterChecks;
+	const light = truth.find((entry) => entry.view === "dashboard-light");
+
+	if (stale.visibleRows !== 0 || stale.pressedChips.join() !== "Stale" || !stale.pressedChipHighlighted) {
+		failures.push(`filter: after clicking Stale, ${stale.visibleRows} rows are visible and pressed=[${stale.pressedChips}]`);
+	}
+
+	const failingWanted = light?.visibleStates.failing ?? 0;
+	if (failing.visibleRows !== failingWanted || Object.keys(failing.visibleStates).join() !== "failing" || failing.pressedChips.join() !== "Failing" || !failing.pressedChipHighlighted) {
+		failures.push(`filter: after clicking Failing, ${failing.visibleRows} rows are visible (${JSON.stringify(failing.visibleStates)}), expected ${failingWanted} failing; pressed=[${failing.pressedChips}]`);
+	}
+
+	if (all.visibleRows !== all.rows || all.pressedChips.join() !== "All") {
+		failures.push(`filter: after clicking All, ${all.visibleRows} of ${all.rows} rows are visible; pressed=[${all.pressedChips}]`);
+	}
+
+	for (const check of filterChecks) {
+		console.log(`filter ${check.clicked}: visible=${check.visibleRows} states=${JSON.stringify(check.visibleStates)} pressed=[${check.pressedChips}] highlighted=${check.pressedChipHighlighted}`);
+	}
 }
 
 if (failures.length > 0) {

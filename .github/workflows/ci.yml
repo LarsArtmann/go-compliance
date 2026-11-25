@@ -128,7 +128,7 @@ jobs:
       - run: ./actionlint
 
   templ-fmt:
-    name: templ fmt gate
+    name: templ fmt and generate gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -141,6 +141,9 @@ jobs:
       # same binary formats locally and in CI (AGENTS.md templ errata).
       - run: GOWORK=off go tool templ fmt -fail ./internal/dashboard/
         working-directory: hub
+      - run: GOWORK=off go tool templ generate ./internal/dashboard/
+        working-directory: hub
+      - run: git diff --exit-code -- hub/internal/dashboard/
 
   stack-drift:
     name: stack drift check
