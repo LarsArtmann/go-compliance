@@ -1,0 +1,216 @@
+// screenshot.mjs drives a headless chromium over the DevTools protocol and
+// captures the compliance dashboard in three views: light, dark, and a
+// narrow phone-width viewport. Every view lands as a viewport PNG plus a
+// full-page PNG and one row in dom-truth.json. Console errors and uncaught
+// page exceptions are collected into console-errors.json and fail the run.
+//
+// Usage: node scripts/screenshot.mjs <url> <outDir>
+// Environment: CHROMIUM_BIN (chromium binary path), SETTLE_MS (default 2500).
+import { spawn } from "node:child_process";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+const [url, outDir] = process.argv.slice(2);
+if (!url || !outDir) {
+	console.error("usage: node scripts/screenshot.mjs <url> <outDir>");
+	process.exit(2);
+}
+
+const settleMs = Number(process.env.SETTLE_MS || 2500);
+const chromiumBin = process.env.CHROMIUM_BIN || "chromium";
+const maxCaptureCssPx = 16000;
+const profileDir = join(outDir, "chromium-profile");
+
+mkdirSync(outDir, { recursive: true });
+rmSync(profileDir, { recursive: true, force: true });
+
+const views = [
+	{ name: "dashboard-light", width: 1440, height: 900, scale: 1, scheme: "light" },
+	{ name: "dashboard-dark", width: 1440, height: 900, scale: 1, scheme: "dark" },
+	{ name: "dashboard-narrow", width: 390, height: 844, scale: 2, scheme: "light" },
+];
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const chrome = spawn(
+	chromiumBin,
+	[
+		"--headless=new",
+		"--no-sandbox",
+		"--disable-gpu",
+		"--disable-dev-shm-usage",
+		"--hide-scrollbars",
+		`--user-data-dir=${profileDir}`,
+		"--remote-debugging-port=0",
+		"about:blank",
+	],
+	{ stdio: ["ignore", "ignore", "pipe"] },
+);
+const chromeStderr = [];
+chrome.stderr.on("data", (chunk) => chromeStderr.push(String(chunk)));
+
+const shutdownChrome = () => {
+	chrome.kill("SIGKILL");
+	rmSync(profileDir, { recursive: true, force: true });
+};
+
+async function readDevToolsEndpoint() {
+	const deadline = Date.now() + 30000;
+	while (Date.now() < deadline) {
+		try {
+			const [port, path] = readFileSync(join(profileDir, "DevToolsActivePort"), "utf8").split("\n");
+			if (port && path) return { port, path };
+		} catch {
+			// chromium has not written the endpoint file yet
+		}
+		await sleep(200);
+	}
+	throw new Error(`chromium published no DevTools endpoint within 30s: ${chromeStderr.join("").slice(-800)}`);
+}
+
+const { port, path } = await readDevToolsEndpoint();
+const ws = new WebSocket(`ws://127.0.0.1:${port}${path}`);
+await new Promise((resolve, reject) => {
+	ws.onopen = resolve;
+	ws.onerror = () => reject(new Error("DevTools websocket connect failed"));
+});
+
+let nextID = 1;
+const pending = new Map();
+const consoleErrors = [];
+const pageExceptions = [];
+
+ws.onmessage = (message) => {
+	const msg = JSON.parse(message.data);
+	if (msg.id && pending.has(msg.id)) {
+		const { resolve, reject } = pending.get(msg.id);
+		pending.delete(msg.id);
+		if (msg.error) reject(new Error(msg.error.message));
+		else resolve(msg.result);
+		return;
+	}
+	if (msg.method === "Runtime.exceptionThrown") {
+		pageExceptions.push(msg.params.exceptionDetails?.exception?.description ?? msg.params.exceptionDetails?.text);
+		return;
+	}
+	if (msg.method === "Runtime.consoleAPICalled" && msg.params.type === "error") {
+		consoleErrors.push(msg.params.args.map((arg) => arg.value ?? arg.description ?? "").join(" "));
+		return;
+	}
+	if (msg.method === "Log.entryAdded" && msg.params.entry.level === "error") {
+		consoleErrors.push(`${msg.params.entry.source}: ${msg.params.entry.text}`);
+	}
+};
+
+function send(method, params = {}, sessionId) {
+	const id = nextID++;
+	return new Promise((resolve, reject) => {
+		pending.set(id, { resolve, reject });
+		ws.send(JSON.stringify({ id, method, params, sessionId }));
+	});
+}
+
+async function evaluate(expression, sessionId) {
+	const result = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);
+	return result.result.value;
+}
+
+async function waitForPage(sessionId) {
+	const deadline = Date.now() + 30000;
+	while (Date.now() < deadline) {
+		if ((await evaluate("document.readyState", sessionId)) === "complete") return;
+		await sleep(100);
+	}
+	throw new Error("page did not reach readyState complete within 30s");
+}
+
+async function capture(sessionId, name, clip) {
+	const shot = await send(
+		"Page.captureScreenshot",
+		{ format: "png", captureBeyondViewport: true, clip: { ...clip, x: 0, y: 0, scale: 1 } },
+		sessionId,
+	);
+	writeFileSync(join(outDir, `${name}.png`), Buffer.from(shot.data, "base64"));
+}
+
+const truthExpression = `JSON.stringify({
+	dark: document.documentElement.classList.contains("dark"),
+	title: document.title,
+	rows: document.querySelectorAll("#fleet-rows tr[data-repo]").length,
+	visibleRows: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => getComputedStyle(row).display !== "none").length,
+	visibleStates: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => getComputedStyle(row).display !== "none").reduce((counts, row) => { const state = row.children[1]?.textContent?.trim() ?? ""; counts[state] = (counts[state] ?? 0) + 1; return counts; }, {}),
+	statCards: [...document.querySelectorAll("#stat-cards > *")].map((card) => card.innerText.replace(/\\s+/g, " ").trim()),
+	findingsCells: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => (row.children[2]?.textContent ?? "").includes("finding")).length,
+	viewportWidth: window.innerWidth,
+	scrollWidth: document.documentElement.scrollWidth,
+	pageHeight: document.documentElement.scrollHeight,
+	themeToggle: document.querySelectorAll("[data-theme-toggle]").length,
+})`;
+
+const truth = [];
+
+for (const view of views) {
+	const { targetId } = await send("Target.createTarget", { url: "about:blank" });
+	const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
+
+	await send("Page.enable", {}, sessionId);
+	await send("Runtime.enable", {}, sessionId);
+	await send("Log.enable", {}, sessionId);
+	await send(
+		"Emulation.setDeviceMetricsOverride",
+		{ width: view.width, height: view.height, deviceScaleFactor: view.scale, mobile: view.scale > 1 },
+		sessionId,
+	);
+	await send(
+		"Emulation.setEmulatedMedia",
+		{ features: [{ name: "prefers-color-scheme", value: view.scheme }] },
+		sessionId,
+	);
+
+	await send("Page.navigate", { url }, sessionId);
+	await waitForPage(sessionId);
+	await sleep(settleMs);
+
+	const facts = JSON.parse(await evaluate(truthExpression, sessionId));
+	const fullHeight = Math.min(facts.pageHeight, maxCaptureCssPx / view.scale);
+
+	await capture(sessionId, view.name, { width: view.width, height: view.height });
+	await capture(sessionId, `${view.name}-full`, { width: view.width, height: fullHeight });
+	truth.push({ view: view.name, scheme: view.scheme, ...facts });
+
+	await send("Target.closeTarget", { targetId });
+}
+
+ws.close();
+shutdownChrome();
+
+writeFileSync(join(outDir, "dom-truth.json"), `${JSON.stringify(truth, null, 2)}\n`);
+writeFileSync(
+	join(outDir, "console-errors.json"),
+	`${JSON.stringify({ consoleErrors, pageExceptions }, null, 2)}\n`,
+);
+
+for (const entry of truth) {
+	console.log(
+		`${entry.view}: dark=${entry.dark} rows=${entry.rows} visible=${entry.visibleRows} ` +
+			`cards=[${entry.statCards.join(" | ")}] width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight}`,
+	);
+}
+
+const failures = [];
+if (consoleErrors.length > 0) failures.push(`${consoleErrors.length} console error(s)`);
+if (pageExceptions.length > 0) failures.push(`${pageExceptions.length} uncaught exception(s)`);
+
+for (const entry of truth) {
+	const wantsDark = entry.scheme === "dark";
+	if (entry.dark !== wantsDark) failures.push(`${entry.view}: expected ${entry.scheme}, got ${entry.dark ? "dark" : "light"}`);
+	if (entry.rows === 0 && process.env.ALLOW_EMPTY !== "1") failures.push(`${entry.view}: no fleet rows rendered`);
+	if (entry.scrollWidth > entry.viewportWidth) failures.push(`${entry.view}: horizontal overflow (${entry.scrollWidth} > ${entry.viewportWidth})`);
+}
+
+if (failures.length > 0) {
+	console.error(`screenshot harness FAIL:\n${failures.map((failure) => `  - ${failure}`).join("\n")}`);
+	process.exit(1);
+}
+
+console.log(`screenshot harness OK: ${views.length} views in ${outDir}`);

@@ -1,0 +1,21 @@
+[Unit]
+Description=compliance-hub — fleet compliance dashboard (go-compliance)
+Documentation=https://github.com/LarsArtmann/go-compliance/blob/master/docs/decisions/bind-posture.md
+
+[Service]
+Type=notify
+NotifyAccess=main
+WatchdogSec=30s
+ExecStart=@BIN@ serve --source file --file %h/.local/state/overview/compliance.json --addr @ADDR@
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=0
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target

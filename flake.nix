@@ -127,7 +127,7 @@
           ...
         }:
         let
-          version = self.rev or self.dirtyRev or "dev";
+          version = self.dirtyShortRev or self.shortRev or self.rev or "dev";
 
           mkPreparedSource = import "${inputs.go-nix-helpers}/mkPreparedSource.nix" {
             inherit pkgs lib;
@@ -166,6 +166,8 @@
             ldflags = [
               "-s"
               "-w"
+              "-X"
+              "github.com/larsartmann/go-compliance/hub/internal/cli.Version=${version}"
             ];
             meta = {
               description = "Fleet compliance hub: realtime dashboard over BuildFlow evidence";
