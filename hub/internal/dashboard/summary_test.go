@@ -37,7 +37,9 @@ var _ = Describe("fleet summary", func() {
 		It("announces a clean fleet without a warning color", func() {
 			html := renderSummary(map[string]int{"compliant": 47}, 47, "all")
 
-			Expect(html).To(MatchRegexp(`>All</span>\s*<span class="text-inherit">47</span>\s*<span>repos are compliant</span>`))
+			Expect(
+				html,
+			).To(MatchRegexp(`>All</span>\s*<span class="text-inherit">47</span>\s*<span>repos are compliant</span>`))
 			Expect(html).NotTo(ContainSubstring("text-red-"))
 		})
 
@@ -97,7 +99,8 @@ var _ = Describe("fleet summary", func() {
 			html := renderSummary(map[string]int{"failing": 3}, 3, "failing")
 
 			Expect(html).To(MatchRegexp(
-				`data-attr:aria-pressed="\$stateFilter===(?:&#39;|')failing(?:&#39;|') \? (?:&#39;|')true(?:&#39;|') : (?:&#39;|')false(?:&#39;|')"`))
+				`data-attr:aria-pressed="\$stateFilter===(?:&#39;|')failing(?:&#39;|') \? (?:&#39;|')true(?:&#39;|') : (?:&#39;|')false(?:&#39;|')"`,
+			))
 			Expect(html).To(MatchRegexp(`data-on:click="\$stateFilter=(?:&#39;|')stale(?:&#39;|')"`))
 
 			// DataStar's class action toggles an object of class names to
@@ -105,7 +108,8 @@ var _ = Describe("fleet summary", func() {
 			// character and the selection would never show.
 			Expect(html).To(MatchRegexp(
 				`data-class="\{ (?:&#39;|')border-accent-600 bg-accent-50[^"=]*: \$stateFilter===(?:&#39;|')failing(?:&#39;|'), ` +
-					`(?:&#39;|')border-gray-200 bg-white[^"=]*: \$stateFilter!==(?:&#39;|')failing(?:&#39;|') \}"`))
+					`(?:&#39;|')border-gray-200 bg-white[^"=]*: \$stateFilter!==(?:&#39;|')failing(?:&#39;|') \}"`,
+			))
 		})
 	})
 })

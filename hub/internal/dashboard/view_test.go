@@ -152,7 +152,8 @@ var _ = Describe("fleet page render", func() {
 		Expect(dashboard.View(model).Render(context.Background(), &rendered)).To(Succeed())
 
 		Expect(rendered.String()).To(ContainSubstring(
-			`data-signals="{&#34;stateFilter&#34;:&#34;failing&#34;,&#34;total&#34;:2,&#34;counts&#34;:{&#34;compliant&#34;:1,&#34;failing&#34;:1}}"`))
+			`data-signals="{&#34;stateFilter&#34;:&#34;failing&#34;,&#34;total&#34;:2,&#34;counts&#34;:{&#34;compliant&#34;:1,&#34;failing&#34;:1}}"`,
+		))
 		Expect(rendered.String()).To(MatchRegexp(`>Failing\s*<span[^>]*>1</span>`))
 	})
 
@@ -167,8 +168,12 @@ var _ = Describe("fleet page render", func() {
 
 			html := rendered.String()
 			Expect(html).To(MatchRegexp(`<div data-show="[^"]*" style="display:none"><div class="overflow-x-auto`))
-			Expect(html).To(MatchRegexp(`data-show="\$stateFilter===&#39;stale&#39; &amp;&amp; !\$counts\[&#39;stale&#39;\]">\s*<div class="text-center py-8"><p[^>]*>No stale repos</p>`))
-			Expect(html).To(MatchRegexp(`data-show="\$stateFilter===&#39;compliant&#39; &amp;&amp; !\$counts\[&#39;compliant&#39;\]" style="display:none">`))
+			Expect(
+				html,
+			).To(MatchRegexp(`data-show="\$stateFilter===&#39;stale&#39; &amp;&amp; !\$counts\[&#39;stale&#39;\]">\s*<div class="text-center py-8"><p[^>]*>No stale repos</p>`))
+			Expect(
+				html,
+			).To(MatchRegexp(`data-show="\$stateFilter===&#39;compliant&#39; &amp;&amp; !\$counts\[&#39;compliant&#39;\]" style="display:none">`))
 		})
 
 		It("keeps the table visible for the all selection, even with no evidence", func() {

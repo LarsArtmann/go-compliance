@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-# deploy-hub.sh — build compliance-hub from a committed tree, GC-root the
+# deploy-hub.sh — build compliance-hub from the COMMITTED tree, GC-root the
 # store path, render the systemd user unit onto it, and (re)start the
 # service. The unit names the concrete store path, so the running binary
-# never drifts with the auto-committed checkout; a redeploy is this script
-# again.
+# never drifts with the checkout; a redeploy is this script again.
 #
-# Refuses a tree with tracked modifications (that build would match no
-# commit) and refuses to take the address from a process the unit does not
-# own (the hub itself never steals a live sibling's socket).
+# Refuses to take the address from a process the unit does not own (the hub
+# itself never steals a live sibling's socket).
 #
 # Usage: scripts/deploy-hub.sh
 # Environment: HUB_ADDR (default 192.168.1.150:8477),
@@ -34,22 +32,17 @@ command -v nix >/dev/null || fail "nix is not on PATH"
 command -v curl >/dev/null || fail "curl is not on PATH (the post-deploy probe needs it)"
 [ -f "$template" ] || fail "unit template $template is missing"
 
-dirty="$(git status --porcelain --untracked-files=no)"
-if [ -n "$dirty" ]; then
-	fail "the tree has uncommitted tracked changes, so the build would match no commit; wait for the auto-commit daemon, then retry:
-$dirty"
-fi
-
+rev="$(git rev-parse HEAD)"
 mkdir -p "$(dirname "$out_link")"
-nix build .#compliance-hub --out-link "$out_link"
+nix build "git+file://$root?rev=$rev#compliance-hub" --out-link "$out_link"
 
 bin="$(readlink -f "$out_link/bin/compliance-hub")"
 version="$("$bin" --version 2>&1 | tail -1)"
-rev="$(git rev-parse --short HEAD)"
-case "$version" in
-*"$rev"*) ;;
+reported="${version##* }"
+case "$rev" in
+"$reported"*) ;;
 *)
-	fail "the built hub reports '$version' but HEAD is $rev; the flake's version stamp is out of step"
+	fail "the built hub reports '$version' but HEAD is ${rev:0:12}; the flake's version stamp is out of step"
 	;;
 esac
 
