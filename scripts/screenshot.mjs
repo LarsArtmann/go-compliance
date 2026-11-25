@@ -156,7 +156,7 @@ const truthExpression = `JSON.stringify({
 	barLabel: document.querySelector("#fleet-summary [role=img]")?.getAttribute("aria-label") ?? "",
 	favicon: document.querySelector("link[rel~='icon']")?.getAttribute("href") ?? "",
 	rowDisplay: getComputedStyle(document.querySelector("#fleet-rows tr[data-repo]")).display,
-	tableDisplay: getComputedStyle(document.querySelector("#fleet-region table")).display,
+	tableDisplay: getComputedStyle(document.querySelector("#fleet-region table").closest("[data-show]")).display,
 	emptyMessages: [...document.querySelectorAll("#fleet-region .text-center")].filter((el) => el.getClientRects().length > 0).map((el) => el.textContent.trim()),
 	findingsCells: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => (row.children[2]?.textContent ?? "").includes("finding")).length,
 	viewportWidth: window.innerWidth,
