@@ -25,11 +25,11 @@ require (
 	github.com/larsartmann/go-sqlitestore v0.1.1
 	github.com/larsartmann/go-sse v0.7.0
 	github.com/larsartmann/go-sse/ssetest v0.5.0
-	github.com/larsartmann/templ-components v1.27.0
-	github.com/larsartmann/templ-components/datastar v1.27.0
-	github.com/larsartmann/templ-components/errorpage v1.27.0
-	github.com/larsartmann/templ-components/icons v1.27.0
-	github.com/larsartmann/templ-components/utils v1.27.0
+	github.com/larsartmann/templ-components v1.27.2
+	github.com/larsartmann/templ-components/datastar v1.27.2
+	github.com/larsartmann/templ-components/errorpage v1.27.2
+	github.com/larsartmann/templ-components/icons v1.27.2
+	github.com/larsartmann/templ-components/utils v1.27.2
 	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 )
@@ -87,7 +87,7 @@ require (
 	github.com/larsartmann/go-output/tree v0.38.7 // indirect
 	github.com/larsartmann/go-sse/sseparse v0.2.1 // indirect
 	github.com/larsartmann/samber-do-auditlog v0.12.3 // indirect
-	github.com/larsartmann/templ-components/htmx v1.27.0 // indirect
+	github.com/larsartmann/templ-components/htmx v1.27.2 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect

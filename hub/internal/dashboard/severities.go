@@ -3,15 +3,13 @@ package dashboard
 import (
 	"sort"
 	"strconv"
+
+	"github.com/dustin/go-humanize/english"
 )
 
 // findingsLabel pluralizes the gate-findings count for the fallback cell.
 func findingsLabel(count int) string {
-	if count == 1 {
-		return "1 finding"
-	}
-
-	return strconv.Itoa(count) + " findings"
+	return strconv.Itoa(count) + " " + english.PluralWord(count, "finding", "findings")
 }
 
 // severityLabel upper-cases a severity for the compact ERR/WARN/INFO cell
