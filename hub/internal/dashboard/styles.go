@@ -16,41 +16,67 @@ import (
 //go:embed app.min.css
 var appCSS []byte
 
+// faviconSVG is the site icon: a check mark on a dark tile, legible on
+// light and dark browser themes alike.
+//
+//go:embed favicon.svg
+var faviconSVG []byte
+
 // appCSSVersion is the artifact's content hash: pageHandler versions the
 // stylesheet URL with it, so every regeneration is a fresh cache key and
 // the day-long cache can never serve yesterday's styles.
 //
 //nolint:gochecknoglobals // computed once from the embedded artifact; hashing cannot be a const
-var appCSSVersion = func() string {
-	sum := sha256.Sum256(appCSS)
+var appCSSVersion = contentHash(appCSS)
+
+const (
+	// cssRoute serves the compiled stylesheet.
+	cssRoute = "/app.css"
+	// faviconRoute serves the site icon.
+	faviconRoute = "/favicon.svg"
+)
+
+// contentHash is the first bytes of an artifact's SHA-256, hex-encoded.
+func contentHash(body []byte) string {
+	sum := sha256.Sum256(body)
 
 	return hex.EncodeToString(sum[:8])
-}()
+}
 
-// appCSSETag is the strong validator for conditional requests.
-//
-//nolint:gochecknoglobals // derived once from the embedded artifact, same lifetime as appCSS
-var appCSSETag = `"` + appCSSVersion + `"`
+// contentETag is the strong validator for an embedded artifact: its
+// content hash, quoted for If-None-Match.
+func contentETag(body []byte) string {
+	return `"` + contentHash(body) + `"`
+}
 
-// cssRoute serves the compiled stylesheet.
-const cssRoute = "/app.css"
+// cachedAsset serves an embedded artifact with ETag/304 conditional
+// requests and day-long caching. The page links its assets content-hash
+// versioned, so the long cache never outlives an upgrade.
+func cachedAsset(body []byte, contentType string) http.Handler {
+	etag := contentETag(body)
 
-// CSSHandler serves the compiled Tailwind artifact with ETag/304
-// conditional requests and day-long caching. The page links it
-// content-hash versioned, so the long cache never outlives an upgrade.
-func (d *Dashboard) CSSHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/css; charset=utf-8")
+		w.Header().Set("Content-Type", contentType)
 		w.Header().Set("Cache-Control", "public, max-age=86400, immutable")
-		w.Header().Set("ETag", appCSSETag)
+		w.Header().Set("ETag", etag)
 
-		if match := r.Header.Get("If-None-Match"); match != "" &&
-			strings.Contains(match, appCSSETag) {
+		if match := r.Header().Get("If-None-Match"); match != "" &&
+			strings.Contains(match, etag) {
 			w.WriteHeader(http.StatusNotModified)
 
 			return
 		}
 
-		_, _ = w.Write(appCSS)
+		_, _ = w.Write(body)
 	})
+}
+
+// CSSHandler serves the compiled Tailwind artifact.
+func (d *Dashboard) CSSHandler() http.Handler {
+	return cachedAsset(appCSS, "text/css; charset=utf-8")
+}
+
+// FaviconHandler serves the site icon.
+func (d *Dashboard) FaviconHandler() http.Handler {
+	return cachedAsset(faviconSVG, "image/svg+xml")
 }

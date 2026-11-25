@@ -53,9 +53,9 @@ var _ = Describe("datastar patch stream", func() {
 
 		Expect(received[1].IsElements()).To(BeTrue())
 		datastartest.RequireElementsContains(GinkgoTB(), received[1],
-			"#"+dashboard.StatCardsID, string(datastar.ElementPatchModeInner), `Total repos`)
+			"#"+dashboard.FleetSummaryID, string(datastar.ElementPatchModeInner), `1</span><span>of 2 repos is failing</span>`)
 		datastartest.RequireElementsContains(GinkgoTB(), received[1],
-			"#"+dashboard.StatCardsID, string(datastar.ElementPatchModeInner), `Never covered`)
+			"#"+dashboard.FleetSummaryID, string(datastar.ElementPatchModeInner), `Never covered</span><span class="ml-1.5 tabular-nums opacity-70">0</span>`)
 		Expect(received[2].IsElements()).To(BeTrue())
 		datastartest.RequireElementsContains(GinkgoTB(), received[2],
 			dashboard.DefaultRowsSelector, string(datastar.ElementPatchModeInner), `<tr data-repo="alpha" data-show=`)
@@ -90,8 +90,8 @@ var _ = Describe("datastar patch stream", func() {
 			published <- err
 		}()
 
-		// 3 initial (signals + stat cards + rows) + 5 update events
-		// (signals, stat cards, append newcomer, replace flipped, remove
+		// 3 initial (signals + summary + rows) + 5 update events
+		// (signals, summary, append newcomer, replace flipped, remove
 		// doomed).
 		received := datastartest.CollectN(GinkgoTB(), stream, 8, datastartest.WithPath("/events"))
 

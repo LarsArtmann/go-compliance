@@ -9,12 +9,12 @@ import (
 // so unknown paths fail in the same styling (and dark mode) as the fleet.
 // The standalone-document variant carries no stylesheet link; this shell
 // does, via the same compiled CSS every page uses.
-templ NotFound(pageTitle string, cssPath string) {
+templ NotFound(pageTitle string, cssPath string, faviconPath string) {
 	@layout.Base(layout.PageProps{
 		Title:       pageTitle,
 		CSSPath:     cssPath,
 		HTMXVersion: "",
-		Favicon:     faviconHref,
+		Favicon:     faviconPath,
 	}) {
 		<div class="py-16">
 			@errorpage.NotFound404(errorpage.DefaultNotFound404Props())

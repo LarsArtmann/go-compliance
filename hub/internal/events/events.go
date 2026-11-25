@@ -238,8 +238,8 @@ func SnapshotJSON(rows []RepoRow) string {
 	})
 }
 
-// CountStates tallies rows per state name (string form), for stat cards and
-// signals.
+// CountStates tallies rows per state name (string form), for the fleet
+// summary and signals.
 func CountStates(rows []RepoRow) map[string]int {
 	counts := make(map[string]int)
 	for _, row := range rows {

@@ -47,7 +47,4 @@ const (
 	// fleetTableClass is the stylesheet hook that stacks the fleet rows once
 	// the table gets narrower than its columns.
 	fleetTableClass = "fleet-table"
-	// faviconHref is an inline SVG icon (a check mark on a dark tile): the
-	// page ships an icon without a binary asset or an extra route.
-	faviconHref = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%23111827'/%3E%3Cpath%20d='M9%2016.5l4.5%204.5L23%2011.5'%20fill='none'%20stroke='%23fff'%20stroke-width='3.2'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E"
 )

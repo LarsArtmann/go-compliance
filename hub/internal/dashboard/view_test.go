@@ -86,6 +86,33 @@ var _ = Describe("fleet page render", func() {
 			Render(context.Background(), &rendered)).To(Succeed())
 
 		Expect(rendered.String()).To(ContainSubstring("No compliance evidence yet"))
+		Expect(rendered.String()).To(ContainSubstring("No fleet evidence yet"))
+	})
+
+	It("ships an icon, so the browser logs no 404 for /favicon.ico", func() {
+		var rendered bytes.Buffer
+		Expect(dashboard.View(dashboard.ViewModel{Title: "Fleet compliance"}).
+			Render(context.Background(), &rendered)).To(Succeed())
+
+		Expect(rendered.String()).To(ContainSubstring(`<link rel="icon" href="data:image/svg+xml,`))
+	})
+
+	It("keeps a word space between the freshness label and its relative time", func() {
+		var rendered bytes.Buffer
+		Expect(dashboard.View(dashboard.ViewModel{Title: "Fleet compliance", RenderedAt: time.Now()}).
+			Render(context.Background(), &rendered)).To(Succeed())
+
+		Expect(rendered.String()).To(ContainSubstring(">rendered</span>"))
+		Expect(rendered.String()).NotTo(ContainSubstring("rendered<"))
+	})
+
+	It("names the fleet table region and gives it the narrow-layout hook", func() {
+		var rendered bytes.Buffer
+		Expect(dashboard.View(dashboard.ViewModel{Title: "Fleet compliance"}).
+			Render(context.Background(), &rendered)).To(Succeed())
+
+		Expect(rendered.String()).To(ContainSubstring(`aria-label="Fleet compliance by repository"`))
+		Expect(rendered.String()).To(ContainSubstring("fleet-table"))
 	})
 
 	It("keeps row patches script-free and inside the patch budget", func() {

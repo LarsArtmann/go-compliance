@@ -72,6 +72,7 @@ func (d *Dashboard) RegisterRoutesAt(routes Routes, mux *http.ServeMux) {
 	}
 
 	mux.HandleFunc("GET "+routes.CSS, d.CSSHandler().ServeHTTP)
+	mux.HandleFunc("GET "+faviconRoute, d.FaviconHandler().ServeHTTP)
 	mux.HandleFunc("GET "+routes.Script, d.ScriptHandler().ServeHTTP)
 	mux.HandleFunc("GET "+routes.Stream, d.StreamHandler().ServeHTTP)
 	mux.Handle("GET "+page, d.pageHandler(routes))
@@ -85,7 +86,7 @@ func (d *Dashboard) NotFoundHandler() http.Handler {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("X-Robots-Tag", "noindex")
 		w.WriteHeader(http.StatusNotFound)
-		_ = NotFound(d.title+" — page not found", versionedCSSHref(cssRoute)).Render(r.Context(), w)
+		_ = NotFound(d.title+" — page not found", versionedCSSHref(cssRoute), faviconRoute).Render(r.Context(), w)
 	})
 }
 

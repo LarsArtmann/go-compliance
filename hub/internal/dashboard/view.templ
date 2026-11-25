@@ -20,7 +20,7 @@ templ View(model ViewModel) {
 		Title:       model.Title,
 		CSSPath:     model.CSSSrc,
 		HTMXVersion: "",
-		Favicon:     faviconHref,
+		Favicon:     faviconRoute,
 		HeadContent: headContent(model),
 	}) {
 		@layout.Container(layout.DefaultContainerProps()) {
@@ -68,10 +68,10 @@ templ pageStatus(renderedAt time.Time) {
 	</div>
 }
 
-// headContent loads the DataStar SDK (self-hosted when ScriptSrc is set)
-// and the pre-paint theme script. Styling is the compiled Tailwind artifact
-// linked via PageProps.CSSPath — the Play CDN and its inline tailwind.config
-// block are gone (CSP debt paid, 2026-11-19).
+// headContent loads the DataStar SDK (self-hosted when ScriptSrc is set).
+// The pre-paint theme script and the stylesheet link come from Base
+// (PageProps.CSSPath); the Play CDN and its inline tailwind.config block are
+// gone (CSP debt paid, 2026-11-19).
 templ headContent(model ViewModel) {
 	if model.ScriptSrc != "" {
 		@datastar.SDKScript(datastar.SDKScriptProps{
@@ -81,7 +81,6 @@ templ headContent(model ViewModel) {
 	} else {
 		@datastar.SDKScript(datastar.SDKScriptProps{BaseProps: utils.BaseProps{}})
 	}
-	@layout.ThemeScript("")
 }
 
 // fleetTable renders the fleet table with the patchable tbody: the stream

@@ -53,7 +53,7 @@ var _ = Describe("live re-derive", func() {
 		received := datastartest.CollectWithTimeout(GinkgoTB(), board.StreamHandler(), 5*time.Second,
 			datastartest.WithPath("/events"))
 
-		// Initial snapshot: signals + stat cards + the full rows patch.
+		// Initial snapshot: signals + fleet summary + the full rows patch.
 		Expect(len(received)).To(BeNumerically(">=", 3),
 			"expected the initial snapshot patches; events: %s", describeEvents(received))
 
