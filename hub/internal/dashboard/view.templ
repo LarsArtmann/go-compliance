@@ -21,6 +21,7 @@ templ View(model ViewModel) {
 		CSSPath:     model.CSSSrc,
 		HTMXVersion: "",
 		Favicon:     faviconRoute,
+		BodyClass:   pageBodyClass,
 		HeadContent: headContent(model),
 	}) {
 		@layout.Container(layout.DefaultContainerProps()) {
@@ -63,9 +64,16 @@ templ View(model ViewModel) {
 // outside every patched region, so the script is never re-sent.
 templ pageStatus(renderedAt time.Time) {
 	<div class="flex items-center gap-3">
-		<span class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+		<span
+			id={ renderedStatusID }
+			class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400"
+		>
 			<span>rendered</span>
-			@display.RelativeTime(display.RelativeTimeProps{Time: renderedAt, AutoRefresh: true})
+			@display.RelativeTime(display.RelativeTimeProps{
+				BaseProps:   utils.BaseProps{Class: "text-xs"},
+				Time:       renderedAt,
+				AutoRefresh: true,
+			})
 		</span>
 		@layout.ThemeToggle("Toggle dark mode", "")
 	</div>
@@ -107,6 +115,9 @@ templ fleetTable(rows []events.RepoRow, selected string) {
 				},
 				Headers:     []string{"Repo", "State", "Findings", "Last run"},
 				Hover:       true,
+				// The header row pins to the top of the table's scroll box
+				// (app.css gives that box its height in wide layouts).
+				StickyHeader: true,
 				CellPadding: display.TableCellPaddingCompact,
 				LazyRows:    true,
 				BodyID:      DefaultRowsSelector[1:],
