@@ -146,10 +146,13 @@ async function waitForPage(sessionId) {
 	throw new Error("page did not reach readyState complete within 30s");
 }
 
-async function capture(sessionId, name, clip) {
+// capture writes one viewport PNG. Capturing beyond the viewport resets
+// every inner scroll box to the top, so a picture of a scrolled box must
+// ask for the plain viewport (beyondViewport false).
+async function capture(sessionId, name, clip, beyondViewport = true) {
 	const shot = await send(
 		"Page.captureScreenshot",
-		{ format: "png", captureBeyondViewport: true, clip: { ...clip, x: 0, y: 0, scale: 1 } },
+		{ format: "png", captureBeyondViewport: beyondViewport, clip: { ...clip, x: 0, y: 0, scale: 1 } },
 		sessionId,
 	);
 	writeFileSync(join(outDir, `${name}.png`), Buffer.from(shot.data, "base64"));
@@ -380,22 +383,26 @@ const keyboardPass = async (sessionId) => {
 	};
 };
 
-// scrollFleetTable scrolls the fleet table's box and reports how far the
-// header row sits from the box's top edge once scrolled: 0 means the sticky
-// header stayed pinned over the rows.
-const scrollFleetTable = async (sessionId) => {
-	const scrolled = await evaluate(
+// fleetTableScrollState reports how far the fleet table's box is scrolled and
+// how far the header row sits from the box's top edge: an offset of 0 means
+// the sticky header stayed pinned over the rows.
+const fleetTableScrollState = async (sessionId) =>
+	evaluate(
 		`(() => {
 			const box = document.querySelector("#fleet-region .fleet-table").parentElement;
 			const head = box.querySelector("thead");
-			box.scrollTop = Math.min(1400, box.scrollHeight - box.clientHeight);
 			return { scrollTop: box.scrollTop, headerPinOffset: Math.abs(head.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientTop) };
 		})()`,
 		sessionId,
 	);
-	await sleep(300);
 
-	return scrolled;
+// scrollFleetTable scrolls the fleet table's box by up to 1400px.
+const scrollFleetTable = async (sessionId) => {
+	await evaluate(
+		`(() => { const box = document.querySelector("#fleet-region .fleet-table").parentElement; box.scrollTop = Math.min(1400, box.scrollHeight - box.clientHeight); })()`,
+		sessionId,
+	);
+	await sleep(300);
 };
 
 try {
@@ -427,8 +434,8 @@ try {
 		);
 
 		// Every view starts from a fresh origin storage: the theme toggle
-			// stores the user's choice in localStorage, and the pre-paint theme
-			// script lets a stored choice outrank the emulated color scheme.
+		// stores the user's choice in localStorage, and the pre-paint theme
+		// script lets a stored choice outrank the emulated color scheme.
 		await send(
 			"Storage.clearDataForOrigin",
 			{ origin: new URL(url).origin, storageTypes: "local_storage" },
@@ -448,8 +455,15 @@ try {
 		contrast.push({ view: view.name, scheme: view.scheme, ...JSON.parse(await evaluate(contrastExpression, sessionId)) });
 
 		if (facts.tableScrolls) {
-			scrolled.push({ view: view.name, ...(await scrollFleetTable(sessionId)) });
-			await capture(sessionId, `${view.name}-scrolled`, { width: view.width, height: view.height });
+			await scrollFleetTable(sessionId);
+			await capture(
+				sessionId,
+				`${view.name}-scrolled`,
+				{ width: view.width, height: view.height },
+				false,
+			);
+			// Measured after the capture, so the numbers describe the picture.
+			scrolled.push({ view: view.name, ...(await fleetTableScrollState(sessionId)) });
 			await evaluate(
 				'document.querySelector("#fleet-region .fleet-table").parentElement.scrollTop = 0',
 				sessionId,
