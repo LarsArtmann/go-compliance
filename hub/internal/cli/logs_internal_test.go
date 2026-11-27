@@ -14,6 +14,7 @@ func captureLogs() func() string {
 	var logs bytes.Buffer
 
 	previous := slog.Default()
+
 	slog.SetDefault(slog.New(slog.NewTextHandler(&logs, nil)))
 	DeferCleanup(func() { slog.SetDefault(previous) })
 

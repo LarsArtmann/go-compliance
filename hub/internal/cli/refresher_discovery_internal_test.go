@@ -217,10 +217,10 @@ var _ = Describe("startDiscovery", func() {
 	})
 
 	It("starts the watch against the daemon when roots are configured", func() {
-		root := GinkgoTB().TempDir()
 		stub := newStubDaemon(nil)
 		defer stub.Close()
 
+		root := GinkgoTB().TempDir()
 		refresher := newRefresher(events.NewHub(), nil, time.Hour, 24*time.Hour, 3, "")
 
 		ctx, cancel := context.WithCancel(context.Background())

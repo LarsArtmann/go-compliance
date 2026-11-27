@@ -101,6 +101,7 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		// If a later setup step fails and runServe returns early, ctx
 		// cancellation (or process exit) reaps both goroutines.
 		go refresher.Run(ctx)
+
 		startDiscovery(ctx, refresher, discoverPaths, discovery.ResolveSocketPath())
 
 		probe, err := buildHealthProbe(ctx, Version, hub, refresher, watcher, cacheDirForDB(flags.DB))
