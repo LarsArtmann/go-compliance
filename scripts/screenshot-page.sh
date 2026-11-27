@@ -43,13 +43,18 @@ fi
 profile="$(mktemp -d)"
 trap 'rm -rf "$profile"' EXIT
 
-mkdir -p "$(dirname "$out")"
+case "$out" in
+/*) outPath="$out" ;;
+*) outPath="$root/$out" ;;
+esac
+mkdir -p "$(dirname "$outPath")"
+
 "$CHROMIUM_BIN" --headless=new --no-sandbox --disable-gpu --hide-scrollbars \
 	--user-data-dir="$profile" --window-size="$size" --virtual-time-budget=4000 \
-	--screenshot="$root/$out" "$url" >/dev/null 2>&1
+	--screenshot="$outPath" "$url" >/dev/null 2>&1
 
-[ -s "$out" ] || {
-	echo "✗ chromium wrote nothing to $out" >&2
+[ -s "$outPath" ] || {
+	echo "✗ chromium wrote nothing to $outPath" >&2
 	exit 1
 }
 

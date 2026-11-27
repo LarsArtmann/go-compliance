@@ -28,6 +28,7 @@ scripts/pre-release-check.sh vX.Y.Z                        # release (docs/notes
 cd hub && go tool templ fmt -fail ./internal/dashboard/ && go tool templ generate ./internal/dashboard/
 nix shell .#tailwindcss -c bash scripts/regen-ui.sh        # commit the three artifacts with the edit
 scripts/screenshot.sh                                      # real-browser gate: themes, narrow layout, filter clicks
+scripts/screenshot-page.sh <url|file> <out.png> [WxH]      # one static capture for docs/assets
 
 # Deployment (host state; both build from the COMMITTED tree)
 scripts/deploy-hub.sh                                      # hub as a systemd user unit on the LAN address

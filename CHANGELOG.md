@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Release posture (2026-11-24): `scripts/pre-release-check.sh` (pre-flight: clean tree, CHANGELOG section, notes file, master pushed to BOTH remotes, tag freshness, the canonical plain-`buildflow` gate, `nix flake check`, `docs-gates run .` — every gate with a true exit code; `--verify` mode: both remotes at the tagged commit, proxy `@v/list`, GitHub release, clean-dir `go get`) plus `docs/notes/release-runbook.md` distilling the v0.2.0 sequence; CI re-runs the full matrix on `v*` tag pushes so a tag's own CI verdict exists (the v0.2.0 tag froze a red run).
 - Retroactive v0.1.0 GitHub release page (`docs/notes/v0.1.0-release-notes.md`; the tag shipped notes-less on 2026-11-19).
 - Dashboard rework (2026-11-25 to 27): the fleet summary replaces the stat cards (a headline sentence "155 of 211 repos are failing", a proportional state bar, count-carrying filter chips); chips filter through `data-on:click` (the previous `data-on-click` attribute was an unknown plugin that the pinned DataStar dropped silently, so the filter never worked); per-filter empty states; a quieter `@theme` re-skin (one accent, muted severity ramp, system fonts); tabular numbers; rows stack under a 40rem container; findings show count-first tokens ("3 ERR") instead of "—"; favicon route.
+- `scripts/screenshot-page.sh`: one static viewport capture of a page or a local HTML file with the same pinned chromium; `docs/assets/libs-index.png` is the library audit index captured and linked from `docs/review/libs/index.html`.
 - `scripts/screenshot.sh`: a real-browser gate (headless Chromium over CDP) rendering light, dark, and narrow views, asserting theme, favicon, zero console/network errors, pressed chip state, filter clicks, and empty messages.
 - `serve --discover-paths` (default `~/projects`): the discovery roots sent to the project-discovery daemon. The hub used to send none, the daemon answered 400 on every start, and never-covered was empty by construction. Only projects with a `go.mod` count, matching the producer's rule; an empty value disables discovery.
 - `scripts/deploy-hub.sh` and `deploy/compliance-hub.user.service`: the hub as a hardened `systemctl --user` unit (Type=notify, watchdog, read-only filesystem, LAN unicast bind) built from the committed tree and GC-rooted; `scripts/deploy-fleet-evidence.sh` and the `fleet-evidence` timer for the producer.
@@ -43,12 +44,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - TODO_LIST purge (2026-11-27): Clean-dir `go get github.com/larsartmann/go-compliance@v0.2.0` (GONOSUMDB='*' then without) — done (2026-11-24; part of scripts/pre-release-check.sh --verify)
 - TODO_LIST purge (2026-11-27): README install/`go get` snippets → v0.2.0 — done (2026-11-24; README Install section)
 
+- TODO_LIST purge (2026-11-27): Screenshot docs/review/libs/index.html into docs/assets + link from index (firefox permission needed) — done (2026-11-27: captured with scripts/screenshot-page.sh and linked from the index hero)
+- TODO_LIST purge (2026-11-27): Flaky-spec sweep: `watcher_internal_test.go:53` (300ms arming) same wall-clock hardening as FileSource — done (2026-11-27: watcher_internal_test.go probes until the watch is live instead of sleeping 300ms; six focused -race runs green)
+
 ### Deprecated
 
 ### Removed
 
 ### Fixed
 
+- The cross-process evidence-watch spec no longer sleeps 300ms to "let the watch arm": it probes with throwaway rows until the hub refreshes, spaced wider than the refresh debounce, then measures the 2s budget (`armWatch`).
 - Filter chips never filtered (2026-11-27): `data-on-click` is not a DataStar attribute; DOM events use `data-on:click`.
 - Never-covered was always empty (2026-11-27): discovery snapshots were sent without search roots, which the daemon rejects. See `--discover-paths`.
 - `/readyz` reported `discovery` warn forever ten minutes after every start on a healthy, quiet stream: the contact stamp was only taken on connect and snapshot. A connected stream now passes the check by itself.
