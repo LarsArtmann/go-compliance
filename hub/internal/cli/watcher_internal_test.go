@@ -89,7 +89,9 @@ var _ = Describe("evidence watch", func() {
 })
 
 // armWatch writes throwaway rows until the hub's row count grows, which
-// proves the directory watch is live; it fails the spec after ten seconds.
+// proves the directory watch is live; it fails the spec after ten probes.
+// Every probe restarts the refresher's debounce window, so the probe
+// interval must outlast the debounce or the refresh would be starved.
 func armWatch(ctx context.Context, other *cache.Store, hub *events.Hub) {
 	before := len(hub.Rows())
 
@@ -121,7 +123,7 @@ func waitRows(hub *events.Hub, before int, window time.Duration) bool {
 }
 
 const (
-	armWatchMaxProbes    = 200
-	armWatchProbeWindow  = 50 * time.Millisecond
+	armWatchMaxProbes    = 10
+	armWatchProbeWindow  = refreshDebounce + 700*time.Millisecond
 	armWatchPollInterval = 5 * time.Millisecond
 )
