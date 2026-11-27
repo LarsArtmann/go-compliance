@@ -32,6 +32,12 @@ const views = [
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Key events carry the character they type, or Chromium performs no default
+// action: Enter activates a button only with "\r" on keyDown, Space only with
+// " " on keyUp (a Space keyDown that carries text scrolls the page).
+const keyText = { Enter: ["\r", ""], " ": ["", " "] };
+const keyCodes = { Tab: 9, Enter: 13, " ": 32 };
+
 mkdirSync(outDir, { recursive: true });
 rmSync(profileDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
 
@@ -174,9 +180,10 @@ const truthExpression = `JSON.stringify({
 	viewportWidth: window.innerWidth,
 	scrollWidth: document.documentElement.scrollWidth,
 	pageHeight: document.documentElement.scrollHeight,
-	thPosition: getComputedStyle(document.querySelector("#fleet-region thead th")).position,
 	theadDisplay: getComputedStyle(document.querySelector("#fleet-region thead")).display,
-	tableScrolls: (() => { const box = document.querySelector("#fleet-region .fleet-table"); return box ? box.scrollHeight > box.clientHeight : false; })(),
+	headerSticky: getComputedStyle(document.querySelector("#fleet-region thead")).position === "sticky",
+	tableScrolls: (() => { const box = document.querySelector("#fleet-region .fleet-table")?.parentElement; return box ? box.scrollHeight > box.clientHeight : false; })(),
+	pageScrolls: document.documentElement.scrollHeight > window.innerHeight,
 })`;
 
 // In-page contrast measurement: every color is resolved through a 1x1
@@ -290,10 +297,10 @@ const clickChip = async (label, sessionId) => {
 };
 
 const press = async (key, sessionId) => {
-	const codes = { Tab: 9, Enter: 13, " ": 32 };
-	const base = { key, code: key === " " ? "Space" : key, windowsVirtualKeyCode: codes[key], nativeVirtualKeyCode: codes[key] };
-	await send("Input.dispatchKeyEvent", { type: "keyDown", ...base }, sessionId);
-	await send("Input.dispatchKeyEvent", { type: "keyUp", ...base }, sessionId);
+	const [down, up] = keyText[key] ?? ["", ""];
+	const base = { key, code: key === " " ? "Space" : key, windowsVirtualKeyCode: keyCodes[key], nativeVirtualKeyCode: keyCodes[key] };
+	await send("Input.dispatchKeyEvent", { type: "keyDown", ...base, text: down }, sessionId);
+	await send("Input.dispatchKeyEvent", { type: "keyUp", ...base, text: up }, sessionId);
 	await sleep(150);
 };
 
