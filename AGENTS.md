@@ -148,7 +148,9 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
 - Wall-clock specs: the work inside the asserted window stays
   microsecond-scale (never fixture IO); sleep at least 2x the TTL for
   expiry; plant a corrupt document mid-window so broken backoff fails
-  loudly.
+  loudly. Never sleep to "let a watch arm": probe until the effect shows
+  (`armWatch` in `watcher_internal_test.go`), and space probes wider than
+  `refreshDebounce`, because every kick restarts the debounce window.
 - Cross-package helpers live in `hub/internal/testsupport`; call
   `testsupport.WaitForSubscriber(hub)` before publishing to a fresh
   subscriber.
