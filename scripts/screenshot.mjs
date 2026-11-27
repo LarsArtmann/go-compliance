@@ -69,17 +69,25 @@ function handleMessage(message) {
 		pageErrors.push(`${msg.params.response.status} ${msg.params.response.url}`);
 		return;
 	}
-	if (msg.method === "Network.loadingFailed" && !msg.params.canceled && msg.params.errorText !== "net::ERR_ABORTED") {
+	if (
+		msg.method === "Network.loadingFailed" &&
+		!msg.params.canceled &&
+		msg.params.errorText !== "net::ERR_ABORTED"
+	) {
 		pageErrors.push(`request failed: ${msg.params.errorText}`);
 		return;
 	}
 	if (msg.method === "Runtime.exceptionThrown") {
 		const details = msg.params.exceptionDetails;
-		pageErrors.push(`exception ${details.url ?? ""}:${details.lineNumber ?? 0} ${details.exception?.description ?? details.text}`);
+		pageErrors.push(
+			`exception ${details.url ?? ""}:${details.lineNumber ?? 0} ${details.exception?.description ?? details.text}`,
+		);
 		return;
 	}
 	if (msg.method === "Runtime.consoleAPICalled" && msg.params.type === "error") {
-		pageErrors.push(`console.error ${msg.params.args.map((arg) => arg.value ?? arg.description ?? "").join(" ")}`);
+		pageErrors.push(
+			`console.error ${msg.params.args.map((arg) => arg.value ?? arg.description ?? "").join(" ")}`,
+		);
 		return;
 	}
 	if (msg.method === "Log.entryAdded" && msg.params.entry.level === "error") {
@@ -114,7 +122,9 @@ async function readDevToolsEndpoint() {
 		}
 		await sleep(200);
 	}
-	throw new Error(`chromium published no DevTools endpoint within 30s: ${chromeStderr.join("").slice(-800)}`);
+	throw new Error(
+		`chromium published no DevTools endpoint within 30s: ${chromeStderr.join("").slice(-800)}`,
+	);
 }
 
 async function waitForPage(sessionId) {
@@ -221,7 +231,10 @@ try {
 			filterChecks.push(await clickChip("Stale", sessionId));
 			await capture(sessionId, "dashboard-light-stale", { width: view.width, height: view.height });
 			filterChecks.push(await clickChip("Failing", sessionId));
-			await capture(sessionId, "dashboard-light-failing", { width: view.width, height: view.height });
+			await capture(sessionId, "dashboard-light-failing", {
+				width: view.width,
+				height: view.height,
+			});
 			filterChecks.push(await clickChip("All", sessionId));
 		}
 
@@ -233,7 +246,10 @@ try {
 	await shutdownChrome();
 }
 
-writeFileSync(join(outDir, "dom-truth.json"), `${JSON.stringify({ views: truth, filterChecks }, null, 2)}\n`);
+writeFileSync(
+	join(outDir, "dom-truth.json"),
+	`${JSON.stringify({ views: truth, filterChecks }, null, 2)}\n`,
+);
 writeFileSync(
 	join(outDir, "console-errors.json"),
 	`${JSON.stringify({ pageErrors, browserNoise }, null, 2)}\n`,
@@ -256,36 +272,67 @@ const failures = [...pageErrors];
 
 for (const entry of truth) {
 	const wantsDark = entry.scheme === "dark";
-	if (entry.dark !== wantsDark) failures.push(`${entry.view}: expected ${entry.scheme}, got ${entry.dark ? "dark" : "light"}`);
-	if (entry.rows === 0 && process.env.ALLOW_EMPTY !== "1") failures.push(`${entry.view}: no fleet rows rendered`);
-	if (entry.scrollWidth > entry.viewportWidth) failures.push(`${entry.view}: horizontal overflow (${entry.scrollWidth} > ${entry.viewportWidth})`);
-	if (entry.pressedChips.join() !== "All" || !entry.pressedChipHighlighted) failures.push(`${entry.view}: the All chip must read as selected on first paint (pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted})`);
+	if (entry.dark !== wantsDark)
+		failures.push(`${entry.view}: expected ${entry.scheme}, got ${entry.dark ? "dark" : "light"}`);
+	if (entry.rows === 0 && process.env.ALLOW_EMPTY !== "1")
+		failures.push(`${entry.view}: no fleet rows rendered`);
+	if (entry.scrollWidth > entry.viewportWidth)
+		failures.push(
+			`${entry.view}: horizontal overflow (${entry.scrollWidth} > ${entry.viewportWidth})`,
+		);
+	if (entry.pressedChips.join() !== "All" || !entry.pressedChipHighlighted)
+		failures.push(
+			`${entry.view}: the All chip must read as selected on first paint (pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted})`,
+		);
 }
 
 if (filterChecks.length === 3) {
 	const [stale, failing, all] = filterChecks;
 	const light = truth.find((entry) => entry.view === "dashboard-light");
 
-	if (stale.visibleRows !== 0 || stale.pressedChips.join() !== "Stale" || !stale.pressedChipHighlighted || stale.tableDisplay !== "none" || stale.emptyMessages.join() !== "No stale repos") {
-		failures.push(`filter: after clicking Stale, ${stale.visibleRows} rows are visible, table display is ${stale.tableDisplay}, messages are [${stale.emptyMessages}], pressed=[${stale.pressedChips}]`);
+	if (
+		stale.visibleRows !== 0 ||
+		stale.pressedChips.join() !== "Stale" ||
+		!stale.pressedChipHighlighted ||
+		stale.tableDisplay !== "none" ||
+		stale.emptyMessages.join() !== "No stale repos"
+	) {
+		failures.push(
+			`filter: after clicking Stale, ${stale.visibleRows} rows are visible, table display is ${stale.tableDisplay}, messages are [${stale.emptyMessages}], pressed=[${stale.pressedChips}]`,
+		);
 	}
 
 	const failingWanted = light?.visibleStates.failing ?? 0;
-	if (failing.visibleRows !== failingWanted || Object.keys(failing.visibleStates).join() !== "failing" || failing.pressedChips.join() !== "Failing" || !failing.pressedChipHighlighted || failing.tableDisplay === "none" || failing.emptyMessages.length > 0) {
-		failures.push(`filter: after clicking Failing, ${failing.visibleRows} rows are visible (${JSON.stringify(failing.visibleStates)}), expected ${failingWanted} failing; pressed=[${failing.pressedChips}]`);
+	if (
+		failing.visibleRows !== failingWanted ||
+		Object.keys(failing.visibleStates).join() !== "failing" ||
+		failing.pressedChips.join() !== "Failing" ||
+		!failing.pressedChipHighlighted ||
+		failing.tableDisplay === "none" ||
+		failing.emptyMessages.length > 0
+	) {
+		failures.push(
+			`filter: after clicking Failing, ${failing.visibleRows} rows are visible (${JSON.stringify(failing.visibleStates)}), expected ${failingWanted} failing; pressed=[${failing.pressedChips}]`,
+		);
 	}
 
 	if (all.visibleRows !== all.rows || all.pressedChips.join() !== "All") {
-		failures.push(`filter: after clicking All, ${all.visibleRows} of ${all.rows} rows are visible; pressed=[${all.pressedChips}]`);
+		failures.push(
+			`filter: after clicking All, ${all.visibleRows} of ${all.rows} rows are visible; pressed=[${all.pressedChips}]`,
+		);
 	}
 
 	for (const check of filterChecks) {
-		console.log(`filter ${check.clicked}: visible=${check.visibleRows} table=${check.tableDisplay} messages=[${check.emptyMessages}] states=${JSON.stringify(check.visibleStates)} pressed=[${check.pressedChips}] highlighted=${check.pressedChipHighlighted}`);
+		console.log(
+			`filter ${check.clicked}: visible=${check.visibleRows} table=${check.tableDisplay} messages=[${check.emptyMessages}] states=${JSON.stringify(check.visibleStates)} pressed=[${check.pressedChips}] highlighted=${check.pressedChipHighlighted}`,
+		);
 	}
 }
 
 if (failures.length > 0) {
-	console.error(`screenshot harness FAIL:\n${failures.map((failure) => `  - ${failure}`).join("\n")}`);
+	console.error(
+		`screenshot harness FAIL:\n${failures.map((failure) => `  - ${failure}`).join("\n")}`,
+	);
 	process.exit(1);
 }
 
