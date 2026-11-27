@@ -90,8 +90,8 @@ var _ = Describe("evidence watch", func() {
 
 // armWatch writes throwaway rows until the hub's row count grows, which
 // proves the directory watch is live; it fails the spec after ten probes.
-// Every probe restarts the refresher's debounce window, so the probe
-// interval must outlast the debounce or the refresh would be starved.
+// The probe window spans the refresher's debounce, the longest a seen
+// probe takes to become a row; a probe the watch missed costs one window.
 func armWatch(ctx context.Context, other *cache.Store, hub *events.Hub) {
 	before := len(hub.Rows())
 

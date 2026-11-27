@@ -205,7 +205,7 @@ var _ = Describe("startDiscovery", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		startDiscovery(ctx, refresher, nil)
+		startDiscovery(ctx, refresher, nil, stub.SocketPath())
 
 		Expect(refresher.DiscoveryLive()).To(BeTrue(), "a disabled discovery must pass its health check")
 		// A watch loop would log its connect or its back-off within moments.
@@ -224,9 +224,9 @@ var _ = Describe("startDiscovery", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		startDiscovery(ctx, refresher, []string{root})
+		startDiscovery(ctx, refresher, []string{root}, stub.SocketPath())
 
+		Eventually(stub.searchPaths, "5s", "20ms").Should(Equal([][]string{{root}}))
 		Eventually(refresher.DiscoveryLive, "5s", "20ms").Should(BeTrue())
-		Expect(refresher.discoverPaths).To(Equal([]string{root}))
 	})
 })

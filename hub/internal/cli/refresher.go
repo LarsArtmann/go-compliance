@@ -205,6 +205,10 @@ func (r *refresher) Refresh(ctx context.Context) error {
 // logged and retried on the next trigger: a transient source error must
 // not take the dashboard down (the health probe's evidence check keeps
 // reporting the last good publish).
+//
+// The debounce is a fixed window from the FIRST trigger of a burst: later
+// triggers inside the window are absorbed and never extend it, so a steady
+// stream of kicks yields one refresh per window and cannot starve the loop.
 func (r *refresher) Run(ctx context.Context) {
 	safetyNet := time.NewTicker(refreshSafetyNet)
 	defer safetyNet.Stop()
@@ -240,11 +244,13 @@ func (r *refresher) Run(ctx context.Context) {
 	}
 }
 
-// startDiscovery wires the refresher to the discovery daemon. Without
-// search roots the daemon would reject every snapshot, so discovery is off
-// instead: never-covered stays an empty set by design, the discovery health
-// check passes, and one log line says so once.
-func startDiscovery(ctx context.Context, refresh *refresher, discoverPaths []string) {
+// startDiscovery wires the refresher to the discovery daemon on
+// socketPath. Without search roots the daemon would reject every snapshot,
+// so discovery is off instead: never-covered stays an empty set by design,
+// the discovery health check passes, and one log line says so once.
+func startDiscovery(
+	ctx context.Context, refresh *refresher, discoverPaths []string, socketPath string,
+) {
 	refresh.discoverPaths = discoverPaths
 
 	if len(discoverPaths) == 0 {
@@ -254,7 +260,7 @@ func startDiscovery(ctx context.Context, refresh *refresher, discoverPaths []str
 		return
 	}
 
-	go runDiscoveryWatch(ctx, discovery.New(discovery.ResolveSocketPath()), refresh)
+	go runDiscoveryWatch(ctx, discovery.New(socketPath), refresh)
 }
 
 // runDiscoveryWatch subscribes to the discovery daemon's /v1/watch stream
