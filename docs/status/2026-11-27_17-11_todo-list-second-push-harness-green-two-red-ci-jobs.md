@@ -52,6 +52,11 @@ previous report is
 - The discovery daemon's snapshot (generation 5, `scannedAt` 05:26:54)
   lists 256 projects, 209 with a `go.mod`; it does not list
   `go-flightrecorder-row92`, which exists as a git worktree with a `go.mod`.
+- Harvest of this report (17:20): two rows added to `TODO_LIST.md` (the
+  768px harness view, the temp-dir cleanup) and the truncated
+  producer-ownership row repaired; CI docs-gates build `freshness .`: this
+  report `0 unharvested open §f item(s)`, `FRESH`; `rows TODO_LIST.md`:
+  clean.
 
 **NOT verified here:**
 
@@ -89,8 +94,9 @@ previous report is
    subagents are alive and obeying: I told both "never commit, never push",
    never looked, and one of them committed twice with the pre-commit hook
    bypassed.
-3. **What could you still improve?** Fix the CSS gate (ten minutes), harvest
-   this report, annotate the 30 items, write the living docs, redeploy
+3. **What could you still improve?** Fix the CSS gate (ten minutes), purge
+   the three TODO rows that are done, annotate the 30 items, write the
+   living docs, redeploy
    through the real gate, and confirm the templ-components lanes. Sections d
    and f.
 4. **Did you lie?** Not on purpose. Three claims of the 11-52 report are
@@ -174,16 +180,16 @@ scenarios; 30 older report items still open; 210 evidence rows.
 
 ## c) Not started
 
-| Item                                                                                                   | Why not                                              | Priority |
-| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- | -------- |
-| Harvest of this report's section f into `TODO_LIST.md`; purge of the three Medium rows that are done   | owner ordered a report and a pause                   | High     |
-| CHANGELOG, FEATURES, AGENTS, README rows for this session's changes                                    | same                                                 | High     |
-| Replacing the stale `~/go/bin/docs-gates` (`dev`)                                                      | not reached                                          | High     |
-| templ-components TODO rows for the three library findings (section e)                                  | not reached                                          | Medium   |
-| templ-components release tag, hub pin bump, deletion of the hand-rolled chip markup                    | needs a tag and a push, which are not mine to make   | Medium   |
-| Regenerating library-policy `docs/reports/fleet-compliance.md`                                         | not reached                                          | Low      |
-| BuildFlow CHANGELOG row and hash check; its five failing tests                                         | the repo moved under another session; not re-checked | Low      |
-| Owner-gated rows (unchanged): LAN sign-off, SystemNix, `FLAKE_PAT`, Forgejo, g2, M26, VACUUM, cache DB | owner-only                                           | Low      |
+| Item                                                                                                         | Why not                                              | Priority |
+| ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- | -------- |
+| Purge of the three Medium `TODO_LIST.md` rows that are done in code (contrast, sticky header, keyboard pass) | not reached before the report order                  | High     |
+| CHANGELOG, FEATURES, AGENTS, README rows for this session's changes                                          | same                                                 | High     |
+| Replacing the stale `~/go/bin/docs-gates` (`dev`)                                                            | not reached                                          | High     |
+| templ-components TODO rows for the three library findings (section e)                                        | not reached                                          | Medium   |
+| templ-components release tag, hub pin bump, deletion of the hand-rolled chip markup                          | needs a tag and a push, which are not mine to make   | Medium   |
+| Regenerating library-policy `docs/reports/fleet-compliance.md`                                               | not reached                                          | Low      |
+| BuildFlow CHANGELOG row and hash check; its five failing tests                                               | the repo moved under another session; not re-checked | Low      |
+| Owner-gated rows (unchanged): LAN sign-off, SystemNix, `FLAKE_PAT`, Forgejo, g2, M26, VACUUM, cache DB       | owner-only                                           | Low      |
 
 ## d) Totally fucked up
 
@@ -279,7 +285,7 @@ Three library findings for templ-components (no row written yet):
 ## f) Next things (up to 50, ranked by impact)
 
 1. Fix the `dashboard CSS freshness gate` job: add `@source not "**/*_test.go";` to `app.css`, run `scripts/regen-ui.sh` twice, confirm `git diff --exit-code` on `library-classes.txt`, `library-custom.css`, `app.min.css`. (Critical, S, Bug)
-2. Harvest this report into `TODO_LIST.md`; strike and purge the three Medium rows that are done in code (contrast, sticky header, keyboard pass) into the `CHANGELOG`. (Critical, S, Documentation)
+2. Strike and purge the three Medium `TODO_LIST.md` rows that are done in code (contrast, sticky header, keyboard pass) into the `CHANGELOG`; this report's own two rows are already in the list. (Critical, S, Documentation)
 3. Make the `docs gates` job green: annotate or harvest the 30 open items listed in `/tmp/dg-audit-all.txt` with the CI docs-gates build, item by item with evidence, until `freshness . --audit-all --audit-max=0` reports zero. (Critical, M, Documentation)
 4. Replace the stale `~/go/bin/docs-gates` (version `dev`) with the CI build, or delete it. (High, S, Tooling)
 5. Write the living docs for this session: `CHANGELOG.md` rows, a `FEATURES.md` row for the scroll box, `AGENTS.md` contracts (deploy gate and rollback, harness check families, test literals feed Tailwind, `startDiscovery`), a `README.md` sentence; `AGENTS.md` stays under 220 lines. (High, S, Documentation)
