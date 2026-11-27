@@ -3,7 +3,9 @@
 // narrow phone-width viewport. Every view lands as a viewport PNG plus a
 // full-page PNG and one row in dom-truth.json. Failed requests, console
 // errors, and uncaught page exceptions are written to console-errors.json
-// and fail the run.
+// and fail the run. Beyond the pictures it measures what a string test
+// cannot see: text contrast per theme (WCAG AA), the sticky column header,
+// and a keyboard pass over the chips and the theme toggle.
 //
 // Usage: node scripts/screenshot.mjs <url> <outDir>
 // Environment: CHROMIUM_BIN (chromium binary path), SETTLE_MS (default 2500).
@@ -172,10 +174,109 @@ const truthExpression = `JSON.stringify({
 	viewportWidth: window.innerWidth,
 	scrollWidth: document.documentElement.scrollWidth,
 	pageHeight: document.documentElement.scrollHeight,
+	thPosition: getComputedStyle(document.querySelector("#fleet-region thead th")).position,
+	theadDisplay: getComputedStyle(document.querySelector("#fleet-region thead")).display,
+	tableScrolls: (() => { const box = document.querySelector("#fleet-region .fleet-table"); return box ? box.scrollHeight > box.clientHeight : false; })(),
 })`;
+
+// In-page contrast measurement: every color is resolved through a 1x1
+// canvas (Tailwind v4 emits oklch), translucent backgrounds and opacities
+// are composited over the nearest opaque ancestor, and the WCAG ratio is
+// computed from the relative luminance. Each named target reports the
+// ratio of its first match; a missing element reports null.
+const contrastExpression = `JSON.stringify((() => {
+	const canvas = document.createElement("canvas");
+	canvas.width = canvas.height = 1;
+	const ctx = canvas.getContext("2d", { willReadFrequently: true });
+	const rgba = (color) => {
+		ctx.clearRect(0, 0, 1, 1);
+		ctx.fillStyle = color;
+		ctx.fillRect(0, 0, 1, 1);
+		const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+		return [r, g, b, a / 255];
+	};
+	const over = (top, bottom) => [0, 1, 2].map((i) => top[i] * top[3] + bottom[i] * (1 - top[3]));
+	const background = (el) => {
+		const layers = [];
+		for (let node = el; node; node = node.parentElement) {
+			const layer = rgba(getComputedStyle(node).backgroundColor);
+			if (layer[3] === 0) continue;
+			layers.push(layer);
+			if (layer[3] === 1) break;
+		}
+		let base = [255, 255, 255];
+		for (const layer of layers.reverse()) base = over([...layer.slice(0, 3), layer[3]], base);
+		return base;
+	};
+	const opacity = (el) => {
+		let product = 1;
+		for (let node = el; node; node = node.parentElement) product *= Number(getComputedStyle(node).opacity);
+		return product;
+	};
+	const luminance = ([r, g, b]) => {
+		const f = (v) => {
+			v /= 255;
+			return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+		};
+		return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+	};
+	const measure = (el) => {
+		if (!el) return null;
+		const style = getComputedStyle(el);
+		const bg = background(el);
+		const raw = rgba(style.color);
+		const alpha = raw[3] * opacity(el);
+		const fg = over([raw[0], raw[1], raw[2], alpha], bg);
+		const l1 = luminance(fg);
+		const l2 = luminance(bg);
+		const size = Number.parseFloat(style.fontSize);
+		const weight = Number(style.fontWeight);
+		const large = size >= 24 || (size >= 18.66 && weight >= 700);
+		const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+		return { ratio: Math.round(ratio * 100) / 100, size, large, required: large ? 3 : 4.5, text: (el.textContent ?? "").trim().slice(0, 40) };
+	};
+	const badge = (label) => {
+		for (const row of document.querySelectorAll("#fleet-rows tr[data-repo]")) {
+			const cell = row.children[1];
+			if ((cell?.textContent ?? "").trim() === label) return cell.querySelector("span");
+		}
+		return null;
+	};
+	const targets = [
+		["headline word", document.querySelector("#fleet-summary p span")],
+		["headline figure", document.querySelectorAll("#fleet-summary p span")[1] ?? null],
+		["chip selected", document.querySelector('#fleet-summary [role=group] button[aria-pressed="true"]')],
+		["chip selected count", document.querySelector('#fleet-summary [role=group] button[aria-pressed="true"] span')],
+		["chip unselected", document.querySelector('#fleet-summary [role=group] button[aria-pressed="false"]')],
+		["chip unselected count", document.querySelector('#fleet-summary [role=group] button[aria-pressed="false"] span')],
+		["badge failing", badge("failing")],
+		["badge stale", badge("stale")],
+		["badge never-covered", badge("never-covered")],
+		["badge compliant", badge("compliant")],
+		["column header", document.querySelector("#fleet-region thead th")],
+		["repo name", document.querySelector("#fleet-rows tr[data-repo] td:nth-child(1)")],
+		["findings", document.querySelector("#fleet-rows tr[data-repo] td:nth-child(3) span")],
+		["last run", document.querySelector("#fleet-rows tr[data-repo] td:nth-child(4) time")],
+		["rendered status", document.querySelector("[data-tc-relative].text-xs") ?? document.querySelector("header [data-tc-relative]")],
+	];
+	return Object.fromEntries(targets.map(([name, el]) => [name, measure(el)]));
+})())`;
+
+// The keyboard pass: Tab reaches the chips and the theme toggle, Enter
+// activates them, and the focused chip shows a focus ring.
+const keyboardExpression = `JSON.stringify((() => {
+	const active = () => {
+		const el = document.activeElement;
+		if (!el || el === document.body) return "body";
+		return el.tagName.toLowerCase() + ":" + (el.getAttribute("aria-label") ?? el.textContent ?? "").trim().replace(/\\s+/g, " ").slice(0, 30);
+	};
+	return { active: active(), chipFocusVisible: document.activeElement?.matches?.("#fleet-summary [role=group] button:focus-visible") ?? false, outline: document.activeElement ? getComputedStyle(document.activeElement).outlineStyle + " " + getComputedStyle(document.activeElement).outlineWidth : "", dark: document.documentElement.classList.contains("dark") };
+})())`;
 
 const truth = [];
 const filterChecks = [];
+const contrast = [];
+let keyboard = null;
 let fatal = null;
 
 const clickChip = async (label, sessionId) => {
@@ -186,6 +287,55 @@ const clickChip = async (label, sessionId) => {
 	await sleep(500);
 
 	return { clicked: label, ...JSON.parse(await evaluate(truthExpression, sessionId)) };
+};
+
+const press = async (key, sessionId) => {
+	const codes = { Tab: 9, Enter: 13, " ": 32 };
+	const base = { key, code: key === " " ? "Space" : key, windowsVirtualKeyCode: codes[key], nativeVirtualKeyCode: codes[key] };
+	await send("Input.dispatchKeyEvent", { type: "keyDown", ...base }, sessionId);
+	await send("Input.dispatchKeyEvent", { type: "keyUp", ...base }, sessionId);
+	await sleep(150);
+};
+
+// tabUntil presses Tab until the active element's description starts with
+// want, or stops after max presses; it returns every stop it passed.
+const tabUntil = async (want, sessionId, max = 14) => {
+	const stops = [];
+	for (let i = 0; i < max; i++) {
+		const state = JSON.parse(await evaluate(keyboardExpression, sessionId));
+		if (state.active.startsWith(want)) return { reached: true, stops, state };
+		await press("Tab", sessionId);
+		stops.push(JSON.parse(await evaluate(keyboardExpression, sessionId)).active);
+	}
+	const state = JSON.parse(await evaluate(keyboardExpression, sessionId));
+
+	return { reached: state.active.startsWith(want), stops, state };
+};
+
+// keyboardPass drives chips and theme toggle with the keyboard alone.
+const keyboardPass = async (sessionId) => {
+	await evaluate("document.activeElement?.blur?.()", sessionId);
+	const chip = await tabUntil("button:Failing", sessionId);
+	if (!chip.reached) return { reached: false, stops: chip.stops };
+	await press("Enter", sessionId);
+	const afterChip = JSON.parse(await evaluate(truthExpression, sessionId));
+	const toggle = await tabUntil("button:Toggle dark mode", sessionId);
+	if (!toggle.reached) return { reached: false, stops: toggle.stops, chipActivated: afterChip };
+	const darkBefore = toggle.state.dark;
+	await press("Enter", sessionId);
+	const darkAfter = JSON.parse(await evaluate(keyboardExpression, sessionId)).dark;
+	await press("Enter", sessionId);
+	const darkRestored = JSON.parse(await evaluate(keyboardExpression, sessionId)).dark;
+
+	return {
+		reached: true,
+		stopsToChip: chip.stops,
+		chipFocusVisible: chip.state.chipFocusVisible,
+		chipOutline: chip.state.outline,
+		chipActivated: afterChip,
+		stopsToToggle: toggle.stops,
+		themeToggled: darkAfter !== darkBefore && darkRestored === darkBefore,
+	};
 };
 
 try {
@@ -226,8 +376,20 @@ try {
 		await capture(sessionId, view.name, { width: view.width, height: view.height });
 		await capture(sessionId, `${view.name}-full`, { width: view.width, height: fullHeight });
 		truth.push({ view: view.name, scheme: view.scheme, ...facts });
+		contrast.push({ view: view.name, scheme: view.scheme, ...JSON.parse(await evaluate(contrastExpression, sessionId)) });
 
 		if (view.name === "dashboard-light") {
+			keyboard = await keyboardPass(sessionId);
+
+			if (facts.tableScrolls) {
+				await evaluate(
+					'(() => { const box = document.querySelector("#fleet-region .fleet-table"); box.scrollTop = Math.min(1400, box.scrollHeight - box.clientHeight); })()',
+					sessionId,
+				);
+				await sleep(300);
+				await capture(sessionId, "dashboard-light-scrolled", { width: view.width, height: view.height });
+			}
+
 			filterChecks.push(await clickChip("Stale", sessionId));
 			await capture(sessionId, "dashboard-light-stale", { width: view.width, height: view.height });
 			filterChecks.push(await clickChip("Failing", sessionId));
@@ -251,6 +413,10 @@ writeFileSync(
 	`${JSON.stringify({ views: truth, filterChecks }, null, 2)}\n`,
 );
 writeFileSync(
+	join(outDir, "contrast.json"),
+	`${JSON.stringify({ contrast, keyboard }, null, 2)}\n`,
+);
+writeFileSync(
 	join(outDir, "console-errors.json"),
 	`${JSON.stringify({ pageErrors, browserNoise }, null, 2)}\n`,
 );
@@ -259,7 +425,23 @@ for (const entry of truth) {
 	console.log(
 		`${entry.view}: dark=${entry.dark} rows=${entry.rows} visible=${entry.visibleRows} rowDisplay=${entry.rowDisplay} pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted} ` +
 			`headline="${entry.headline}" chips=[${entry.statCards.join(" | ")}] bar="${entry.barLabel}" favicon=${entry.favicon} ` +
-			`width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight}`,
+			`width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight} th=${entry.thPosition}/${entry.theadDisplay} tableScrolls=${entry.tableScrolls}`,
+	);
+}
+
+for (const entry of contrast) {
+	console.log(
+		`contrast ${entry.view}: ` +
+			Object.entries(entry)
+				.filter(([name]) => name !== "view" && name !== "scheme")
+				.map(([name, m]) => `${name}=${m ? m.ratio : "n/a"}`)
+				.join(" "),
+	);
+}
+
+if (keyboard) {
+	console.log(
+		`keyboard: reached=${keyboard.reached} chipFocusVisible=${keyboard.chipFocusVisible} outline="${keyboard.chipOutline}" chipPressed=[${keyboard.chipActivated?.pressedChips ?? ""}] themeToggled=${keyboard.themeToggled}`,
 	);
 }
 
@@ -284,6 +466,33 @@ for (const entry of truth) {
 		failures.push(
 			`${entry.view}: the All chip must read as selected on first paint (pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted})`,
 		);
+	const wide = entry.viewportWidth >= 640;
+	if (wide && entry.thPosition !== "sticky")
+		failures.push(`${entry.view}: the column header is ${entry.thPosition}, expected sticky`);
+	if (wide && entry.theadDisplay === "none")
+		failures.push(`${entry.view}: the column header is hidden in a wide layout`);
+	if (!wide && (entry.thPosition === "sticky" || entry.theadDisplay !== "none"))
+		failures.push(`${entry.view}: the stacked layout must drop the column header (th=${entry.thPosition}, thead=${entry.theadDisplay})`);
+}
+
+for (const entry of contrast) {
+	for (const [name, m] of Object.entries(entry)) {
+		if (name === "view" || name === "scheme" || !m) continue;
+		if (m.ratio < m.required)
+			failures.push(
+				`contrast ${entry.view}: ${name} "${m.text}" is ${m.ratio}:1 at ${m.size}px, WCAG AA needs ${m.required}:1`,
+			);
+	}
+}
+
+if (!keyboard || !keyboard.reached) {
+	failures.push(`keyboard: Tab never reached the chips and the theme toggle (stops: ${(keyboard?.stops ?? []).join(" > ")})`);
+} else {
+	if (!keyboard.chipFocusVisible || keyboard.chipOutline.startsWith("none") || keyboard.chipOutline.endsWith(" 0px"))
+		failures.push(`keyboard: the focused chip shows no focus ring (visible=${keyboard.chipFocusVisible}, outline="${keyboard.chipOutline}")`);
+	if (keyboard.chipActivated?.pressedChips?.join() !== "Failing")
+		failures.push(`keyboard: Enter on the Failing chip did not select it (pressed=[${keyboard.chipActivated?.pressedChips ?? ""}])`);
+	if (!keyboard.themeToggled) failures.push("keyboard: Enter on the theme toggle did not flip and restore the theme");
 }
 
 if (filterChecks.length === 3) {
