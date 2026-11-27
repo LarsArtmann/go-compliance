@@ -266,35 +266,35 @@ All of these are specified in rev 2 with their order; none was started.
 
 ## f) Next things (up to 50, ranked by impact)
 
-1. Contain `b0a8b7a`: revert the foreign root `go.mod`, `go.sum`, `go.work.sum` changes and regenerate the five `*_templ.go` from `hub/` with the pinned templ tool, or tidy and re-pin if the bump was intentional (Critical, S, Bug).
-2. Run the canonical `buildflow` gate at HEAD and fix what it reports (gomod tidy, templ roundtrip, `vendorHash`); GitHub CI run 45506462845 was still running at 00:02:53 (Critical, M, Bug).
-3. Identify the actor behind hub PID 3874004 and the root `go.mod` change; agree that rev 2 is the only plan before any further execution (Critical, S, Process).
-4. Deploy compliance-hub as a `systemctl --user` unit on a GC-rooted store path, replacing the foreign `nix run` process (rev 2 T01) (High, M, Feature).
-5. Build a durable `library-policy` via `nix build --out-link` (rev 2 T13) (High, M, Feature).
-6. Make fleet discovery skip dot-directories (`.bf-jscpd-worktree`) with regression tests (rev 2 T06) (High, S, Bug).
-7. Install the daily fleet evidence timer writing the XDG evidence file and verify the live refresh (rev 2 T02) (High, M, Feature).
-8. Build the screenshot harness before any visual task (rev 2 T10.1) (High, S, Tooling).
-9. Close out the findings cell: full hub `-race` suite, golangci-lint, CSS byte-freshness at HEAD, AGENTS, TODO and CHANGELOG rows, screenshot proof (High, S, Quality).
-10. Harvest the new items of this report into `TODO_LIST.md` and `ROADMAP.md` (High, S, Documentation).
+~~1. Contain `b0a8b7a`: revert the foreign root `go.mod`, `go.sum`, `go.work.sum` changes and regenerate the five `*_templ.go` from `hub/` with the pinned templ tool, or tidy and re-pin if the bump was intentional (Critical, S, Bug).~~ done at `2b4ada2` 2026-11-25: root module files restored, templ regenerated from hub/
+~~2. Run the canonical `buildflow` gate at HEAD and fix what it reports (gomod tidy, templ roundtrip, `vendorHash`); GitHub CI run 45506462845 was still running at 00:02:53 (Critical, M, Bug).~~ done at `0ba385b` 2026-11-27 for the local gate (plain buildflow exit 0); the CI half waits on the manual push, see the push row in TODO_LIST Blocked
+~~3. Identify the actor behind hub PID 3874004 and the root `go.mod` change; agree that rev 2 is the only plan before any further execution (Critical, S, Process).~~ NOT-DO — the actor was never identified; the owner ordered rev 2 executed on 2026-11-27, which settles the agreement this item asked for
+~~4. Deploy compliance-hub as a `systemctl --user` unit on a GC-rooted store path, replacing the foreign `nix run` process (rev 2 T01) (High, M, Feature).~~ done at `77c2c45`: scripts/deploy-hub.sh and deploy/compliance-hub.user.service, unit live since 2026-11-25
+~~5. Build a durable `library-policy` via `nix build --out-link` (rev 2 T13) (High, M, Feature).~~ done at `77c2c45`: scripts/deploy-fleet-evidence.sh builds git+file://<repo>#library-policy into ~/.local/state/compliance-fleet/current
+~~6. Make fleet discovery skip dot-directories (`.bf-jscpd-worktree`) with regression tests (rev 2 T06) (High, S, Bug).~~ done 2026-11-27 in the library-policy repository, commit 57c2e2b, which is not a commit of this repo: discoverFleetRepos skips dot-directories, table and BDD specs
+~~7. Install the daily fleet evidence timer writing the XDG evidence file and verify the live refresh (rev 2 T02) (High, M, Feature).~~ done at `77c2c45`: fleet-evidence.timer enabled and started (daily 05:10), the hub refreshes after each scan
+~~8. Build the screenshot harness before any visual task (rev 2 T10.1) (High, S, Tooling).~~ done at `77c2c45`: scripts/screenshot.sh, light, dark, and narrow views with filter clicks and console-error checks
+~~9. Close out the findings cell: full hub `-race` suite, golangci-lint, CSS byte-freshness at HEAD, AGENTS, TODO and CHANGELOG rows, screenshot proof (High, S, Quality).~~ done at `77c2c45`: hub -race suite green, golangci-lint 0 issues, CSS artifacts regenerated, AGENTS, TODO, and CHANGELOG rows written, harness run against the LAN URL
+~~10. Harvest the new items of this report into `TODO_LIST.md` and `ROADMAP.md` (High, S, Documentation).~~ done at `77c2c45`: docs-gates run . all green (freshness and audit-all included)
 11. Confirm CI is 14 of 14 on the HEAD that results from items 1 and 2 (High, S, Quality).
-12. Bump templ-components from v1.27.0 to v1.27.2 in the hub with CSS regen and tests (rev 2 T05) (Medium, S, Dependency).
-13. Dashboard hierarchy: the failing story lands in two seconds (rev 2 T04) (Medium, M, Feature).
-14. Root-cause the discovery daemon `400 Bad Request` at serve start, then re-check whether never-covered populates by itself (rev 2 T11) (Medium, M, Bug).
-15. Auth posture: threat sketch and recommendation in `docs/decisions/bind-posture.md`, sign-off routed to the owner (rev 2 T20) (Medium, S, Documentation).
-16. Quiet `@theme` re-skin with one accent and a muted severity ramp (rev 2 T03) (Medium, M, Feature).
-17. Typography: `tabular-nums` and a weight scale (rev 2 T09) (Medium, S, Feature).
-18. Severity coherence in the table; padding is already compact (rev 2 T08) (Low, S, Feature).
-19. Visual QA over the finished dashboard (rev 2 T10) (Medium, S, Quality).
-20. Verify the Nix-built `library-policy` reports a real version in `buildflow_versions` (rev 2 T14) (Medium, S, Quality).
-21. LAN serve recipe as a `bind-posture.md` appendix with cross-links (rev 2 T16) (Medium, S, Documentation).
-22. Consumer sweep to core v0.2.0 in library-policy, md-go-validator and BuildFlow (rev 2 T18) (Medium, L, Dependency).
-23. Persist the fleet snapshot to library-policy `docs/reports/` (rev 2 T15) (Low, S, Documentation).
-    ~~24. Align the evidence path defaults in the docs (rev 2 T19) (Low, S, Documentation).~~ done at `77c2c45` 2026-11-27: README, docs/guides/integrate.md, and bind-posture.md state both defaults
-24. Write the v2 reporter-to-cache ingress decision ask (rev 2 T28) (Medium, S, Decision).
-25. Strike and purge the done rows in `TODO_LIST.md`, including the 4 unwrapped DONE rows, with `docs-gates strike` and `docs-gates purge` (Medium, S, Documentation).
-26. Put the cmdguard follow-ups row into a plan or mark it deferred (Low, S, Documentation).
-27. Define `DOCUMENTED` in the FEATURES legend or switch to a defined status (Low, S, Documentation).
-28. Reconcile `deploy/compliance-hub.service` with the user-unit recipe and correct its NixOS-module claim (Medium, S, Documentation).
+~~12. Bump templ-components from v1.27.0 to v1.27.2 in the hub with CSS regen and tests (rev 2 T05) (Medium, S, Dependency).~~ done at `77c2c45`: hub at v1.27.2 with CSS regen and tests
+~~13. Dashboard hierarchy: the failing story lands in two seconds (rev 2 T04) (Medium, M, Feature).~~ done at `77c2c45`: headline sentence, state bar, and count chips (stat cards replaced)
+~~14. Root-cause the discovery daemon `400 Bad Request` at serve start, then re-check whether never-covered populates by itself (rev 2 T11) (Medium, M, Bug).~~ done at `77c2c45`: serve --discover-paths sends the roots; never-covered computes (0 today because every Go repo has evidence)
+~~15. Auth posture: threat sketch and recommendation in `docs/decisions/bind-posture.md`, sign-off routed to the owner (rev 2 T20) (Medium, S, Documentation).~~ done at `77c2c45`: threat sketch and recommendation in docs/decisions/bind-posture.md; sign-off still open with the owner
+~~16. Quiet `@theme` re-skin with one accent and a muted severity ramp (rev 2 T03) (Medium, M, Feature).~~ done at `77c2c45`: app.css @theme block
+~~17. Typography: `tabular-nums` and a weight scale (rev 2 T09) (Medium, S, Feature).~~ done at `77c2c45`: system font stack with tabular-nums and a weight scale
+~~18. Severity coherence in the table; padding is already compact (rev 2 T08) (Low, S, Feature).~~ done at `77c2c45`: count-first severity tokens, muted ramp, padding on the custom rows
+~~19. Visual QA over the finished dashboard (rev 2 T10) (Medium, S, Quality).~~ done at `77c2c45`: scripts/screenshot.sh is the repeatable gate, three views green
+~~20. Verify the Nix-built `library-policy` reports a real version in `buildflow_versions` (rev 2 T14) (Medium, S, Quality).~~ done at `77c2c45`: buildflow_versions carries the producer commit, no dev
+~~21. LAN serve recipe as a `bind-posture.md` appendix with cross-links (rev 2 T16) (Medium, S, Documentation).~~ done at `77c2c45`: bind-posture.md Appendix A, runbook and AGENTS cross-links
+~~22. Consumer sweep to core v0.2.0 in library-policy, md-go-validator and BuildFlow (rev 2 T18) (Medium, L, Dependency).~~ done at `77c2c45` 2026-11-27: library-policy, md-go-validator, and BuildFlow require core v0.2.0; tests match each baseline
+~~23. Persist the fleet snapshot to library-policy `docs/reports/` (rev 2 T15) (Low, S, Documentation).~~ done at `77c2c45` 2026-11-27: library-policy scripts/fleet-snapshot.sh writes docs/reports/fleet-compliance.md
+~~24. Align the evidence path defaults in the docs (rev 2 T19) (Low, S, Documentation).~~ done at `77c2c45` 2026-11-27: README, docs/guides/integrate.md, and bind-posture.md state both defaults
+~~24. Write the v2 reporter-to-cache ingress decision ask (rev 2 T28) (Medium, S, Decision).~~ done at `77c2c45` 2026-11-27: docs/decisions/v2-wire-design.md, section Decision ask
+~~25. Strike and purge the done rows in `TODO_LIST.md`, including the 4 unwrapped DONE rows, with `docs-gates strike` and `docs-gates purge` (Medium, S, Documentation).~~ done at `77c2c45` 2026-11-27: 15 rows struck and purged into the CHANGELOG
+~~26. Put the cmdguard follow-ups row into a plan or mark it deferred (Low, S, Documentation).~~ done at `77c2c45` 2026-11-27: the row stays in TODO_LIST Low Impact as BLOCKED with its drafts written; nothing further to plan
+~~27. Define `DOCUMENTED` in the FEATURES legend or switch to a defined status (Low, S, Documentation).~~ done at `77c2c45`: FEATURES.md legend carries DOCUMENTED
+~~28. Reconcile `deploy/compliance-hub.service` with the user-unit recipe and correct its NixOS-module claim (Medium, S, Documentation).~~ done at `936faf8` 2026-11-25: StartLimit moved to [Unit], the NixOS-module claim corrected, the ineffective Environment line removed
 29. Add a gate that regenerates templ with the pinned tool and diffs (Medium, S, Quality).
 30. File a verified BuildFlow issue: the prettier lane rewrites committed compiled artifacts (Medium, S, Upstream).
 31. Record the formatter hazard, the `exclude`, and the concurrent-actor check in AGENTS.md (Medium, S, Documentation).
