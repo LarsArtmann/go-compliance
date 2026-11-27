@@ -40,7 +40,7 @@ templ StateFilterChips(selected string, counts map[string]int, total int) {
 				aria-pressed={ fmt.Sprintf("%t", chip.State == selected) }
 			>
 				{ chip.Label }
-				<span class="ml-1.5 tabular-nums opacity-70">{ fmt.Sprintf("%d", chipCount(chip.State, counts, total)) }</span>
+				<span class="ms-1.5 tabular-nums font-normal">{ fmt.Sprintf("%d", chipCount(chip.State, counts, total)) }</span>
 			</button>
 		}
 	</div>

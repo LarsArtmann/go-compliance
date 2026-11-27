@@ -49,7 +49,20 @@ const (
 )
 
 const (
-	// fleetTableClass is the stylesheet hook that stacks the fleet rows once
-	// the table gets narrower than its columns.
+	// fleetTableClass is the stylesheet hook on the <table>: it stacks the
+	// fleet rows once the table gets narrower than its columns, and it marks
+	// the table whose scroll box (the library wrapper around it) gets a
+	// height in wide layouts.
 	fleetTableClass = "fleet-table"
+
+	// renderedStatusID marks the "rendered X ago" freshness line in the
+	// page header; the browser harness reads its contrast from it.
+	renderedStatusID = "rendered-status"
+
+	// pageBodyClass paints the page canvas. layout.Base applies no body
+	// class of its own, so without it a dark page falls back to the browser's
+	// default canvas, which differs per browser. The dashboard names its own:
+	// white, and in dark mode the darkest gray, one step below the table's
+	// raised surfaces.
+	pageBodyClass = "bg-white text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100"
 )
