@@ -240,6 +240,23 @@ func (r *refresher) Run(ctx context.Context) {
 	}
 }
 
+// startDiscovery wires the refresher to the discovery daemon. Without
+// search roots the daemon would reject every snapshot, so discovery is off
+// instead: never-covered stays an empty set by design, the discovery health
+// check passes, and one log line says so once.
+func startDiscovery(ctx context.Context, refresh *refresher, discoverPaths []string) {
+	refresh.discoverPaths = discoverPaths
+
+	if len(discoverPaths) == 0 {
+		refresh.DisableDiscovery()
+		slog.Info("compliance-hub: discovery disabled (--discover-paths is empty); never-covered is not computed")
+
+		return
+	}
+
+	go runDiscoveryWatch(ctx, discovery.New(discovery.ResolveSocketPath()), refresh)
+}
+
 // runDiscoveryWatch subscribes to the discovery daemon's /v1/watch stream
 // and kicks the refresher on every fleet change. The daemon being down is
 // normal (best-effort completeness): errors back off and retry, and each

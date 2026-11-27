@@ -13,7 +13,6 @@ import (
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/cache"
 	"github.com/larsartmann/go-compliance/hub/internal/dashboard"
-	"github.com/larsartmann/go-compliance/hub/internal/discovery"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
 )
 
@@ -81,14 +80,6 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		// discovery change, safety-net tick) re-derives and publishes.
 		refresher := newRefresher(hub, source, window, staleAfter, flags.WorstSteps, flags.Step)
 
-		refresher.discoverPaths = discoverPaths
-		if len(discoverPaths) == 0 {
-			// No roots: the daemon would reject every snapshot, so discovery
-			// is off and never-covered stays an empty set by design.
-			refresher.DisableDiscovery()
-			slog.Info("compliance-hub: discovery disabled (--discover-paths is empty); never-covered is not computed")
-		}
-
 		if err := refresher.Refresh(ctx); err != nil {
 			return err
 		}
@@ -109,10 +100,7 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		// If a later setup step fails and runServe returns early, ctx
 		// cancellation (or process exit) reaps both goroutines.
 		go refresher.Run(ctx)
-
-		if len(discoverPaths) > 0 {
-			go runDiscoveryWatch(ctx, discovery.New(discovery.ResolveSocketPath()), refresher)
-		}
+		startDiscovery(ctx, refresher, discoverPaths)
 
 		probe, err := buildHealthProbe(ctx, Version, hub, refresher, watcher, cacheDirForDB(flags.DB))
 		if err != nil {
