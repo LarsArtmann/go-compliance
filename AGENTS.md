@@ -173,3 +173,15 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   reports success).
 - Fixture: `testdata/buildflow-v1-fixture.json` pins 341 redacted repos;
   `scripts/refresh-fixture.sh` is the refresh ritual.
+- BuildFlow warning triage (2026-11-27, plain `buildflow` exits 0; these
+  warning groups are deliberate non-fixes, do not "fix" them again):
+  branching-flow and erraudit (style, both modules), go-auto-upgrade
+  (dependency pins move only in a bump task), go-version-auto-configure
+  (a dependency forces the `go 1.27.2` floor; tidy restores it),
+  nix-checker (hashes stay inline: `nix-hash-fix` rewrites them in place),
+  go-structure-linter (`docs/assets`, top-level layout, fixtures are
+  decided), library-policy companions (this hub IS the health dashboard;
+  three headers do not justify the `httputil` dependency), io-surface on
+  the discovery `http.Client` (no `Timeout` on purpose: the watch is a
+  long-lived SSE stream, every request carries a context), govulncheck and
+  vulnix (advisories in dependency and nixpkgs closures, none reachable).

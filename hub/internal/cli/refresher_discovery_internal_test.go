@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json/v2"
 	"io"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,6 +17,7 @@ import (
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/discovery"
 	"github.com/larsartmann/go-compliance/hub/internal/events"
+	"github.com/larsartmann/go-compliance/hub/internal/testsupport"
 )
 
 func userHome() string {
@@ -55,8 +55,8 @@ var _ = Describe("ServeFlags.DiscoverPaths", func() {
 // uses it: /v1/discover rejects a request without search paths (400), and
 // /v1/watch holds an SSE stream open.
 type stubDaemon struct {
-	socket   string
-	server   *http.Server
+	*testsupport.UnixServer
+
 	mu       sync.Mutex
 	requests [][]string
 }
@@ -68,23 +68,10 @@ func (s *stubDaemon) searchPaths() [][]string {
 	return append([][]string(nil), s.requests...)
 }
 
-func (s *stubDaemon) close() {
-	_ = s.server.Close()
-	_ = os.RemoveAll(filepath.Dir(s.socket))
-}
-
-// newStubDaemon starts the stub on a unix socket in a temp directory and
-// answers /v1/discover with projects.
-// art-dupl:accept a five-line unix-listener setup in a black-box test; the twin lives in another package's test file and cannot be imported
+// newStubDaemon starts the stub on a unix socket and answers
+// /v1/discover with projects.
 func newStubDaemon(projects []discovery.Project) *stubDaemon {
-	dir, err := os.MkdirTemp("", "compliance-stub-daemon-*")
-	Expect(err).NotTo(HaveOccurred())
-
-	socket := filepath.Join(dir, "daemon.sock")
-	listener, err := (&net.ListenConfig{}).Listen(context.Background(), "unix", socket)
-	Expect(err).NotTo(HaveOccurred())
-
-	stub := &stubDaemon{socket: socket}
+	stub := &stubDaemon{}
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /v1/discover", func(w http.ResponseWriter, r *http.Request) {
@@ -116,8 +103,7 @@ func newStubDaemon(projects []discovery.Project) *stubDaemon {
 		<-r.Context().Done()
 	})
 
-	stub.server = &http.Server{Handler: mux, ReadHeaderTimeout: 5 * time.Second}
-	go func() { _ = stub.server.Serve(listener) }()
+	stub.UnixServer = testsupport.NewUnixServer(mux)
 
 	return stub
 }
@@ -145,7 +131,7 @@ var _ = Describe("discovery watch", func() {
 			{DirName: "go-repo", Path: goRepo},
 			{DirName: "site", Path: siteRepo},
 		})
-		defer stub.close()
+		defer stub.Close()
 
 		refresher := newRefresher(events.NewHub(), nil, time.Hour, 24*time.Hour, 3, "")
 		refresher.discoverPaths = []string{root}
@@ -153,7 +139,7 @@ var _ = Describe("discovery watch", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		go runDiscoveryWatch(ctx, discovery.New(stub.socket), refresher)
+		go runDiscoveryWatch(ctx, discovery.New(stub.SocketPath()), refresher)
 
 		Eventually(refresher.DiscoveryLive, "5s", "20ms").Should(BeTrue())
 		Eventually(discoveredNames, "5s", "20ms").WithArguments(refresher).Should(
@@ -170,23 +156,23 @@ var _ = Describe("discovery watch", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		go runDiscoveryWatch(ctx, discovery.New(stub.socket), refresher)
+		go runDiscoveryWatch(ctx, discovery.New(stub.SocketPath()), refresher)
 
 		Eventually(refresher.DiscoveryLive, "5s", "20ms").Should(BeTrue())
-		stub.close()
+		stub.Close()
 		Eventually(refresher.DiscoveryLive, "5s", "20ms").Should(BeFalse())
 	})
 
 	It("is rejected by a daemon when no roots are configured", func() {
 		stub := newStubDaemon(nil)
-		defer stub.close()
+		defer stub.Close()
 
 		refresher := newRefresher(events.NewHub(), nil, time.Hour, 24*time.Hour, 3, "")
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		Expect(refresher.refreshDiscovered(ctx, discovery.New(stub.socket), nil)).NotTo(Succeed())
+		Expect(refresher.refreshDiscovered(ctx, discovery.New(stub.SocketPath()), nil)).NotTo(Succeed())
 		Expect(discoveredNames(refresher)).To(BeNil())
 	})
 })

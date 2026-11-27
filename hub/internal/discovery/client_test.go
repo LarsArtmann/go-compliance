@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -20,38 +19,11 @@ import (
 
 	"github.com/larsartmann/go-compliance"
 	"github.com/larsartmann/go-compliance/hub/internal/discovery"
+	"github.com/larsartmann/go-compliance/hub/internal/testsupport"
 )
 
-// unixTestServer serves HTTP over a unix socket the way the daemon does.
-type unixTestServer struct {
-	listener net.Listener
-	server   *http.Server
-	socket   string
-}
-
-// art-dupl:accept a five-line unix-listener setup; the twin is the cli package's black-box stub daemon, which cannot import this test helper
-func newUnixTestServer(handler http.Handler) *unixTestServer {
-	dir, err := os.MkdirTemp("", "compliance-discovery-*")
-	Expect(err).NotTo(HaveOccurred())
-
-	socket := filepath.Join(dir, "daemon.sock")
-	listener, err := (&net.ListenConfig{}).Listen(context.Background(), "unix", socket)
-	Expect(err).NotTo(HaveOccurred())
-
-	server := &http.Server{Handler: handler, ReadHeaderTimeout: 5 * time.Second}
-
-	go func() { _ = server.Serve(listener) }()
-
-	return &unixTestServer{listener: listener, server: server, socket: socket}
-}
-
-func (s *unixTestServer) close() {
-	_ = s.server.Close()
-	_ = os.RemoveAll(filepath.Dir(s.socket))
-}
-
 var _ = Describe("discovery client", func() {
-	var srv *unixTestServer
+	var srv *testsupport.UnixServer
 
 	BeforeEach(func() {
 		mux := http.NewServeMux()
@@ -90,12 +62,12 @@ var _ = Describe("discovery client", func() {
 			flusher.Flush()
 		})
 
-		srv = newUnixTestServer(mux)
-		DeferCleanup(srv.close)
+		srv = testsupport.NewUnixServer(mux)
+		DeferCleanup(srv.Close)
 	})
 
 	It("discovers projects over the unix socket", func() {
-		client := discovery.New(srv.socket)
+		client := discovery.New(srv.SocketPath())
 
 		projects, err := client.Discover(context.Background(), []string{"/home/lars/projects"})
 		Expect(err).NotTo(HaveOccurred())
@@ -123,7 +95,7 @@ var _ = Describe("discovery client", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		events, err := discovery.New(srv.socket).Watch(ctx)
+		events, err := discovery.New(srv.SocketPath()).Watch(ctx)
 		Expect(err).NotTo(HaveOccurred())
 
 		var received []discovery.Event
@@ -197,11 +169,11 @@ func (b *syncBuffer) String() string {
 }
 
 var _ = Describe("discovery client SSE framing", func() {
-	startWatchServer := func(handler http.HandlerFunc) *unixTestServer {
+	startWatchServer := func(handler http.HandlerFunc) *testsupport.UnixServer {
 		mux := http.NewServeMux()
 		mux.HandleFunc("GET /v1/watch", handler)
 
-		return newUnixTestServer(mux)
+		return testsupport.NewUnixServer(mux)
 	}
 
 	It("reassembles multi-line data frames into one event", func() {
@@ -220,12 +192,12 @@ var _ = Describe("discovery client SSE framing", func() {
 
 			<-r.Context().Done()
 		})
-		DeferCleanup(srv.close)
+		DeferCleanup(srv.Close)
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		eventCh, err := discovery.New(srv.socket).Watch(ctx)
+		eventCh, err := discovery.New(srv.SocketPath()).Watch(ctx)
 		Expect(err).NotTo(HaveOccurred())
 
 		var event discovery.Event
@@ -250,7 +222,7 @@ var _ = Describe("discovery client SSE framing", func() {
 
 			<-r.Context().Done()
 		})
-		DeferCleanup(srv.close)
+		DeferCleanup(srv.Close)
 
 		logs := &syncBuffer{}
 		previous := slog.Default()
@@ -261,7 +233,7 @@ var _ = Describe("discovery client SSE framing", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		eventCh, err := discovery.New(srv.socket).Watch(ctx)
+		eventCh, err := discovery.New(srv.SocketPath()).Watch(ctx)
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() bool {
