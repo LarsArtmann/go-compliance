@@ -2,7 +2,10 @@
 # screenshot.sh — capture the fleet dashboard in light, dark, and narrow
 # (phone-width) views. scripts/screenshot.mjs drives a headless chromium over
 # the DevTools protocol and fails the run on console errors, a theme that did
-# not apply, an empty fleet table, or horizontal overflow.
+# not apply, an empty fleet table, horizontal overflow, text or control
+# contrast under WCAG AA, a fleet table that scrolls the page instead of its
+# own box or loses its pinned column header, and a keyboard pass that fails
+# to reach, focus, or activate the chips and the theme toggle.
 #
 # Without a URL argument the hub is built from the working tree and serves
 # the XDG evidence file on a loopback port, so uncommitted template changes

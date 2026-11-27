@@ -4,8 +4,10 @@
 // full-page PNG and one row in dom-truth.json. Failed requests, console
 // errors, and uncaught page exceptions are written to console-errors.json
 // and fail the run. Beyond the pictures it measures what a string test
-// cannot see: text contrast per theme (WCAG AA), the sticky column header,
-// and a keyboard pass over the chips and the theme toggle.
+// cannot see: text and control contrast per theme (WCAG AA), a fleet table
+// that scrolls inside its box under a pinned column header while the page
+// itself stays still, and a keyboard pass over the chips and the theme
+// toggle.
 //
 // Usage: node scripts/screenshot.mjs <url> <outDir>
 // Environment: CHROMIUM_BIN (chromium binary path), SETTLE_MS (default 2500).
@@ -189,9 +191,9 @@ const truthExpression = `JSON.stringify({
 
 // In-page contrast measurement: every color is resolved through a 1x1
 // canvas (Tailwind v4 emits oklch), translucent backgrounds and opacities
-// are composited over the nearest opaque ancestor, and the WCAG ratio is
-// computed from the relative luminance. Each named target reports the
-// ratio of its first match; a missing element reports null.
+// are composited over the nearest opaque ancestor and, below that, the
+// canvas; the WCAG ratio is computed from the relative luminance. Each named
+// target reports the first match's ratio; a missing element reports null.
 const contrastExpression = `JSON.stringify((() => {
 	const canvas = document.createElement("canvas");
 	canvas.width = canvas.height = 1;
@@ -482,23 +484,17 @@ for (const entry of truth) {
 	console.log(
 		`${entry.view}: dark=${entry.dark} rows=${entry.rows} visible=${entry.visibleRows} rowDisplay=${entry.rowDisplay} pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted} ` +
 			`headline="${entry.headline}" chips=[${entry.statCards.join(" | ")}] bar="${entry.barLabel}" favicon=${entry.favicon} ` +
-			`width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight} th=${entry.thPosition}/${entry.theadDisplay} tableScrolls=${entry.tableScrolls}`,
+			`width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight} thead=${entry.theadDisplay} sticky=${entry.headerSticky} tableScrolls=${entry.tableScrolls} pageScrolls=${entry.pageScrolls}`,
 	);
 }
 
-for (const entry of contrast) {
-	console.log(
-		`contrast ${entry.view}: ` +
-			Object.entries(entry)
-				.filter(([name]) => name !== "view" && name !== "scheme")
-				.map(([name, m]) => `${name}=${m ? m.ratio : "n/a"}`)
-				.join(" "),
-	);
+for (const entry of scrolled) {
+	console.log(`scrolled ${entry.view}: scrollTop=${entry.scrollTop} headerPinOffset=${entry.headerPinOffset}`);
 }
 
 if (keyboard) {
 	console.log(
-		`keyboard: reached=${keyboard.reached} chipFocusVisible=${keyboard.chipFocusVisible} outline="${keyboard.chipOutline}" chipPressed=[${keyboard.chipActivated?.pressedChips ?? ""}] themeToggled=${keyboard.themeToggled}`,
+		`keyboard: reached=${keyboard.reached} chipFocusVisible=${keyboard.chipFocusVisible} chipOutline="${keyboard.chipOutline}" chipPressed=[${keyboard.chipActivated?.pressedChips ?? ""}] spacePressed=[${keyboard.spaceActivated?.pressedChips ?? ""}] toggleFocusVisible=${keyboard.toggleFocusVisible} themeToggled=${keyboard.themeToggled}`,
 	);
 }
 
@@ -524,12 +520,25 @@ for (const entry of truth) {
 			`${entry.view}: the All chip must read as selected on first paint (pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted})`,
 		);
 	const wide = entry.viewportWidth >= 640;
-	if (wide && entry.thPosition !== "sticky")
-		failures.push(`${entry.view}: the column header is ${entry.thPosition}, expected sticky`);
-	if (wide && entry.theadDisplay === "none")
-		failures.push(`${entry.view}: the column header is hidden in a wide layout`);
-	if (!wide && (entry.thPosition === "sticky" || entry.theadDisplay !== "none"))
-		failures.push(`${entry.view}: the stacked layout must drop the column header (th=${entry.thPosition}, thead=${entry.theadDisplay})`);
+	if (wide && (entry.theadDisplay === "none" || !entry.headerSticky))
+		failures.push(
+			`${entry.view}: the column header is not a sticky, visible header (display=${entry.theadDisplay}, sticky=${entry.headerSticky})`,
+		);
+	if (wide && entry.pageScrolls)
+		failures.push(
+			`${entry.view}: the page itself scrolls (${entry.pageHeight}px of content in a ${entry.viewportHeight}px viewport); in a wide layout only the fleet table scrolls, inside its box`,
+		);
+	if (!wide && entry.theadDisplay !== "none")
+		failures.push(`${entry.view}: the stacked layout must drop the column header (thead display=${entry.theadDisplay})`);
+}
+
+for (const entry of scrolled) {
+	if (entry.scrollTop === 0)
+		failures.push(`scrolled ${entry.view}: the fleet table's box did not scroll although its table overflows`);
+	if (entry.headerPinOffset > 1)
+		failures.push(
+			`scrolled ${entry.view}: the column header moved ${entry.headerPinOffset}px away from the top of the table box`,
+		);
 }
 
 for (const entry of contrast) {
@@ -537,19 +546,34 @@ for (const entry of contrast) {
 		if (name === "view" || name === "scheme" || !m) continue;
 		if (m.ratio < m.required)
 			failures.push(
-				`contrast ${entry.view}: ${name} "${m.text}" is ${m.ratio}:1 at ${m.size}px, WCAG AA needs ${m.required}:1`,
+				`contrast ${entry.view}: ${name} "${m.text}" is ${m.ratio}:1 (${m.foreground} on ${m.background}) at ${m.size}px, WCAG AA needs ${m.required}:1`,
 			);
 	}
 }
 
+const noRing = (outline) => outline.startsWith("none") || outline.endsWith(" 0px");
+const requireRing = (control, visible, outline) => {
+	if (!visible || noRing(outline))
+		failures.push(
+			`keyboard: the focused ${control} shows no focus ring (visible=${visible}, outline="${outline}")`,
+		);
+};
+
 if (!keyboard || !keyboard.reached) {
 	failures.push(`keyboard: Tab never reached the chips and the theme toggle (stops: ${(keyboard?.stops ?? []).join(" > ")})`);
 } else {
-	if (!keyboard.chipFocusVisible || keyboard.chipOutline.startsWith("none") || keyboard.chipOutline.endsWith(" 0px"))
-		failures.push(`keyboard: the focused chip shows no focus ring (visible=${keyboard.chipFocusVisible}, outline="${keyboard.chipOutline}")`);
+	requireRing("chip", keyboard.chipFocusVisible, keyboard.chipOutline);
+	requireRing("theme toggle", keyboard.toggleFocusVisible, keyboard.toggleOutline);
 	if (keyboard.chipActivated?.pressedChips?.join() !== "Failing")
-		failures.push(`keyboard: Enter on the Failing chip did not select it (pressed=[${keyboard.chipActivated?.pressedChips ?? ""}])`);
-	if (!keyboard.themeToggled) failures.push("keyboard: Enter on the theme toggle did not flip and restore the theme");
+		failures.push(
+			`keyboard: Enter on the Failing chip did not select it (pressed=[${keyboard.chipActivated?.pressedChips ?? ""}])`,
+		);
+	if (keyboard.spaceActivated?.pressedChips?.join() !== "Stale")
+		failures.push(
+			`keyboard: Space on the Stale chip did not select it (pressed=[${keyboard.spaceActivated?.pressedChips ?? ""}])`,
+		);
+	if (!keyboard.themeToggled)
+		failures.push("keyboard: Enter and Space on the theme toggle did not flip and restore the theme");
 }
 
 if (filterChecks.length === 3) {
