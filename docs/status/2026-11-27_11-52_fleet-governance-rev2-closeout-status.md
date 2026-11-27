@@ -24,7 +24,7 @@ and the "next things" of the 2026-11-26 17-47 report.
   HEAD.
 - Docs battery, local binary (`~/go/bin/docs-gates`, version `dev`): all ten
   gates PASS at 12:02. Docs battery, CI build (`nix run github:Artmann-Technologies/docs-gates`,
-  version `bfdefba`): nine PASS, `audit-all` FAIL with 31 open items in ten
+  version `bfdefba`): nine PASS, `audit-all` FAIL with 30 open items in ten
   reports from 2026-11-18 to 2026-11-25.
 - `scripts/screenshot.sh` at HEAD against the working tree (10:04): FAIL with
   10 findings (section d). The same harness against the deployed hub (09:40,
@@ -44,9 +44,9 @@ and the "next things" of the 2026-11-26 17-47 report.
 - Root causes of the three new harness finding groups (contrast, keyboard,
   sticky header): measured, not diagnosed.
 - The hub test suite after the sticky-header CSS change.
-- Who pushed 16 commits to GitHub at about 10:32, and who wrote a `dev`
+- Who pushed the 21 commits to GitHub at about 10:32, and who wrote a `dev`
   version into the evidence at 10:36.
-- The truth of the 31 older report items that CI's docs-gates flags; they
+- The truth of the 30 older report items that CI's docs-gates flags; they
   were counted, not read.
 
 ## Executive summary
@@ -56,14 +56,14 @@ hardened user unit with working never-covered discovery, three consumers sit
 on core v0.2.0, the docs corpus is annotated and purged, and the live
 dashboard is green on readiness. Three things are not done and one of them
 is serious: CI is still red on `docs gates` because the local docs-gates
-binary is a stale build that hides 31 open items; the browser harness I
+binary is a stale build that hides 30 open items; the browser harness I
 extended at HEAD now fails on ten real or unconfirmed findings (contrast,
 keyboard activation, a sticky header that does not stick); and the
 templ-components contribution sits as 38 uncommitted, unverified files in a
 repo where other sessions work.
 
 Numbers: 21 commits in go-compliance, 6 in library-policy, 2 in
-md-go-validator this session; 17 TODO rows struck and purged; 111 report
+md-go-validator this session; 17 TODO rows struck and purged; 103 report
 items annotated inline; 211 repos on the live dashboard, 153 failing.
 
 ## Self-review
@@ -84,7 +84,7 @@ items annotated inline; 211 repos on the live dashboard, 153 failing.
    the CI docs job was fixed. Finish one harness check (diagnose, fix,
    green) before adding the next two. Revert or finish the subagent's files
    before writing a report.
-4. **What could you still improve?** The three open findings, the 31 old
+4. **What could you still improve?** The three open findings, the 30 old
    items, the templ-components tree, and a final gate run at the tip.
 5. **Did you lie?** Not on purpose, and not now. Three statements I made
    earlier were false and are corrected here and in the files: "CI docs
@@ -108,15 +108,11 @@ items annotated inline; 211 repos on the live dashboard, 153 failing.
     `library-policy fleet` prunes the evidence file, but a hand-built
     `dev` binary still writes rows outside the timer, so producer versions
     mix again (210 commit stamps, 1 `dev`).
-11. **Tests?** Go suites are green and grew by nine specs (discover paths,
-    fleet eligibility, discovery health, stub daemon, prune, armWatch). The
-    browser harness grew three checks and is red; that is the harness doing
-    its job, and the findings need fixes, not looser thresholds.
-12. **Inherited claims re-verified?** The rev 2 claims were checked at
-    source in the earlier session; today I re-verified the cache column
-    name (`severity_counts`), the daemon 400, the DataStar CSP need, and the
-    five BuildFlow test failures before and after the bump. I did not
-    re-verify the 31 older items.
+11. **Tests?** Go suites are green and grew by eight hub specs (discover paths,
+    fleet eligibility, discovery health, stub daemon) and three library-policy
+    tests (prune); the watcher spec was rewritten, not added. The browser harness
+    grew three checks and is red; that is the harness doing its job, and the
+    findings need fixes, not looser thresholds.
 
 ## a) Fully done
 
@@ -134,7 +130,7 @@ items annotated inline; 211 repos on the live dashboard, 153 failing.
 | T19 evidence path defaults aligned in README, integrate guide, bind-posture decision, AGENTS                                                                    | `docs/decisions/bind-posture.md` table of the two defaults                                                                                              |
 | T28 v2 reporter-to-cache decision ask written                                                                                                                   | `docs/decisions/v2-wire-design.md`, "Decision ask" section                                                                                              |
 | README (user unit recipe, discover-paths, health table, refreshed `dashboard.png`), FEATURES (fleet summary row, `DOCUMENTED` legend, unit row), CHANGELOG rows | all three files at HEAD; `docs/assets/dashboard.png` captured 06:01 from the deployed hub                                                               |
-| 17 TODO rows struck and purged into the CHANGELOG; 111 report items annotated inline across four reports and the rev 2 plan                                     | 17 "TODO_LIST purge (2026-11-27)" entries; `docs-gates annotate` PASS with both builds                                                                  |
+| 17 TODO rows struck and purged into the CHANGELOG; 103 report items annotated inline across four reports and the rev 2 plan                                     | 17 "TODO_LIST purge (2026-11-27)" entries; `docs-gates annotate` PASS with both builds                                                                  |
 | `scripts/deploy-hub.sh` refuses a deploy when any readiness check is not `pass` after 10s                                                                       | real deploy at 09:39 passed through the new gate                                                                                                        |
 | Watcher spec hardened: probes until the watch is live instead of sleeping 300ms (`armWatch`)                                                                    | six focused `-race` runs green; cli package green                                                                                                       |
 | Shared `testsupport.NewUnixServer` helper; art-dupl back to 0 findings                                                                                          | `hub/internal/testsupport/unixserver.go`; `buildflow -s art-dupl` 0 messages                                                                            |
@@ -173,14 +169,14 @@ items annotated inline; 211 repos on the live dashboard, 153 failing.
 
 1. **CI is red on the pushed tip, and I said it was fixed.**
    - What: `docs gates` fails on `0c65dcf` (run 45974600959) and on
-     `b8b1dcf`. Its `audit-all` lists 31 open items in ten reports from
+     `b8b1dcf`. Its `audit-all` lists 31 open items (30 after the TODO rows were restored) in ten reports from
      2026-11-18 to 2026-11-25.
    - Severity: high. Every "green on master" statement about docs is false.
    - Root cause (verified at 12:00): the local gate is
      `~/go/bin/docs-gates`, version `dev`, a stale build; CI runs
      `nix run github:Artmann-Technologies/docs-gates` (bfdefba). Run
      locally, the CI build gives the same `audit-all` FAIL and nine PASS.
-   - Mitigation: none applied to the 31 items. `AGENTS.md` now names the
+   - Mitigation: none applied to the 30 items. `AGENTS.md` now names the
      CI command; the High Impact TODO row describes the work.
 2. **The browser harness at HEAD is red.**
    - What: `scripts/screenshot.sh` exits 1 with ten findings (run 10:04):
@@ -243,11 +239,10 @@ items annotated inline; 211 repos on the live dashboard, 153 failing.
 | Synthetic key events without `text`                  | Keyboard findings that may be harness defects        | Fix the harness first, then trust the result; add Space as well as Enter                                       |
 | Two writers on one evidence file                     | Mixed producer versions                              | Owner names the producer; or the prune step also rewrites stale `dev` rows                                     |
 | TODO rows cited by line number                       | The citation goes stale on every purge (twice today) | Cite the section or a stable row title in the audit reports                                                    |
-| A patched `docs-gates` on PATH shadows the nix build | Silent drift from CI                                 | Add `docs-gates --version` to the documented gate and compare with CI's                                        |
 
 ## f) Next things (up to 50, ranked by impact)
 
-1. Make the CI `docs gates` job green: run CI's docs-gates build locally, annotate or harvest the 31 open items in the ten older reports, re-run until `audit-all` is clean, push is already done. (Critical, M, Documentation)
+1. Make the CI `docs gates` job green: run CI's docs-gates build locally, annotate or harvest the 30 open items in the ten older reports, re-run until `audit-all` is clean, push is already done. (Critical, M, Documentation)
 2. Fix the keyboard check: send `text` with the synthetic Enter and Space, re-run; if chips or the theme toggle still do not activate, fix the page. (Critical, S, Bug)
 3. Confirm or refute the dark-theme contrast numbers by eye and by dumping the resolved foreground and background layers; fix the harness if wrong. (High, S, Quality)
 4. Fix the chip-count contrast: drop `opacity-70` or choose a tone that reaches 4.5:1 in both themes. (High, S, Bug)
@@ -274,7 +269,7 @@ items annotated inline; 211 repos on the live dashboard, 153 failing.
 25. Add a spec that `DisableDiscovery` logs once and never starts the watch loop. (Low, S, Quality)
 26. Document the debounce starvation (probes wider than `refreshDebounce`) in `docs/notes/live-architecture.md`. (Low, S, Documentation)
 27. Move the evidence-file locations table into `docs/guides/integrate.md` as the single home and link to it from README and AGENTS. (Low, S, Documentation)
-28. Archive the 2026-11-18 23-09 report once its last item is resolved (cadence: 15 reports unarchived, threshold 15 after this one). (Medium, S, Documentation)
+28. Archive the 2026-11-18 23-09 report once its last item is resolved: 15 reports are unarchived and the cadence threshold is 15 (the gate still passes). (Medium, S, Documentation)
 29. Harvest this section into `TODO_LIST.md` rows that do not exist yet (items 9, 13 to 29). (Medium, S, Documentation)
 30. Owner: LAN sign-off, SystemNix, `FLAKE_PAT`, Forgejo visibility, g2 answers. (Medium, S, Decision)
 
