@@ -108,11 +108,11 @@ that path:
 The designed home for both is step 3 above: a reporter mode that writes
 into the cache. Concretely it would mean:
 
-| Change                                                  | Where           | Size |
-| ------------------------------------------------------- | --------------- | ---- |
-| `fleet --cache <hub.db>` records runs into the SQLite cache | library-policy | M    |
-| The hub unit serves `--source cache --db <hub.db>`      | deploy script   | S    |
-| The producer timer writes cache and file until v1 readers are gone | unit          | S    |
+| Change                                                             | Where          | Size |
+| ------------------------------------------------------------------ | -------------- | ---- |
+| `fleet --cache <hub.db>` records runs into the SQLite cache        | library-policy | M    |
+| The hub unit serves `--source cache --db <hub.db>`                 | deploy script  | S    |
+| The producer timer writes cache and file until v1 readers are gone | unit           | S    |
 
 Costs and risks: the producer and the hub then share one SQLite file
 (same user; the hub's evidence-watch check already refreshes on WAL

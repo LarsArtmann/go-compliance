@@ -31,7 +31,7 @@ The consumer has **no credential surface**, verified end to end: (1) inbound —
 
 ## Gap analysis
 
-No Partial/Missed/Misused rows — see score note above. The audit's real work was the credential-surface hunt, so the negative result is recorded with its evidence: `rg -i 'token|authorization|password|secret|credential' -g '!vendor/**' -g '!*_templ.go' -g '!*_test.go' --type go` over both modules returns exactly one hit, the comment at filestore.go:143 asserting the data is _not_ secret (every other hit in the repo is markdown prose about the CI-only `FLAKE_PAT` secret — TODO_LIST.md:53, AGENTS.md:59-61, FEATURES.md, CHANGELOG.md). The FLAKE_PAT reference lives in `.github/workflows` + markdown only (verified by search, not imported by any Go file).
+No Partial/Missed/Misused rows — see score note above. The audit's real work was the credential-surface hunt, so the negative result is recorded with its evidence: `rg -i 'token|authorization|password|secret|credential' -g '!vendor/**' -g '!*_templ.go' -g '!*_test.go' --type go` over both modules returns exactly one hit, the comment at filestore.go:143 asserting the data is _not_ secret (every other hit in the repo is markdown prose about the CI-only `FLAKE_PAT` secret — TODO_LIST.md:45, AGENTS.md:59-61, FEATURES.md, CHANGELOG.md). The FLAKE_PAT reference lives in `.github/workflows` + markdown only (verified by search, not imported by any Go file).
 
 ## Version currency
 
