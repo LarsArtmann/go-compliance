@@ -141,6 +141,37 @@ var _ = Describe("fleet page render", func() {
 		Expect(rendered.String()).To(ContainSubstring("fleet-table"))
 	})
 
+	It("paints its own page canvas instead of trusting the browser default", func() {
+		var rendered bytes.Buffer
+		Expect(dashboard.View(pageWith(events.RepoRow{Repo: "one"})).
+			Render(context.Background(), &rendered)).To(Succeed())
+
+		Expect(rendered.String()).To(ContainSubstring(
+			`<body class="bg-white text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100"`,
+		))
+	})
+
+	It("pins the column header and keeps the chip counts at full contrast", func() {
+		var rendered bytes.Buffer
+		Expect(dashboard.View(pageWith(events.RepoRow{Repo: "one"})).
+			Render(context.Background(), &rendered)).To(Succeed())
+
+		html := rendered.String()
+		Expect(html).To(ContainSubstring(`<thead class="sticky top-0 z-10`), "html: %s", html)
+		Expect(html).NotTo(ContainSubstring("opacity-70"), "html: %s", html)
+		Expect(html).To(MatchRegexp(`>All\s*<span class="ms-1.5 tabular-nums font-normal">1</span>`))
+	})
+
+	It("marks the freshness line, so the browser harness can measure it", func() {
+		var rendered bytes.Buffer
+		Expect(dashboard.View(pageWith(events.RepoRow{Repo: "one"})).
+			Render(context.Background(), &rendered)).To(Succeed())
+
+		Expect(rendered.String()).To(MatchRegexp(
+			`<span id="rendered-status" class="[^"]*text-gray-500 dark:text-gray-400"`,
+		))
+	})
+
 	It("seeds the filter and the counts, so no expression reads a missing signal", func() {
 		model := pageWith(
 			events.RepoRow{Repo: "broken", State: compliance.StateFailing},

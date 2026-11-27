@@ -64,7 +64,7 @@ var _ = Describe("datastar patch stream", func() {
 			received[1],
 			"#"+dashboard.FleetSummaryID,
 			string(datastar.ElementPatchModeInner),
-			`Never covered <span class="ml-1.5 tabular-nums opacity-70">0</span>`,
+			`Never covered <span class="ms-1.5 tabular-nums font-normal">0</span>`,
 		)
 		Expect(received[2].IsElements()).To(BeTrue())
 		datastartest.RequireElementsContains(GinkgoTB(), received[2],
