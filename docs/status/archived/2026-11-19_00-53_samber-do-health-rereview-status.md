@@ -73,7 +73,7 @@ _Ranked; inherited items carry their source. Verdicts inline where I could settl
 
 **Inherited, verified open this session (tracked or awaiting routing):**
 8. ✎ `?state=`-adjacent: drop hub `replace` when core tags v0.1.0 (TODO_LIST Low).
-9. ✎ `templ fmt` CI gate (TODO_LIST Low).
+~~9. ✎ `templ fmt` CI gate (TODO_LIST Low).~~ done 2026-11-27: the CI job "templ fmt and generate gate" runs templ fmt and generate and diffs
 10. ✎ Archive sweep of aged status reports (TODO_LIST Low; cadence threshold 15, currently 12).
 11. ✎ io-history-ratchet anomaly with `--profile-io` (routed to TODO_LIST this session).
 12. ✎ lychee 4 path-excluded files confirmation (routed to TODO_LIST this session).

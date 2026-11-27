@@ -98,7 +98,7 @@
 7. Retro-create the v0.1.0 GitHub Release (notes from CHANGELOG [0.1.0]) so the releases page isn't a hole
 8. Consumer propagation: md-go-validator → core v0.2.0; BuildFlow binding → v0.2.0 (go-ecosystem-upgrade)
 9. Tag-triggered CI workflow (`on: push: tags: ['v*']`) running the battery on the frozen tag
-10. Document the v0.2.0 tag's red css check as known-and-fixed-on-master (release notes addendum or AGENTS note)
+~~10. Document the v0.2.0 tag's red css check as known-and-fixed-on-master (release notes addendum or AGENTS note)~~ done 2026-11-27: the CI css-freshness job regenerates and diffs the artifacts, AGENTS.md states the rule, and CI re-runs the matrix on v* tags so a tag carries its own verdict
 11. `docs-health` HARVEST: real TODO_LIST/ROADMAP rows for the remaining §f items below that aren't incidental token matches
 12. `scripts/pre-release-check.sh` (the go-release skill's assumed pre-flight, in-repo)
 13. Release runbook: `docs/notes/release-runbook.md` (collision check → CI-first → canonical buildflow → tag → post-push → replace-drop ritual)
