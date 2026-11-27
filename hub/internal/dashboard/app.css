@@ -163,6 +163,26 @@
   }
 }
 
+/* Wide layouts scroll the fleet table inside its own box so the column
+   header stays in view over 200 rows; the summary above never moves. */
+@container (width >= 40rem) {
+  .fleet-table {
+    max-height: min(72vh, 52rem);
+    overflow: auto;
+  }
+
+  .fleet-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--color-gray-50);
+  }
+
+  .dark .fleet-table thead th {
+    background-color: var(--color-gray-900);
+  }
+}
+
 :root {
   color-scheme: light;
 }
