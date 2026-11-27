@@ -57,6 +57,7 @@ If a watch silently dies today's design has no signal — the fresh-data promise
 ### Integration sketch (hub/internal/cli/refresher.go + serve.go)
 
 ```go
+// skip-validate
 // refresher.go — one new exported-ish helper next to runDiscoveryWatch:
 
 // runSourceWatch watches the source's on-disk location and kicks the

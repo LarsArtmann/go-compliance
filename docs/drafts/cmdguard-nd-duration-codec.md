@@ -10,6 +10,7 @@
 unit (Go durations cap out at hours):
 
 ```go
+// skip-validate
 // types_duration.go:14 (v5.1.0)
 func ParseDuration(s string) (Duration, error) {
 	d, err := time.ParseDuration(s)

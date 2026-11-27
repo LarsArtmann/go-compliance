@@ -94,6 +94,7 @@ No actionable gaps. The one forward-looking sketch, parked behind the flip
 trigger:
 
 ```go
+// skip-validate
 // IF the hub ever serves POST /v1/evidence (network reporters, v2 era):
 // 1) implement the Store against the existing SQLite cache — one conditional upsert:
 func (s *Store) CheckAndRecord(ctx context.Context, key string, ttl time.Duration) error {

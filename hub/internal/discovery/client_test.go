@@ -29,6 +29,7 @@ type unixTestServer struct {
 	socket   string
 }
 
+// art-dupl:accept a five-line unix-listener setup; the twin is the cli package's black-box stub daemon, which cannot import this test helper
 func newUnixTestServer(handler http.Handler) *unixTestServer {
 	dir, err := os.MkdirTemp("", "compliance-discovery-*")
 	Expect(err).NotTo(HaveOccurred())

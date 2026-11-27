@@ -171,6 +171,7 @@
             ];
             meta = {
               description = "Fleet compliance hub: realtime dashboard over BuildFlow evidence";
+              homepage = "https://github.com/LarsArtmann/go-compliance";
               mainProgram = "compliance-hub";
               license = lib.licenses.mit;
               platforms = lib.platforms.unix;

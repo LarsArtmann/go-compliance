@@ -73,8 +73,9 @@ func (s *stubDaemon) close() {
 	_ = os.RemoveAll(filepath.Dir(s.socket))
 }
 
-// newStubDaemon serves goRepo as the one project; paths holds a go.mod
-// when withGoMod is true.
+// newStubDaemon starts the stub on a unix socket in a temp directory and
+// answers /v1/discover with projects.
+// art-dupl:accept a five-line unix-listener setup in a black-box test; the twin lives in another package's test file and cannot be imported
 func newStubDaemon(projects []discovery.Project) *stubDaemon {
 	dir, err := os.MkdirTemp("", "compliance-stub-daemon-*")
 	Expect(err).NotTo(HaveOccurred())

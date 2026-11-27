@@ -85,6 +85,7 @@ this audit — the data loop (`table.go:65-75`) already produces every cell.
 **Sketch** (`hub/internal/cli/flags.go` + `table.go`):
 
 ```go
+// skip-validate
 // QueryFlags (or a TableFlags wrapper): one new field
 Format string `default:"table" flag:"format" help:"Output format for the table command" values:"table,csv,tsv,markdown,html"`
 ```

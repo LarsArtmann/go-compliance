@@ -115,6 +115,7 @@ templ-components' `SDKScript` (it already tracks `static.Version`); until it doe
 the hub can self-serve:
 
 ```go
+// skip-validate
 // view.templ — version the self-hosted bundle path once ScriptHandler carries the ETag
 @datastar.SDKScript(datastar.SDKScriptProps{
 	BaseProps: utils.BaseProps{},
