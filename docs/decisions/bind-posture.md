@@ -62,10 +62,10 @@ of the document it serves).
 
 Evidence file locations (two defaults, no code change):
 
-| Deployment   | Default evidence file                          | Who writes it                                   |
-| ------------ | ---------------------------------------------- | ----------------------------------------------- |
-| System       | `/var/lib/overview/compliance.json`            | the BuildFlow daemon pipes `compliance --json`  |
-| User (this host) | `~/.local/state/overview/compliance.json`  | the `fleet-evidence` timer (`library-policy fleet`) |
+| Deployment       | Default evidence file                     | Who writes it                                       |
+| ---------------- | ----------------------------------------- | --------------------------------------------------- |
+| System           | `/var/lib/overview/compliance.json`       | the BuildFlow daemon pipes `compliance --json`      |
+| User (this host) | `~/.local/state/overview/compliance.json` | the `fleet-evidence` timer (`library-policy fleet`) |
 
 `GO_COMPLIANCE_EVIDENCE_FILE` overrides both for every reporter, and
 `--evidence-file` / `--file` override it per command. The core's

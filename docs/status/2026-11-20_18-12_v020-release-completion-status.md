@@ -98,15 +98,15 @@
 7. Retro-create the v0.1.0 GitHub Release (notes from CHANGELOG [0.1.0]) so the releases page isn't a hole
 8. Consumer propagation: md-go-validator → core v0.2.0; BuildFlow binding → v0.2.0 (go-ecosystem-upgrade)
 9. Tag-triggered CI workflow (`on: push: tags: ['v*']`) running the battery on the frozen tag
-~~10. Document the v0.2.0 tag's red css check as known-and-fixed-on-master (release notes addendum or AGENTS note)~~ done 2026-11-27: the CI css-freshness job regenerates and diffs the artifacts, AGENTS.md states the rule, and CI re-runs the matrix on v* tags so a tag carries its own verdict
-11. `docs-health` HARVEST: real TODO_LIST/ROADMAP rows for the remaining §f items below that aren't incidental token matches
-12. `scripts/pre-release-check.sh` (the go-release skill's assumed pre-flight, in-repo)
-13. Release runbook: `docs/notes/release-runbook.md` (collision check → CI-first → canonical buildflow → tag → post-push → replace-drop ritual)
-14. AGENTS.md line: css pin + flake.lock bump ritual (regenerate artifacts in the same commit as the lock bump)
-15. Post-release AGENTS.md check: the Module Rules go-daemon/_local_deps text vs the post-replace-drop reality (partially updated; verify no stale `_core_only` references remain anywhere: `rg _core_only`)
-16. STACK.md decision-log entry for the replace-drop + the go-humanize adoption (new direct dep)
-17. `go work sync` / go.work.sum drift check after the replace-drop tides
-18. Verify `go.work` still gives local dev the live-core experience post-replace (documented expectation, untested explicitly)
+   ~~10. Document the v0.2.0 tag's red css check as known-and-fixed-on-master (release notes addendum or AGENTS note)~~ done 2026-11-27: the CI css-freshness job regenerates and diffs the artifacts, AGENTS.md states the rule, and CI re-runs the matrix on v* tags so a tag carries its own verdict
+10. `docs-health` HARVEST: real TODO_LIST/ROADMAP rows for the remaining §f items below that aren't incidental token matches
+11. `scripts/pre-release-check.sh` (the go-release skill's assumed pre-flight, in-repo)
+12. Release runbook: `docs/notes/release-runbook.md` (collision check → CI-first → canonical buildflow → tag → post-push → replace-drop ritual)
+13. AGENTS.md line: css pin + flake.lock bump ritual (regenerate artifacts in the same commit as the lock bump)
+14. Post-release AGENTS.md check: the Module Rules go-daemon/_local_deps text vs the post-replace-drop reality (partially updated; verify no stale `_core_only` references remain anywhere: `rg _core_only`)
+15. STACK.md decision-log entry for the replace-drop + the go-humanize adoption (new direct dep)
+16. `go work sync` / go.work.sum drift check after the replace-drop tides
+17. Verify `go.work` still gives local dev the live-core experience post-replace (documented expectation, untested explicitly)
 
 **Fleet/hardening:**
 19. FLAKE_PAT secret decision (GitHub + Forgejo) — hub/flake CI jobs still skip; vendorHash has ZERO CI coverage

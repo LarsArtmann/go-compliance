@@ -89,3 +89,37 @@ drops them exactly as today (documented), the cache path stores them.
 3. Reporter v2 writes into the cache (severities already stored).
 4. overview migration decision — OWNER gate (see M26/g2), independent of
    and never blocking the above.
+
+## Decision ask: reporter-to-cache ingress (T28, 2026-11-27)
+
+**Status: open, owner decision.**
+
+The deployed producer writes the v1 file (`library-policy fleet`, daily
+timer) and the hub reads that file. Two things can never become real on
+that path:
+
+- **History.** The file store replaces a repository's row on every run, so
+  `runs` is always 1 and `fail_rate` is 0 or 1. Staleness and trends need
+  the SQLite cache, which keeps every run.
+- **Severities.** The frozen v1 contract has no severity field, so the
+  dashboard shows a findings count where a severity breakdown belongs.
+  The cache stores them (`finding_severities`, schema versions).
+
+The designed home for both is step 3 above: a reporter mode that writes
+into the cache. Concretely it would mean:
+
+| Change                                                  | Where           | Size |
+| ------------------------------------------------------- | --------------- | ---- |
+| `fleet --cache <hub.db>` records runs into the SQLite cache | library-policy | M    |
+| The hub unit serves `--source cache --db <hub.db>`      | deploy script   | S    |
+| The producer timer writes cache and file until v1 readers are gone | unit          | S    |
+
+Costs and risks: the producer and the hub then share one SQLite file
+(same user, WAL mode, the cache is built for cross-process writes; the
+evidence-watch check already watches the WAL sidecars), the hub's boot
+source changes, and the cache needs a backup story the JSON file never
+needed.
+
+**The ask:** approve the cache-ingress work (three rows above), defer it,
+or reject it in favor of keeping the v1 file as the only producer path.
+Until answered, the dashboard keeps the findings-count fallback.
