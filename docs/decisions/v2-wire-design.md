@@ -103,7 +103,7 @@ that path:
   the SQLite cache, which keeps every run.
 - **Severities.** The frozen v1 contract has no severity field, so the
   dashboard shows a findings count where a severity breakdown belongs.
-  The cache stores them (`finding_severities`, schema versions).
+  The cache stores them (`evidence_runs.severity_counts`, one row per run).
 
 The designed home for both is step 3 above: a reporter mode that writes
 into the cache. Concretely it would mean:
@@ -115,10 +115,10 @@ into the cache. Concretely it would mean:
 | The producer timer writes cache and file until v1 readers are gone | unit          | S    |
 
 Costs and risks: the producer and the hub then share one SQLite file
-(same user, WAL mode, the cache is built for cross-process writes; the
-evidence-watch check already watches the WAL sidecars), the hub's boot
-source changes, and the cache needs a backup story the JSON file never
-needed.
+(same user; the hub's evidence-watch check already refreshes on WAL
+sidecar writes, but a second writer process is untested today and needs a
+concurrency spec first), the hub's boot source changes, and the cache needs
+a backup story the JSON file never needed.
 
 **The ask:** approve the cache-ingress work (three rows above), defer it,
 or reject it in favor of keeping the v1 file as the only producer path.

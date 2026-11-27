@@ -39,6 +39,10 @@ step, distilled from the v0.2.0 run (2026-11-20) and the v0.1.0 tag-only gap.
    - The canonical gate is plain `buildflow`, not a per-tool sweep: a
      manual-green drill-down missed 8 error findings during the v0.2.0
      prep. Never overlap concurrent full buildflow runs (SQLITE_BUSY).
+   - Also run `scripts/check-citations.sh` (expect `stale=0`): the
+     utilization reports cite `file:line` positions, and a refactor or a
+     slimmed `AGENTS.md` silently rots them (CI went red for a day on one
+     stale cite on 2026-11-26).
 5. **Tag and push BOTH remotes WITH the tag**:
    `git tag -a vX.Y.Z -m "go-compliance vX.Y.Z"` then
    `git push origin master vX.Y.Z && git push github master vX.Y.Z`.

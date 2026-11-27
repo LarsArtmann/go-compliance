@@ -30,6 +30,7 @@ fail() {
 [ "$(id -u)" -ne 0 ] || fail "run as your own user, never root: the evidence file is user-owned"
 command -v nix >/dev/null || fail "nix is not on PATH"
 command -v curl >/dev/null || fail "curl is not on PATH (the post-deploy probe needs it)"
+command -v jq >/dev/null || fail "jq is not on PATH (the readiness probe needs it)"
 [ -f "$template" ] || fail "unit template $template is missing"
 
 rev="$(git rev-parse HEAD)"
@@ -45,6 +46,21 @@ case "$rev" in
 	fail "the built hub reports '$version' but HEAD is ${rev:0:12}; the flake's version stamp is out of step"
 	;;
 esac
+
+# Readiness must be fully green, not merely serving: a check stuck on warn
+# (a dead discovery stream, a stalled refresh) hides behind a 200.
+readyz="http://$addr/readyz"
+not_passing=""
+for _ in $(seq 1 50); do
+	not_passing="$(curl -fsS "$readyz" 2>/dev/null |
+		jq -r '[.checks | to_entries[] | select(.value.status != "pass" and .value.status != "off") | .key] | join(", ")' 2>/dev/null || echo "unparsed")"
+	[ -z "$not_passing" ] && break
+	sleep 0.2
+done
+if [ -n "$not_passing" ]; then
+	curl -fsS "$readyz" 2>/dev/null | jq -r '.checks | to_entries[] | "\(.key): \(.value.status) \(.value.error)"' >&2 || true
+	fail "readiness is not green after 10s (checks not passing: $not_passing)"
+fi
 
 unit_state="$(systemctl --user is-active "$unit_name" 2>/dev/null || true)"
 listener="$(ss -ltnpH "sport = :$port" 2>/dev/null || true)"
