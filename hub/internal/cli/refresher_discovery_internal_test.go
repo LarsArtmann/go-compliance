@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -174,5 +175,58 @@ var _ = Describe("discovery watch", func() {
 
 		Expect(refresher.refreshDiscovered(ctx, discovery.New(stub.SocketPath()), nil)).NotTo(Succeed())
 		Expect(discoveredNames(refresher)).To(BeNil())
+	})
+
+	It("completes nothing when the daemon knows only projects without a go.mod", func() {
+		root := GinkgoTB().TempDir()
+		siteRepo := filepath.Join(root, "site")
+		Expect(os.MkdirAll(siteRepo, 0o750)).To(Succeed())
+
+		stub := newStubDaemon([]discovery.Project{{DirName: "site", Path: siteRepo}})
+		defer stub.Close()
+
+		refresher := newRefresher(events.NewHub(), nil, time.Hour, 24*time.Hour, 3, "")
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		go runDiscoveryWatch(ctx, discovery.New(stub.SocketPath()), refresher)
+
+		Eventually(stub.searchPaths, "5s", "20ms").Should(HaveLen(1))
+		Expect(discoveredNames(refresher)).To(BeEmpty(), "a project without a go.mod is never never-covered")
+	})
+})
+
+var _ = Describe("startDiscovery", func() {
+	It("logs once and starts no watch loop when no roots are configured", func() {
+		logs := captureLogs()
+		refresher := newRefresher(events.NewHub(), nil, time.Hour, 24*time.Hour, 3, "")
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		startDiscovery(ctx, refresher, nil)
+
+		Expect(refresher.DiscoveryLive()).To(BeTrue(), "a disabled discovery must pass its health check")
+		// A watch loop would log its connect or its back-off within moments.
+		Consistently(func() int { return len(strings.Split(logs(), "\n")) }, "300ms", "50ms").Should(Equal(1),
+			"a started watch loop would log; logs: %s", logs())
+		Expect(logs()).To(ContainSubstring("discovery disabled"))
+	})
+
+	It("starts the watch against the daemon when roots are configured", func() {
+		root := GinkgoTB().TempDir()
+		stub := newStubDaemon(nil)
+		defer stub.Close()
+
+		refresher := newRefresher(events.NewHub(), nil, time.Hour, 24*time.Hour, 3, "")
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		startDiscovery(ctx, refresher, []string{root})
+
+		Eventually(refresher.DiscoveryLive, "5s", "20ms").Should(BeTrue())
+		Expect(refresher.discoverPaths).To(Equal([]string{root}))
 	})
 })

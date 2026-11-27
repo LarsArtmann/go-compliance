@@ -4,6 +4,7 @@ import (
 	"context"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	datastar "github.com/larsartmann/go-datastar"
@@ -126,6 +127,85 @@ var _ = Describe("refresh freshness guard", func() {
 
 		Expect(refresher.Refresh(context.Background())).NotTo(Succeed())
 		Expect(refresher.LastRefreshSuccess()).To(BeZero())
+	})
+})
+
+// The debounce is a fixed window from the FIRST trigger of a burst: kicks
+// inside the window are absorbed and never push the refresh back, so a
+// steady stream of triggers costs one refresh per window and cannot starve
+// the refresh (docs/notes/live-architecture.md, "Liveness").
+var _ = Describe("trigger debounce", func() {
+	countingSource := func(queries *atomic.Int64) compliance.Source {
+		return compliance.SourceFunc(
+			func(_ context.Context, _ time.Time, _ int, _ string) ([]compliance.RepoEvidence, error) {
+				queries.Add(1)
+
+				return []compliance.RepoEvidence{}, nil
+			},
+		)
+	}
+
+	It("coalesces a burst of kicks into one refresh", func() {
+		ctx, cancel := context.WithCancel(context.Background())
+		DeferCleanup(cancel)
+
+		var queries atomic.Int64
+
+		refresher := newRefresher(events.NewHub(), countingSource(&queries), time.Hour, 24*time.Hour, 3, "")
+		refresher.debounce = 40 * time.Millisecond
+
+		go refresher.Run(ctx)
+
+		for range 5 {
+			refresher.Kick()
+			time.Sleep(5 * time.Millisecond)
+		}
+
+		Eventually(queries.Load, "2s", "10ms").Should(Equal(int64(1)))
+		Consistently(queries.Load, "150ms", "10ms").Should(Equal(int64(1)),
+			"five kicks inside one window must cost exactly one refresh")
+	})
+
+	It("refreshes once per window under a steady stream of kicks, so no stream starves the refresh", func() {
+		ctx, cancel := context.WithCancel(context.Background())
+		DeferCleanup(cancel)
+
+		var queries atomic.Int64
+
+		refresher := newRefresher(events.NewHub(), countingSource(&queries), time.Hour, 24*time.Hour, 3, "")
+		refresher.debounce = 40 * time.Millisecond
+
+		go refresher.Run(ctx)
+
+		// Twelve windows of kicks, five per window: far more triggers than
+		// refreshes, arriving faster than the debounce the whole time.
+		streamDone := make(chan struct{})
+
+		go func() {
+			defer close(streamDone)
+
+			deadline := time.Now().Add(12 * refresher.debounce)
+
+			for time.Now().Before(deadline) {
+				refresher.Kick()
+				time.Sleep(8 * time.Millisecond)
+			}
+		}()
+
+		select {
+		case <-streamDone:
+		case <-time.After(5 * time.Second):
+			Fail("the kick stream never ended")
+		}
+
+		// The stream spanned twelve windows; a refresh per window (minus
+		// scheduling slack) must have happened once the last window
+		// elapsed, and the kicks must not have cost more than that.
+		time.Sleep(2 * refresher.debounce)
+
+		final := queries.Load()
+		Expect(final).To(BeNumerically(">=", int64(4)), "a steady kick stream must keep producing refreshes")
+		Expect(final).To(BeNumerically("<=", int64(14)), "never more than one refresh per window")
 	})
 })
 

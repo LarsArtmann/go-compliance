@@ -1,10 +1,8 @@
 package cli
 
 import (
-	"bytes"
 	"context"
 	"encoding/json/v2"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -36,12 +34,7 @@ func booted(refresher *refresher) *health.Probe {
 
 var _ = Describe("health check transition logging", func() {
 	It("logs each check's boot baseline once, then exactly one line per flip", func() {
-		var buf bytes.Buffer
-
-		previous := slog.Default()
-
-		slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
-		DeferCleanup(func() { slog.SetDefault(previous) })
+		logs := captureLogs()
 
 		hook := checkTransitions()
 
@@ -63,11 +56,11 @@ var _ = Describe("health check transition logging", func() {
 		}
 
 		evaluate(five)
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(5),
-			"the first batch logs all five checks once; got: %s", buf.String())
+		Expect(strings.Count(logs(), "health check status changed")).To(Equal(5),
+			"the first batch logs all five checks once; got: %s", logs())
 
 		evaluate(five)
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(5),
+		Expect(strings.Count(logs(), "health check status changed")).To(Equal(5),
 			"a stable evaluation must not log")
 
 		flipped := map[string]health.Status{
@@ -79,12 +72,12 @@ var _ = Describe("health check transition logging", func() {
 		}
 
 		evaluate(flipped)
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(6),
-			"exactly the sse-backpressure flip may log; got: %s", buf.String())
-		Expect(buf.String()).To(ContainSubstring("check=sse-backpressure"))
+		Expect(strings.Count(logs(), "health check status changed")).To(Equal(6),
+			"exactly the sse-backpressure flip may log; got: %s", logs())
+		Expect(logs()).To(ContainSubstring("check=sse-backpressure"))
 
 		evaluate(flipped)
-		Expect(strings.Count(buf.String(), "health check status changed")).To(Equal(6),
+		Expect(strings.Count(logs(), "health check status changed")).To(Equal(6),
 			"a stable evaluation must not log")
 	})
 })
