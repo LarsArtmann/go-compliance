@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Release posture (2026-11-24): `scripts/pre-release-check.sh` (pre-flight: clean tree, CHANGELOG section, notes file, master pushed to BOTH remotes, tag freshness, the canonical plain-`buildflow` gate, `nix flake check`, `docs-gates run .` — every gate with a true exit code; `--verify` mode: both remotes at the tagged commit, proxy `@v/list`, GitHub release, clean-dir `go get`) plus `docs/notes/release-runbook.md` distilling the v0.2.0 sequence; CI re-runs the full matrix on `v*` tag pushes so a tag's own CI verdict exists (the v0.2.0 tag froze a red run).
 - Retroactive v0.1.0 GitHub release page (`docs/notes/v0.1.0-release-notes.md`; the tag shipped notes-less on 2026-11-19).
+- Dashboard rework (2026-11-25 to 27): the fleet summary replaces the stat cards (a headline sentence "155 of 211 repos are failing", a proportional state bar, count-carrying filter chips); chips filter through `data-on:click` (the previous `data-on-click` attribute was an unknown plugin that the pinned DataStar dropped silently, so the filter never worked); per-filter empty states; a quieter `@theme` re-skin (one accent, muted severity ramp, system fonts); tabular numbers; rows stack under a 40rem container; findings show count-first tokens ("3 ERR") instead of "—"; favicon route.
+- `scripts/screenshot.sh`: a real-browser gate (headless Chromium over CDP) rendering light, dark, and narrow views, asserting theme, favicon, zero console/network errors, pressed chip state, filter clicks, and empty messages.
+- `serve --discover-paths` (default `~/projects`): the discovery roots sent to the project-discovery daemon. The hub used to send none, the daemon answered 400 on every start, and never-covered was empty by construction. Only projects with a `go.mod` count, matching the producer's rule; an empty value disables discovery.
+- `scripts/deploy-hub.sh` and `deploy/compliance-hub.user.service`: the hub as a hardened `systemctl --user` unit (Type=notify, watchdog, read-only filesystem, LAN unicast bind) built from the committed tree and GC-rooted; `scripts/deploy-fleet-evidence.sh` and the `fleet-evidence` timer for the producer.
+- `Content-Security-Policy` and `Referrer-Policy` headers on every hub response (same-origin only, never framed; `script-src` keeps `'unsafe-eval'` because DataStar compiles expressions with `new Function`).
+- `docs/notes/live-architecture.md` and the bind-posture deployment appendix plus auth threat sketch.
 - README Install section: `go get github.com/larsartmann/go-compliance@v0.2.0`, the `compliance.Record` one-liner, and the hub's run-from-checkout posture (the hub module is deliberately not go-get-able — decision documented in-runbook and STACK.md).
 
 ### Changed
@@ -25,7 +31,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Filter chips never filtered (2026-11-27): `data-on-click` is not a DataStar attribute; DOM events use `data-on:click`.
+- Never-covered was always empty (2026-11-27): discovery snapshots were sent without search roots, which the daemon rejects. See `--discover-paths`.
+- `/readyz` reported `discovery` warn forever ten minutes after every start on a healthy, quiet stream: the contact stamp was only taken on connect and snapshot. A connected stream now passes the check by itself.
+- Failing rows showed "—" in the findings column: with no severity breakdown (the frozen v1 contract cannot carry severities) the cell shows the gate-findings count.
+- templ-components v1.27.0 to v1.27.2 in the hub (ScriptComponent `</script>` escape guard).
+- Stale citation in `docs/review/libs/go-credentials-store.md` after the AGENTS.md slimming.
+
 ### Security
+
+- Hub responses carry a Content-Security-Policy (same-origin, no framing) and `Referrer-Policy: no-referrer`; the LAN auth posture is written up in `docs/decisions/bind-posture.md` and awaits owner sign-off.
 
 ## [0.2.0] - 2026-11-20
 

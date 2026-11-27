@@ -105,6 +105,10 @@ func buildHealthProbe(
 			return nil
 		},
 		discoveryCheckName: func(_ context.Context) error {
+			if refresher.DiscoveryLive() {
+				return nil
+			}
+
 			last := refresher.LastDiscoverySuccess()
 			if last.IsZero() {
 				return ErrDiscoveryNeverContacted

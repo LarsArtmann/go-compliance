@@ -145,6 +145,15 @@ var _ = Describe("compliance-hub CLI", func() {
 			}, "5s", "50ms").Should(Equal("nosniff"), "path %s", path)
 		}
 
+		page, err := Get(base + "/")
+		Expect(err).NotTo(HaveOccurred())
+
+		defer func() { _ = page.Body.Close() }()
+
+		Expect(page.Header.Get("Content-Security-Policy")).To(ContainSubstring("default-src 'self'"))
+		Expect(page.Header.Get("Content-Security-Policy")).To(ContainSubstring("frame-ancestors 'none'"))
+		Expect(page.Header.Get("Referrer-Policy")).To(Equal("no-referrer"))
+
 		ready, err := Get(base + "/readyz")
 		Expect(err).NotTo(HaveOccurred())
 		body, err := io.ReadAll(ready.Body)

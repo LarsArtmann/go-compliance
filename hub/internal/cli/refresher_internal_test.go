@@ -135,13 +135,13 @@ var _ = Describe("discovery contact stamping", func() {
 		dead := discovery.New(filepath.Join(GinkgoTB().TempDir(), "missing.sock"))
 
 		Expect(refresher.LastDiscoverySuccess()).To(BeZero())
-		Expect(refresher.refreshDiscovered(context.Background(), dead)).NotTo(Succeed())
+		Expect(refresher.refreshDiscovered(context.Background(), dead, nil)).NotTo(Succeed())
 		Expect(refresher.LastDiscoverySuccess()).To(BeZero())
 
 		refresher.markDiscoverySuccess()
 		first := refresher.LastDiscoverySuccess()
 
-		Expect(refresher.refreshDiscovered(context.Background(), dead)).NotTo(Succeed())
+		Expect(refresher.refreshDiscovered(context.Background(), dead, nil)).NotTo(Succeed())
 		Expect(refresher.LastDiscoverySuccess()).To(Equal(first))
 	})
 })

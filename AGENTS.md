@@ -111,13 +111,27 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   `~/.local/state/overview/compliance.json`, and runs on a read-only
   filesystem. Verify afterwards with `scripts/screenshot.sh
   http://192.168.1.150:8477/` and `journalctl --user -u compliance-hub`.
-- **Producer**: `scripts/deploy-fleet-evidence.sh` builds library-policy
-  the same way into `~/.local/state/compliance-fleet/current` and installs
-  the `fleet-evidence` timer (daily 05:10, `Persistent=true`) that runs
-  `library-policy fleet --record` on the XDG evidence file.
-- **File-store limits**: each run replaces a repo's row and nothing is ever
-  pruned, so `runs` stays 1 and a repo that leaves the fleet stays visible
-  until the evidence file is regenerated (trash it, then run the scan).
+- **Evidence file defaults align** across README, the integrate guide, and
+  `docs/decisions/bind-posture.md`: system `/var/lib/overview/compliance.json`
+  (the core's `DefaultEvidenceFile`), user
+  `~/.local/state/overview/compliance.json`; `GO_COMPLIANCE_EVIDENCE_FILE`
+  overrides both.
+- **Producer**: `scripts/deploy-fleet-evidence.sh --run` builds library-policy
+  the same way into `~/.local/state/compliance-fleet/current`, installs and
+  starts the `fleet-evidence` timer (daily 05:10, `Persistent=true`) that
+  runs `library-policy fleet` on the XDG evidence file, and scans once.
+  `enable` alone does not start a user timer; the script starts it.
+- **File-store limits**: each run replaces a repo's row, so `runs` stays 1.
+  `fleet` prunes by default (`--prune`): rows of repos no longer under the
+  root are dropped after a complete recording pass.
+- **Never-covered fleet**: `serve --discover-paths` (default `~/projects`)
+  sends real roots to the daemon (empty roots are a 400); only projects
+  with a `go.mod` count. `discovery` readiness passes while the watch
+  stream is connected.
+- **CSP**: every response carries a Content-Security-Policy; DataStar
+  compiles expressions with `new Function`, so `script-src` needs
+  `'unsafe-eval'`. Removing it goes inert with no server-side error; only
+  `scripts/screenshot.sh` (console-error check) sees it.
 - NEVER sudo: root cannot fetch the private Go dependencies and the system
   evidence path belongs to another user. The non-loopback bind warning is
   the documented speed bump (`docs/decisions/bind-posture.md`). The units

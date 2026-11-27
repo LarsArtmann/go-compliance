@@ -60,6 +60,18 @@ A redeploy is the same script again. The hub reports its commit as the
 version (`compliance-hub --version`, `/version`, and the `buildflow_version`
 of the document it serves).
 
+Evidence file locations (two defaults, no code change):
+
+| Deployment   | Default evidence file                          | Who writes it                                   |
+| ------------ | ---------------------------------------------- | ----------------------------------------------- |
+| System       | `/var/lib/overview/compliance.json`            | the BuildFlow daemon pipes `compliance --json`  |
+| User (this host) | `~/.local/state/overview/compliance.json`  | the `fleet-evidence` timer (`library-policy fleet`) |
+
+`GO_COMPLIANCE_EVIDENCE_FILE` overrides both for every reporter, and
+`--evidence-file` / `--file` override it per command. The core's
+`DefaultEvidenceFile` constant stays the system path; user deployments
+pass the XDG state file explicitly, which is what both deploy scripts do.
+
 The unit runs `serve --source file --file
 ~/.local/state/overview/compliance.json --addr 192.168.1.150:8477` as the
 login user on a read-only filesystem (`ProtectSystem=strict`,

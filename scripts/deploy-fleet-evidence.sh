@@ -44,6 +44,7 @@ done
 
 systemctl --user daemon-reload
 systemctl --user enable fleet-evidence.timer >/dev/null 2>&1
+systemctl --user start fleet-evidence.timer
 
 echo "✓ library-policy $version"
 echo "  binary:  $(readlink -f "$bin")"

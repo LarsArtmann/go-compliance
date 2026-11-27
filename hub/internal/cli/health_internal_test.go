@@ -227,6 +227,30 @@ var _ = Describe("health probe discovery check", func() {
 		Expect(evaluated.Checks[discoveryCheckName].Status).To(Equal(health.StatusWarn))
 		Expect(evaluated.Checks[discoveryCheckName].Error).To(ContainSubstring(ErrDiscoverySilent.Error()))
 	})
+
+	It("passes on a connected stream, however old the last contact stamp", func() {
+		refresher := newRefresher(nil, nil, time.Hour, 24*time.Hour, 3, "")
+		refresher.lastDiscoverySuccess.Store(time.Now().Add(-24 * time.Hour).UnixNano())
+		refresher.discoveryState.Store(discoveryLive)
+		probe := booted(refresher)
+
+		Expect(probe.Evaluate(context.Background()).Checks[discoveryCheckName].Status).
+			To(Equal(health.StatusPass))
+
+		refresher.discoveryState.Store(discoveryIdle)
+
+		Expect(probe.Evaluate(context.Background()).Checks[discoveryCheckName].Status).
+			To(Equal(health.StatusWarn))
+	})
+
+	It("passes, with no daemon, when discovery is disabled", func() {
+		refresher := newRefresher(nil, nil, time.Hour, 24*time.Hour, 3, "")
+		refresher.DisableDiscovery()
+		probe := booted(refresher)
+
+		Expect(probe.Evaluate(context.Background()).Checks[discoveryCheckName].Status).
+			To(Equal(health.StatusPass))
+	})
 })
 
 var _ = Describe("health probe evidence gate", func() {

@@ -15,6 +15,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -150,6 +151,22 @@ func RepoNames(projects []Project) []compliance.RepoName {
 	}
 
 	return names
+}
+
+// FleetEligible keeps the discovered projects the fleet producer can cover:
+// those with a go.mod at their root. The daemon reports every kind of
+// project under the search paths; a non-Go one can never gain evidence, so
+// counting it as never-covered would be a permanent false alarm.
+func FleetEligible(projects []Project) []Project {
+	eligible := make([]Project, 0, len(projects))
+
+	for _, project := range projects {
+		if _, err := os.Stat(filepath.Join(project.Path, "go.mod")); err == nil {
+			eligible = append(eligible, project)
+		}
+	}
+
+	return eligible
 }
 
 // Watch subscribes to the daemon's /v1/watch SSE stream and delivers

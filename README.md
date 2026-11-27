@@ -31,8 +31,13 @@ full walkthrough):
 ```go
 import compliance "github.com/larsartmann/go-compliance"
 
-compliance.Record(compliance.WithFileWriter("/var/lib/overview/compliance.json"))
+compliance.Record(ctx, compliance.NewRepoName("my-repo"),
+    compliance.RunResult{Verdict: compliance.VerdictPassed})
 ```
+
+The run lands in the fleet evidence file: `/var/lib/overview/compliance.json`
+for a system deployment, `~/.local/state/overview/compliance.json` for a user
+deployment, or wherever `GO_COMPLIANCE_EVIDENCE_FILE` points.
 
 The `compliance-hub` binary is not `go install`-able (the hub module is
 untagged by design); run it from a checkout of this repo:
@@ -83,6 +88,19 @@ compliance.json` (also `--source buildflow`, `--source cache --db path`).
 
 ### Run it
 
+On the fleet host the hub runs as a `systemctl --user` unit, built from the
+committed tree and GC-rooted in the nix store:
+
+```bash
+scripts/deploy-hub.sh        # build, install, enable, restart; prints the address
+```
+
+It binds `192.168.1.150:8477` and reads
+`~/.local/state/overview/compliance.json`, which the daily producer timer
+(`scripts/deploy-fleet-evidence.sh`) refreshes every morning.
+
+Ad hoc, from a checkout:
+
 ```bash
 nix run .#compliance-hub -- serve --source file --file compliance.json
 ```
@@ -93,6 +111,11 @@ Or from the devShell (Go toolchain + pinned templ generator):
 nix develop -c bash -c 'cd hub && GOWORK=off go run ./cmd/compliance-hub \
   serve --source file --file compliance.json'
 ```
+
+Never-covered needs the project-discovery daemon: `--discover-paths`
+(default `~/projects`) names the roots it scans, and a discovered project
+counts only when it has a `go.mod` (the same rule the producer uses), so
+non-Go projects never show as gaps. An empty value disables discovery.
 
 ### Fleet table
 
@@ -121,8 +144,9 @@ scraping dashboard:
 | `/version`  | Build version stamp                                                        |
 
 Checks: `evidence` (critical gate), `cache-disk` (128 MiB floor, only with
-`--db`), `refresh-freshness` and `discovery` (warn when their loop stalls
-past 10 minutes), `sse-backpressure` (warn on new patch drops). Shutdown
+`--db`), `refresh-freshness` (warn when the loop stalls past 10 minutes),
+`discovery` (warn only when the watch stream is down and the last contact
+is older than 10 minutes; a connected stream is always healthy), `sse-backpressure` (warn on new patch drops). Shutdown
 drains honestly: readiness flips to 503 before the listeners close.
 
 ### Exit codes

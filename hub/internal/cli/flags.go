@@ -60,7 +60,7 @@ func parseDiscoverPaths(raw string) ([]string, error) {
 
 	roots := make([]string, 0)
 
-	for _, part := range strings.Split(raw, ",") {
+	for part := range strings.SplitSeq(raw, ",") {
 		root := strings.TrimSpace(part)
 		if root == "" {
 			continue
@@ -72,7 +72,7 @@ func parseDiscoverPaths(raw string) ([]string, error) {
 				return nil, compliance.NewValidationError(
 					"--discover-paths %q needs the home directory: %v", root, err)
 			}
-			
+
 			root = filepath.Join(home, strings.TrimPrefix(root, "~"))
 		}
 

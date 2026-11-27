@@ -41,8 +41,10 @@ err := compliance.RecordTo(ctx, compliance.NewFileStore(path),
 ```
 
 Or with the default fleet document
-(`/var/lib/overview/compliance.json`, overridable via
-`GO_COMPLIANCE_EVIDENCE_FILE`):
+(`/var/lib/overview/compliance.json` on a system deployment; user
+deployments point `GO_COMPLIANCE_EVIDENCE_FILE` at
+`~/.local/state/overview/compliance.json`, the file the user-level
+compliance-hub reads):
 
 ```go
 err := compliance.Record(ctx, compliance.NewRepoName("my-repo"),

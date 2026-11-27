@@ -22,12 +22,26 @@ const (
 	readHeaderTimeout = 10 * time.Second
 )
 
+// contentSecurityPolicy is the page's browser fence: everything loads from
+// this origin only (SDK bundle, stylesheet, favicon, the SSE stream), and
+// the page can never be framed. The relaxation is deliberate and verified
+// in a real browser (scripts/screenshot.sh): DataStar compiles every
+// expression attribute with new Function, so script-src needs
+// 'unsafe-eval' or the whole page goes inert; the inline scopes cover the
+// library's theme toggle, the one AutoRefresh script, and the inline
+// display toggles DataStar drives.
+const contentSecurityPolicy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+	"style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; " +
+	"font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+
 // securityHeaders is the browser-hardening floor on EVERY response:
 // nosniff keeps user-controlled content (repo names in JSON, evidence
 // bodies) from being reinterpreted as executable MIME types.
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Content-Security-Policy", contentSecurityPolicy)
+		w.Header().Set("Referrer-Policy", "no-referrer")
 		next.ServeHTTP(w, r)
 	})
 }
@@ -47,6 +61,11 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 			return err
 		}
 
+		discoverPaths, err := parseDiscoverPaths(flags.DiscoverPaths)
+		if err != nil {
+			return err
+		}
+
 		source, closer, err := resolveSource(ctx, flags.QueryFlags)
 		if err != nil {
 			return err
@@ -61,6 +80,15 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		// Live rows: the source stays open and every trigger (cache write,
 		// discovery change, safety-net tick) re-derives and publishes.
 		refresher := newRefresher(hub, source, window, staleAfter, flags.WorstSteps, flags.Step)
+
+		refresher.discoverPaths = discoverPaths
+		if len(discoverPaths) == 0 {
+			// No roots: the daemon would reject every snapshot, so discovery
+			// is off and never-covered stays an empty set by design.
+			refresher.DisableDiscovery()
+			slog.Info("compliance-hub: discovery disabled (--discover-paths is empty); never-covered is not computed")
+		}
+
 		if err := refresher.Refresh(ctx); err != nil {
 			return err
 		}
@@ -81,7 +109,10 @@ func runServe(out, errW io.Writer) func(context.Context, *Config, ServeFlags) er
 		// If a later setup step fails and runServe returns early, ctx
 		// cancellation (or process exit) reaps both goroutines.
 		go refresher.Run(ctx)
-		go runDiscoveryWatch(ctx, discovery.New(discovery.ResolveSocketPath()), refresher)
+
+		if len(discoverPaths) > 0 {
+			go runDiscoveryWatch(ctx, discovery.New(discovery.ResolveSocketPath()), refresher)
+		}
 
 		probe, err := buildHealthProbe(ctx, Version, hub, refresher, watcher, cacheDirForDB(flags.DB))
 		if err != nil {

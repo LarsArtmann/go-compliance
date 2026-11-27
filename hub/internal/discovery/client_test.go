@@ -154,6 +154,24 @@ var _ = Describe("discovery client", func() {
 		Expect(compliance.DeriveState(completed[1], time.Now(), compliance.DefaultStaleAfter)).
 			To(Equal(compliance.StateNeverCovered))
 	})
+
+	It("keeps only projects the fleet producer can cover", func() {
+		root := GinkgoTB().TempDir()
+		goRepo := filepath.Join(root, "go-repo")
+		siteRepo := filepath.Join(root, "site")
+
+		Expect(os.MkdirAll(goRepo, 0o750)).To(Succeed())
+		Expect(os.MkdirAll(siteRepo, 0o750)).To(Succeed())
+		Expect(os.WriteFile(filepath.Join(goRepo, "go.mod"), []byte("module x\n"), 0o600)).To(Succeed())
+
+		eligible := discovery.FleetEligible([]discovery.Project{
+			{DirName: "go-repo", Path: goRepo},
+			{DirName: "site", Path: siteRepo},
+			{DirName: "ghost", Path: filepath.Join(root, "missing")},
+		})
+
+		Expect(discovery.RepoNames(eligible)).To(Equal([]compliance.RepoName{compliance.NewRepoName("go-repo")}))
+	})
 })
 
 // syncBuffer serializes writes from the watch goroutine against reads from

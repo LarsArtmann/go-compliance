@@ -4,7 +4,7 @@ Documentation=https://github.com/LarsArtmann/go-compliance/blob/master/docs/deci
 
 [Service]
 Type=oneshot
-ExecStart=%h/.local/state/compliance-fleet/current/bin/library-policy fleet --record --evidence-file %h/.local/state/overview/compliance.json
+ExecStart=%h/.local/state/compliance-fleet/current/bin/library-policy fleet --evidence-file %h/.local/state/overview/compliance.json
 TimeoutStartSec=1h
 Nice=10
 IOSchedulingClass=idle
