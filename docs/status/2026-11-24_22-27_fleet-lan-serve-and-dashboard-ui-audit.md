@@ -78,6 +78,7 @@ source or live commands; no repo code changed except docs/memory.
    signal-mode chip is being contributed to templ-components. Evidence:
    `hub/internal/dashboard/app.css`, `CHANGELOG.md` Unreleased,
    `docs/status/2026-11-26_17-47_fleet-governance-rev2-execution-status.md`.
+
 ## b) Partially done
 
 1. **g2 hub deployment.** Ad-hoc LAN serve works (running since ~22:00 as a
