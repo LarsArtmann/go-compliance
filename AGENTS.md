@@ -163,7 +163,9 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
 - Dedup: `art-dupl -t 1 --type-aware`; accept intentional clones with
   `// art-dupl:accept <why>` within 5 lines above the clone; CI ratchets
   `.art-dupl-baseline.json`. Policy: `docs/notes/dedup-audit-policy.md`.
-- Docs: `docs-gates run .` and `dprint check`. Multi-section annotate keys
+- Docs: `nix run github:Artmann-Technologies/docs-gates -- run .` (the
+  CI build; `docs-gates` on PATH is a stale dev binary that reports green
+  while CI's audit-all fails) and `dprint check`. Multi-section annotate keys
   need the `N@substring` disambiguator; run `emit-keys` and `--dry-run`
   first (`docs/notes/docs-health-annotate-writer.md`). The CI docs-gates
   job checks out the full history because its annotate gate resolves
