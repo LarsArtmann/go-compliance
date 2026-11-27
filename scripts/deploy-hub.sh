@@ -57,10 +57,15 @@ if [ -f "$unit_file" ]; then
 fi
 
 # restore_link puts the GC root back onto the hub that was current before
-# this run, so an aborted deploy cannot leave a running binary collectable.
+# this run, so an aborted deploy cannot leave a running binary collectable;
+# a link this run created for a hub that was then rejected is removed.
 restore_link() {
-	if [ -n "$previous_target" ] && [ -e "$previous_target" ]; then
-		ln -sfn "$previous_target" "$out_link"
+	if [ -n "$previous_target" ]; then
+		if [ -e "$previous_target" ]; then
+			ln -sfn "$previous_target" "$out_link"
+		fi
+	elif [ -L "$out_link" ]; then
+		unlink "$out_link"
 	fi
 }
 
