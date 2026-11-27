@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -49,15 +50,20 @@ var _ = Describe("evidence watch", func() {
 		Expect(err).NotTo(HaveOccurred())
 		DeferCleanup(func() { _ = other.Close() })
 
-		// Let the watch arm (fsnotify add + initial walk settle).
-		time.Sleep(300 * time.Millisecond)
+		// No arming sleep: a write that lands before the fsnotify add is
+		// missed, so a fixed 300ms wait made this spec flaky under load.
+		// Probe with throwaway rows until one shows up; only then does the
+		// 2s budget below measure the watch instead of the arming.
+		armWatch(ctx, other, hub)
+
+		rowsBefore := len(hub.Rows())
 
 		Expect(other.WriteEvidence(ctx, compliance.NewRepoName("cross-process-repo"),
 			compliance.RunResult{Verdict: compliance.VerdictFailed, Failures: 1})).To(Succeed())
 
 		Eventually(func() int {
 			return len(hub.Rows())
-		}, "2s", "20ms").Should(Equal(2),
+		}, "2s", "20ms").Should(Equal(rowsBefore+1),
 			"a cross-process WAL write must refresh within the 2s realtime budget")
 	})
 
@@ -81,3 +87,41 @@ var _ = Describe("evidence watch", func() {
 			QueryFlags{Source: "buildflow"}, []string(nil), map[string]struct{}{}),
 	)
 })
+
+// armWatch writes throwaway rows until the hub's row count grows, which
+// proves the directory watch is live; it fails the spec after ten seconds.
+func armWatch(ctx context.Context, other *cache.Store, hub *events.Hub) {
+	before := len(hub.Rows())
+
+	for attempt := 1; attempt <= armWatchMaxProbes; attempt++ {
+		Expect(other.WriteEvidence(ctx, compliance.NewRepoName(fmt.Sprintf("arm-probe-%d", attempt)),
+			compliance.RunResult{Verdict: compliance.VerdictPassed})).To(Succeed())
+
+		if waitRows(hub, before, armWatchProbeWindow) {
+			return
+		}
+	}
+
+	Fail("the evidence watch never armed: no probe write produced a refresh")
+}
+
+// waitRows polls the hub for armWatchProbeWindow; true once a row was added.
+func waitRows(hub *events.Hub, before int, window time.Duration) bool {
+	deadline := time.Now().Add(window)
+
+	for time.Now().Before(deadline) {
+		if len(hub.Rows()) > before {
+			return true
+		}
+
+		time.Sleep(armWatchPollInterval)
+	}
+
+	return false
+}
+
+const (
+	armWatchMaxProbes    = 200
+	armWatchProbeWindow  = 50 * time.Millisecond
+	armWatchPollInterval = 5 * time.Millisecond
+)
