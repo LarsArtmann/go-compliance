@@ -426,6 +426,15 @@ try {
 			sessionId,
 		);
 
+		// Every view starts from a fresh origin storage: the theme toggle
+			// stores the user's choice in localStorage, and the pre-paint theme
+			// script lets a stored choice outrank the emulated color scheme.
+		await send(
+			"Storage.clearDataForOrigin",
+			{ origin: new URL(url).origin, storageTypes: "local_storage" },
+			sessionId,
+		);
+
 		await send("Page.navigate", { url }, sessionId);
 		await waitForPage(sessionId);
 		await sleep(settleMs);
