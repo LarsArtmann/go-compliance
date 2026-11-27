@@ -186,6 +186,7 @@ var _ = Describe("discovery watch", func() {
 		defer stub.Close()
 
 		refresher := newRefresher(events.NewHub(), nil, time.Hour, 24*time.Hour, 3, "")
+		refresher.discoverPaths = []string{root}
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -205,7 +206,8 @@ var _ = Describe("startDiscovery", func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		startDiscovery(ctx, refresher, nil, stub.SocketPath())
+		// The path is dead on purpose: with no roots nothing may dial it.
+		startDiscovery(ctx, refresher, nil, filepath.Join(GinkgoTB().TempDir(), "missing.sock"))
 
 		Expect(refresher.DiscoveryLive()).To(BeTrue(), "a disabled discovery must pass its health check")
 		// A watch loop would log its connect or its back-off within moments.
