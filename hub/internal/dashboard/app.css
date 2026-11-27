@@ -163,23 +163,29 @@
   }
 }
 
-/* Wide layouts scroll the fleet table inside its own box so the column
-   header stays in view over 200 rows; the summary above never moves. */
+/* Wide layouts scroll the fleet table inside the box the library wraps it
+   in: display.Table puts BaseProps.Class on the <table>, so the box is the
+   element holding that table as its direct child. The box takes exactly the
+   height the viewport leaves below the summary (254px is the summary block,
+   222px at every width from 640px up, plus the page's bottom padding), so
+   the page itself never scrolls; the browser harness fails when it does.
+   The header row (TableProps.StickyHeader) pins to the top of that box over
+   200 rows; the summary above never moves. */
 @container (width >= 40rem) {
-  .fleet-table {
-    max-height: min(72vh, 52rem);
+  :has(> .fleet-table) {
+    max-height: max(20rem, calc(100dvh - 254px));
     overflow: auto;
   }
+}
 
-  .fleet-table thead th {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: var(--color-gray-50);
-  }
-
-  .dark .fleet-table thead th {
-    background-color: var(--color-gray-900);
+/* The theme toggle's icon is a control, not decoration: WCAG 1.4.11 asks
+   3:1 against the canvas. The library's gray-400 is 2.6:1 on the white
+   canvas (its dark shade clears the bar), so light mode moves one step
+   darker. In the utilities layer, after Tailwind's, so equal specificity
+   wins at rest and the library's hover: variants still win on hover. */
+@layer utilities {
+  [data-theme-toggle] {
+    color: var(--color-gray-500);
   }
 }
 
