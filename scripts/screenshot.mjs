@@ -178,6 +178,7 @@ const truthExpression = `JSON.stringify({
 	emptyMessages: [...document.querySelectorAll("#fleet-region .text-center")].filter((el) => el.getClientRects().length > 0).map((el) => el.textContent.trim()),
 	findingsCells: [...document.querySelectorAll("#fleet-rows tr[data-repo]")].filter((row) => (row.children[2]?.textContent ?? "").includes("finding")).length,
 	viewportWidth: window.innerWidth,
+	viewportHeight: window.innerHeight,
 	scrollWidth: document.documentElement.scrollWidth,
 	pageHeight: document.documentElement.scrollHeight,
 	theadDisplay: getComputedStyle(document.querySelector("#fleet-region thead")).display,
@@ -203,6 +204,17 @@ const contrastExpression = `JSON.stringify((() => {
 		return [r, g, b, a / 255];
 	};
 	const over = (top, bottom) => [0, 1, 2].map((i) => top[i] * top[3] + bottom[i] * (1 - top[3]));
+	// Below the last painted layer sits the canvas: the browser's default,
+	// white or its dark color under color-scheme: dark, never plain white.
+	const canvasColor = () => {
+		const probe = document.createElement("span");
+		probe.style.color = "Canvas";
+		document.body.appendChild(probe);
+		const color = getComputedStyle(probe).color;
+		probe.remove();
+
+		return rgba(color);
+	};
 	const background = (el) => {
 		const layers = [];
 		for (let node = el; node; node = node.parentElement) {
@@ -211,7 +223,7 @@ const contrastExpression = `JSON.stringify((() => {
 			layers.push(layer);
 			if (layer[3] === 1) break;
 		}
-		let base = [255, 255, 255];
+		let base = canvasColor();
 		for (const layer of layers.reverse()) base = over([...layer.slice(0, 3), layer[3]], base);
 		return base;
 	};
@@ -227,7 +239,12 @@ const contrastExpression = `JSON.stringify((() => {
 		};
 		return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
 	};
-	const measure = (el) => {
+	const hex = (rgb) => "#" + rgb.slice(0, 3).map((channel) => Math.round(channel).toString(16).padStart(2, "0")).join("");
+	// measure returns the WCAG ratio of an element's color over its painted
+	// background. Text needs 4.5:1, or 3:1 when large; the icon of a control
+	// (ui) needs 3:1 (WCAG 1.4.11). foreground and background are the two
+	// composited colors the ratio was computed from.
+	const measure = (el, ui = false) => {
 		if (!el) return null;
 		const style = getComputedStyle(el);
 		const bg = background(el);
@@ -240,7 +257,7 @@ const contrastExpression = `JSON.stringify((() => {
 		const weight = Number(style.fontWeight);
 		const large = size >= 24 || (size >= 18.66 && weight >= 700);
 		const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
-		return { ratio: Math.round(ratio * 100) / 100, size, large, required: large ? 3 : 4.5, text: (el.textContent ?? "").trim().slice(0, 40) };
+		return { ratio: Math.round(ratio * 100) / 100, size, large, required: ui || large ? 3 : 4.5, text: (el.textContent ?? "").trim().slice(0, 40), foreground: hex(fg), background: hex(bg) };
 	};
 	const badge = (label) => {
 		for (const row of document.querySelectorAll("#fleet-rows tr[data-repo]")) {
@@ -250,8 +267,8 @@ const contrastExpression = `JSON.stringify((() => {
 		return null;
 	};
 	const targets = [
-		["headline word", document.querySelector("#fleet-summary p span")],
-		["headline figure", document.querySelectorAll("#fleet-summary p span")[1] ?? null],
+		["headline words", document.querySelector("#fleet-summary p span:not([class])")],
+		["headline figure", document.querySelector("#fleet-summary p span[class]")],
 		["chip selected", document.querySelector('#fleet-summary [role=group] button[aria-pressed="true"]')],
 		["chip selected count", document.querySelector('#fleet-summary [role=group] button[aria-pressed="true"] span')],
 		["chip unselected", document.querySelector('#fleet-summary [role=group] button[aria-pressed="false"]')],
@@ -264,24 +281,27 @@ const contrastExpression = `JSON.stringify((() => {
 		["repo name", document.querySelector("#fleet-rows tr[data-repo] td:nth-child(1)")],
 		["findings", document.querySelector("#fleet-rows tr[data-repo] td:nth-child(3) span")],
 		["last run", document.querySelector("#fleet-rows tr[data-repo] td:nth-child(4) time")],
-		["rendered status", document.querySelector("[data-tc-relative].text-xs") ?? document.querySelector("header [data-tc-relative]")],
+		["rendered status", document.querySelector("#rendered-status time")],
+		["theme toggle icon", [...document.querySelectorAll("[data-theme-toggle] svg")].find((icon) => getComputedStyle(icon).display !== "none") ?? null, true],
 	];
-	return Object.fromEntries(targets.map(([name, el]) => [name, measure(el)]));
+	return Object.fromEntries(targets.map(([name, el, ui]) => [name, measure(el, ui)]));
 })())`;
 
 // The keyboard pass: Tab reaches the chips and the theme toggle, Enter
 // activates them, and the focused chip shows a focus ring.
 const keyboardExpression = `JSON.stringify((() => {
+	const el = document.activeElement;
 	const active = () => {
-		const el = document.activeElement;
 		if (!el || el === document.body) return "body";
 		return el.tagName.toLowerCase() + ":" + (el.getAttribute("aria-label") ?? el.textContent ?? "").trim().replace(/\\s+/g, " ").slice(0, 30);
 	};
-	return { active: active(), chipFocusVisible: document.activeElement?.matches?.("#fleet-summary [role=group] button:focus-visible") ?? false, outline: document.activeElement ? getComputedStyle(document.activeElement).outlineStyle + " " + getComputedStyle(document.activeElement).outlineWidth : "", dark: document.documentElement.classList.contains("dark") };
+	const outline = el ? getComputedStyle(el).outlineStyle + " " + getComputedStyle(el).outlineWidth : "";
+	return { active: active(), focusVisible: el?.matches?.(":focus-visible") ?? false, outline, dark: document.documentElement.classList.contains("dark") };
 })())`;
 
 const truth = [];
 const filterChecks = [];
+const scrolled = [];
 const contrast = [];
 let keyboard = null;
 let fatal = null;
@@ -319,30 +339,61 @@ const tabUntil = async (want, sessionId, max = 14) => {
 	return { reached: state.active.startsWith(want), stops, state };
 };
 
-// keyboardPass drives chips and theme toggle with the keyboard alone.
+// keyboardPass drives the chips and the theme toggle with the keyboard
+// alone: Tab reaches a chip and Enter selects it; Tab reaches the next chip
+// and Space selects that one; Tab reaches the theme toggle, Enter flips the
+// theme and Space flips it back. Every focused control must show its focus
+// ring. It ends in the theme it started with.
 const keyboardPass = async (sessionId) => {
 	await evaluate("document.activeElement?.blur?.()", sessionId);
 	const chip = await tabUntil("button:Failing", sessionId);
 	if (!chip.reached) return { reached: false, stops: chip.stops };
 	await press("Enter", sessionId);
 	const afterChip = JSON.parse(await evaluate(truthExpression, sessionId));
+	const nextChip = await tabUntil("button:Stale", sessionId);
+	if (!nextChip.reached) return { reached: false, stops: nextChip.stops, chipActivated: afterChip };
+	await press(" ", sessionId);
+	const afterSpace = JSON.parse(await evaluate(truthExpression, sessionId));
 	const toggle = await tabUntil("button:Toggle dark mode", sessionId);
-	if (!toggle.reached) return { reached: false, stops: toggle.stops, chipActivated: afterChip };
+	if (!toggle.reached)
+		return { reached: false, stops: toggle.stops, chipActivated: afterChip, spaceActivated: afterSpace };
 	const darkBefore = toggle.state.dark;
 	await press("Enter", sessionId);
-	const darkAfter = JSON.parse(await evaluate(keyboardExpression, sessionId)).dark;
-	await press("Enter", sessionId);
-	const darkRestored = JSON.parse(await evaluate(keyboardExpression, sessionId)).dark;
+	const darkAfterEnter = JSON.parse(await evaluate(keyboardExpression, sessionId)).dark;
+	await press(" ", sessionId);
+	const darkAfterSpace = JSON.parse(await evaluate(keyboardExpression, sessionId)).dark;
 
 	return {
 		reached: true,
 		stopsToChip: chip.stops,
-		chipFocusVisible: chip.state.chipFocusVisible,
+		chipFocusVisible: chip.state.focusVisible,
 		chipOutline: chip.state.outline,
 		chipActivated: afterChip,
+		stopsToNextChip: nextChip.stops,
+		spaceActivated: afterSpace,
 		stopsToToggle: toggle.stops,
-		themeToggled: darkAfter !== darkBefore && darkRestored === darkBefore,
+		toggleFocusVisible: toggle.state.focusVisible,
+		toggleOutline: toggle.state.outline,
+		themeToggled: darkAfterEnter !== darkBefore && darkAfterSpace === darkBefore,
 	};
+};
+
+// scrollFleetTable scrolls the fleet table's box and reports how far the
+// header row sits from the box's top edge once scrolled: 0 means the sticky
+// header stayed pinned over the rows.
+const scrollFleetTable = async (sessionId) => {
+	const scrolled = await evaluate(
+		`(() => {
+			const box = document.querySelector("#fleet-region .fleet-table").parentElement;
+			const head = box.querySelector("thead");
+			box.scrollTop = Math.min(1400, box.scrollHeight - box.clientHeight);
+			return { scrollTop: box.scrollTop, headerPinOffset: Math.abs(head.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientTop) };
+		})()`,
+		sessionId,
+	);
+	await sleep(300);
+
+	return scrolled;
 };
 
 try {
@@ -385,18 +436,16 @@ try {
 		truth.push({ view: view.name, scheme: view.scheme, ...facts });
 		contrast.push({ view: view.name, scheme: view.scheme, ...JSON.parse(await evaluate(contrastExpression, sessionId)) });
 
+		if (facts.tableScrolls) {
+			scrolled.push({ view: view.name, ...(await scrollFleetTable(sessionId)) });
+			await capture(sessionId, `${view.name}-scrolled`, { width: view.width, height: view.height });
+			await evaluate(
+				'document.querySelector("#fleet-region .fleet-table").parentElement.scrollTop = 0',
+				sessionId,
+			);
+		}
+
 		if (view.name === "dashboard-light") {
-			keyboard = await keyboardPass(sessionId);
-
-			if (facts.tableScrolls) {
-				await evaluate(
-					'(() => { const box = document.querySelector("#fleet-region .fleet-table"); box.scrollTop = Math.min(1400, box.scrollHeight - box.clientHeight); })()',
-					sessionId,
-				);
-				await sleep(300);
-				await capture(sessionId, "dashboard-light-scrolled", { width: view.width, height: view.height });
-			}
-
 			filterChecks.push(await clickChip("Stale", sessionId));
 			await capture(sessionId, "dashboard-light-stale", { width: view.width, height: view.height });
 			filterChecks.push(await clickChip("Failing", sessionId));
@@ -405,6 +454,7 @@ try {
 				height: view.height,
 			});
 			filterChecks.push(await clickChip("All", sessionId));
+			keyboard = await keyboardPass(sessionId);
 		}
 
 		await send("Target.closeTarget", { targetId });
@@ -417,7 +467,7 @@ try {
 
 writeFileSync(
 	join(outDir, "dom-truth.json"),
-	`${JSON.stringify({ views: truth, filterChecks }, null, 2)}\n`,
+	`${JSON.stringify({ views: truth, filterChecks, scrolled }, null, 2)}\n`,
 );
 writeFileSync(
 	join(outDir, "contrast.json"),
