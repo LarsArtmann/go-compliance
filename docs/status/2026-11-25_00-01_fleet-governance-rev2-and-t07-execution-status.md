@@ -289,23 +289,23 @@ All of these are specified in rev 2 with their order; none was started.
 21. LAN serve recipe as a `bind-posture.md` appendix with cross-links (rev 2 T16) (Medium, S, Documentation).
 22. Consumer sweep to core v0.2.0 in library-policy, md-go-validator and BuildFlow (rev 2 T18) (Medium, L, Dependency).
 23. Persist the fleet snapshot to library-policy `docs/reports/` (rev 2 T15) (Low, S, Documentation).
-24. Align the evidence path defaults in the docs (rev 2 T19) (Low, S, Documentation).
-25. Write the v2 reporter-to-cache ingress decision ask (rev 2 T28) (Medium, S, Decision).
-26. Strike and purge the done rows in `TODO_LIST.md`, including the 4 unwrapped DONE rows, with `docs-gates strike` and `docs-gates purge` (Medium, S, Documentation).
-27. Put the cmdguard follow-ups row into a plan or mark it deferred (Low, S, Documentation).
-28. Define `DOCUMENTED` in the FEATURES legend or switch to a defined status (Low, S, Documentation).
-29. Reconcile `deploy/compliance-hub.service` with the user-unit recipe and correct its NixOS-module claim (Medium, S, Documentation).
-30. Add a gate that regenerates templ with the pinned tool and diffs (Medium, S, Quality).
-31. File a verified BuildFlow issue: the prettier lane rewrites committed compiled artifacts (Medium, S, Upstream).
-32. Record the formatter hazard, the `exclude`, and the concurrent-actor check in AGENTS.md (Medium, S, Documentation).
-33. Annotate rev 2: the T08 padding step is already in place at `view.templ:90` (Low, S, Documentation).
-34. Replace raw palette classes in the hub templates with semantic color tokens (Medium, M, Quality).
-35. Hygiene batch: CHANGELOG rows, `/tmp` probes (including my two log files), CSS drift check, M26 ROADMAP note, AGENTS placement re-check, flaky watcher spec, libs index screenshot (rev 2 T26) (Low, M, Cleanup).
-36. Component pass: `EmptyState`, `DataState`, `StatusBadge` (rev 2 T21) (Low, M, Feature).
-37. Contribute the DataStar signal-mode chip to templ-components (rev 2 T22) (Low, L, Feature).
-38. Owner ask batch: SystemNix pin for `library-policy`, Forgejo visibility, benchmark re-record, BuildFlow DB VACUUM and cache delete, docs-gates fleet pin, cmdguard OG.5 mandate, M26 and g2, auth sign-off (rev 2 T27) (Medium, S, Decision).
-39. Decide whether the evidence directory keeps the deprecated `overview` name (Low, S, Cleanup).
-40. Run the `modern-web-guidance` search for the templ and CSS work, done and upcoming, and disclose it (Low, S, Process).
+    ~~24. Align the evidence path defaults in the docs (rev 2 T19) (Low, S, Documentation).~~ done at `77c2c45` 2026-11-27: README, docs/guides/integrate.md, and bind-posture.md state both defaults
+24. Write the v2 reporter-to-cache ingress decision ask (rev 2 T28) (Medium, S, Decision).
+25. Strike and purge the done rows in `TODO_LIST.md`, including the 4 unwrapped DONE rows, with `docs-gates strike` and `docs-gates purge` (Medium, S, Documentation).
+26. Put the cmdguard follow-ups row into a plan or mark it deferred (Low, S, Documentation).
+27. Define `DOCUMENTED` in the FEATURES legend or switch to a defined status (Low, S, Documentation).
+28. Reconcile `deploy/compliance-hub.service` with the user-unit recipe and correct its NixOS-module claim (Medium, S, Documentation).
+29. Add a gate that regenerates templ with the pinned tool and diffs (Medium, S, Quality).
+30. File a verified BuildFlow issue: the prettier lane rewrites committed compiled artifacts (Medium, S, Upstream).
+31. Record the formatter hazard, the `exclude`, and the concurrent-actor check in AGENTS.md (Medium, S, Documentation).
+32. Annotate rev 2: the T08 padding step is already in place at `view.templ:90` (Low, S, Documentation).
+33. Replace raw palette classes in the hub templates with semantic color tokens (Medium, M, Quality).
+34. Hygiene batch: CHANGELOG rows, `/tmp` probes (including my two log files), CSS drift check, M26 ROADMAP note, AGENTS placement re-check, flaky watcher spec, libs index screenshot (rev 2 T26) (Low, M, Cleanup).
+35. Component pass: `EmptyState`, `DataState`, `StatusBadge` (rev 2 T21) (Low, M, Feature).
+36. Contribute the DataStar signal-mode chip to templ-components (rev 2 T22) (Low, L, Feature).
+37. Owner ask batch: SystemNix pin for `library-policy`, Forgejo visibility, benchmark re-record, BuildFlow DB VACUUM and cache delete, docs-gates fleet pin, cmdguard OG.5 mandate, M26 and g2, auth sign-off (rev 2 T27) (Medium, S, Decision).
+38. Decide whether the evidence directory keeps the deprecated `overview` name (Low, S, Cleanup).
+39. Run the `modern-web-guidance` search for the templ and CSS work, done and upcoming, and disclose it (Low, S, Process).
 
 ## g) Questions I can NOT figure out myself
 

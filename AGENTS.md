@@ -183,5 +183,6 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   decided), library-policy companions (this hub IS the health dashboard;
   three headers do not justify the `httputil` dependency), io-surface on
   the discovery `http.Client` (no `Timeout` on purpose: the watch is a
-  long-lived SSE stream, every request carries a context), govulncheck and
-  vulnix (advisories in dependency and nixpkgs closures, none reachable).
+  long-lived SSE stream, every request carries a context), govulncheck (its
+  "findings" are the report's own section headers, the run shows zero
+  called vulnerabilities) and vulnix (advisories in the nixpkgs closure).

@@ -70,6 +70,14 @@ source or live commands; no repo code changed except docs/memory.
    the library's DEFAULT THEME shipped unmodified. Corrected here and in the
    chat answer.
 
+   **Addendum (2026-11-27, later history; the item above stays as
+   written):** every underuse named in item 6 is closed. The hub CSS now
+   carries an `@theme` block (one accent, muted severity ramps, system
+   fonts), the pin is v1.27.2, the four stat cards are gone (a headline
+   sentence, a state bar, and count chips replaced them), and the
+   signal-mode chip is being contributed to templ-components. Evidence:
+   `hub/internal/dashboard/app.css`, `CHANGELOG.md` Unreleased,
+   `docs/status/2026-11-26_17-47_fleet-governance-rev2-execution-status.md`.
 ## b) Partially done
 
 1. **g2 hub deployment.** Ad-hoc LAN serve works (running since ~22:00 as a

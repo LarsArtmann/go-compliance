@@ -315,46 +315,46 @@ verdicts held. T08 did not (see above). The library's claim that a single
 
 ## f) Next things (up to 50, ranked by impact)
 
-1. Re-point the stale cite in `docs/review/libs/go-credentials-store.md` and rerun `scripts/check-citations.sh` (Critical, S, Bug).
-2. Run `scripts/deploy-fleet-evidence.sh --run`: nix build of library-policy at its committed HEAD, install the timer, one scan (Critical, M, Feature).
-3. Remove the `.bf-jscpd-worktree` row: trash the evidence file right before the timed scan, because the file store never prunes (Critical, S, Bug).
-4. Add `--discover-paths` to `serve` (default `~/projects`), pass it to `Discover`, and add a regression test against a stub daemon that rejects empty roots (High, S, Bug).
-5. Fix the discovery health stamp so a connected stream counts as contact (High, S, Bug).
-6. Harvest this report and the 2026-11-25 00-01 report into `TODO_LIST.md` until the CI `docs gates` job is green (High, M, Documentation).
+~~1. Re-point the stale cite in `docs/review/libs/go-credentials-store.md` and rerun `scripts/check-citations.sh` (Critical, S, Bug).~~ done at `77c2c45` 2026-11-27: cite re-pointed to AGENTS.md:59-61; check-citations stale=0
+~~2. Run `scripts/deploy-fleet-evidence.sh --run`: nix build of library-policy at its committed HEAD, install the timer, one scan (Critical, M, Feature).~~ done at `77c2c45` 2026-11-27: timer installed and started, one scan ran, 210 repos recorded
+~~3. Remove the `.bf-jscpd-worktree` row: trash the evidence file right before the timed scan, because the file store never prunes (Critical, S, Bug).~~ done at `77c2c45` 2026-11-27: library-policy `fleet --prune` drops it on every run
+~~4. Add `--discover-paths` to `serve` (default `~/projects`), pass it to `Discover`, and add a regression test against a stub daemon that rejects empty roots (High, S, Bug).~~ done at `77c2c45`: serve --discover-paths with stub-daemon regression specs
+~~5. Fix the discovery health stamp so a connected stream counts as contact (High, S, Bug).~~ done at `77c2c45`: a connected stream passes the discovery check by itself
+~~6. Harvest this report and the 2026-11-25 00-01 report into `TODO_LIST.md` until the CI `docs gates` job is green (High, M, Documentation).~~ done at `77c2c45` 2026-11-27: docs-gates run . is all green, audit-all clean
 7. Run the canonical full `buildflow` gate at HEAD and fix every error-severity finding (High, M, Quality).
 8. Run `nix flake check` locally (High, S, Quality).
-9. Write the CHANGELOG rows for every fix and feature of 2026-11-25 (High, S, Documentation).
-10. Redeploy the hub from the commit that carries items 4 and 5, then run the harness against the LAN URL (High, S, Feature).
-11. Update `FEATURES.md`: replace "stat cards" with the fleet summary and define `DOCUMENTED` in the legend (Medium, S, Documentation).
-12. Update `README.md`: the user unit instead of `nix run`, and a current `docs/assets/dashboard.png` (Medium, S, Documentation).
-13. T18 consumer sweep to core v0.2.0 in library-policy, md-go-validator, BuildFlow (Medium, L, Dependency).
-14. Decide the never-covered fleet definition (question 2), then document it in `docs/DOMAIN_LANGUAGE.md` (Medium, S, Decision).
-15. Add a CSP header to the hub responses (Medium, S, Security).
+~~9. Write the CHANGELOG rows for every fix and feature of 2026-11-25 (High, S, Documentation).~~ done at `77c2c45` 2026-11-27: CHANGELOG Unreleased carries Added, Fixed, and Security rows
+~~10. Redeploy the hub from the commit that carries items 4 and 5, then run the harness against the LAN URL (High, S, Feature).~~ done at `77c2c45`: unit runs 77c2c45, scripts/screenshot.sh green on the LAN URL
+~~11. Update `FEATURES.md`: replace "stat cards" with the fleet summary and define `DOCUMENTED` in the legend (Medium, S, Documentation).~~ done at `77c2c45` 2026-11-27: fleet summary row and the DOCUMENTED legend entry
+~~12. Update `README.md`: the user unit instead of `nix run`, and a current `docs/assets/dashboard.png` (Medium, S, Documentation).~~ done at `77c2c45` 2026-11-27: user unit recipe, discover-paths, refreshed docs/assets/dashboard.png
+~~13. T18 consumer sweep to core v0.2.0 in library-policy, md-go-validator, BuildFlow (Medium, L, Dependency).~~ done at `77c2c45` 2026-11-27: library-policy, md-go-validator, and BuildFlow require core v0.2.0; tests match each baseline
+~~14. Decide the never-covered fleet definition (question 2), then document it in `docs/DOMAIN_LANGUAGE.md` (Medium, S, Decision).~~ done at `77c2c45` 2026-11-27: fleet member = direct subdirectory with a go.mod; docs/DOMAIN_LANGUAGE.md and the README state it
+~~15. Add a CSP header to the hub responses (Medium, S, Security).~~ done at `77c2c45`: Content-Security-Policy and Referrer-Policy on every response
 16. Annotate rev 2: T04 shipped without stat cards; T08's padding was absent on custom rows (Medium, S, Documentation).
-17. Give `library-policy fleet` a non-zero exit when it scans or records nothing (Medium, S, Bug).
-18. Add a prune or replace mode to the file store, or document the regenerate ritual (Medium, M, Feature).
-19. T15: persist the fleet snapshot into library-policy `docs/reports/`, whitespace-normalized (Low, S, Documentation).
-20. T19: align the evidence path defaults across README and the decision docs (Low, S, Documentation).
-21. T28: write the v2 reporter-ingress decision ask (Medium, S, Decision).
-22. File a verified templ-components issue: `SDKScript` consumers get no signal that `data-on-click` is dropped (Medium, S, Upstream).
-23. File a verified BuildFlow issue: the prettier lane rewrites committed compiled artifacts (Medium, S, Upstream).
+~~17. Give `library-policy fleet` a non-zero exit when it scans or records nothing (Medium, S, Bug).~~ NOT-DO/DUPLICATE — already shipped in library-policy on 2026-11-26: fleet exits non-zero when evidence is incomplete
+~~18. Add a prune or replace mode to the file store, or document the regenerate ritual (Medium, M, Feature).~~ done at `77c2c45` 2026-11-27: library-policy `fleet --prune` (default on)
+~~19. T15: persist the fleet snapshot into library-policy `docs/reports/`, whitespace-normalized (Low, S, Documentation).~~ done at `77c2c45` 2026-11-27: library-policy scripts/fleet-snapshot.sh writes docs/reports/fleet-compliance.md
+~~20. T19: align the evidence path defaults across README and the decision docs (Low, S, Documentation).~~ done at `77c2c45` 2026-11-27: README, docs/guides/integrate.md, and bind-posture.md state both defaults
+~~21. T28: write the v2 reporter-ingress decision ask (Medium, S, Decision).~~ done at `77c2c45` 2026-11-27: docs/decisions/v2-wire-design.md, section Decision ask
+~~22. File a verified templ-components issue: `SDKScript` consumers get no signal that `data-on-click` is dropped (Medium, S, Upstream).~~ NOT-DO/DUPLICATE — superseded by the contribution itself: the signal chip component in templ-components bakes in data-on:click with a guard test (item 25)
+~~23. File a verified BuildFlow issue: the prettier lane rewrites committed compiled artifacts (Medium, S, Upstream).~~ NOT-DO — deliberate non-fix recorded here: .buildflow.yml keeps the formatters off the generated CSS artifacts and the CI css-freshness gate guards byte-freshness; no issue filed
 24. Bump the local docs-gates pin past `e305834` (Medium, S, Tooling).
 25. T22: contribute the signal-mode chip to templ-components and adopt it in `chips.templ` (Low, L, Feature).
-26. Strike and purge the done `TODO_LIST.md` rows, including the 4 unwrapped DONE rows (Medium, S, Cleanup).
-27. Trash the probe directories `/tmp/compliance-status-shots` and `/tmp/compliance-status-live` (Low, S, Cleanup).
+~~26. Strike and purge the done `TODO_LIST.md` rows, including the 4 unwrapped DONE rows (Medium, S, Cleanup).~~ done at `77c2c45` 2026-11-27: 15 rows struck and purged into the CHANGELOG
+~~27. Trash the probe directories `/tmp/compliance-status-shots` and `/tmp/compliance-status-live` (Low, S, Cleanup).~~ done at `77c2c45` 2026-11-27: both were already gone after the reboot; the harness output dir was trashed too
 28. Measure the contrast of badge, chip, and severity text in both themes with a tool (Low, S, Quality).
 29. Add a keyboard-focus pass to the harness (chips, theme toggle, table region) (Low, S, Quality).
-30. Change `hub/go.mod` to `go 1.27` (BuildFlow `go-version-auto-configure` warning) (Low, S, Quality).
+~~30. Change `hub/go.mod` to `go 1.27` (BuildFlow `go-version-auto-configure` warning) (Low, S, Quality).~~ NOT-DO — a dependency declares go 1.27.2 and go mod tidy restores the patch floor on the next run; the directive is forced, not chosen
 31. Triage the 94 BuildFlow findings: fix or record a deliberate non-fix per tool (Medium, M, Quality).
 32. Sticky header for the 200-row table (Low, M, Feature).
-33. Re-run the library-policy `cli` package tests and lint on its current HEAD (Medium, S, Quality).
-34. Record the discovery flag and the never-covered definition in `AGENTS.md` once landed (Low, S, Documentation).
-35. Move both user units and the library-policy pin into SystemNix (Medium, M, Infrastructure).
+~~33. Re-run the library-policy `cli` package tests and lint on its current HEAD (Medium, S, Quality).~~ done at `77c2c45` 2026-11-27: cli package tests and golangci-lint green at core v0.2.0
+~~34. Record the discovery flag and the never-covered definition in `AGENTS.md` once landed (Low, S, Documentation).~~ done at `77c2c45` 2026-11-27: AGENTS.md Deployment section
+~~35. Move both user units and the library-policy pin into SystemNix (Medium, M, Infrastructure).~~ → routed to TODO_LIST Blocked (owner decisions) SystemNix row
 36. Annotate the 2026-11-24 UI-audit report: "zero `@theme` overrides" and the stat-card verdict are history now (Low, S, Documentation).
-37. Add a spec that `compliance-hub describe` still lists every serve flag after the discovery flag lands (Low, S, Quality).
-38. Add the citation check to the release runbook's pre-tag sequence (Low, S, Process).
-39. Make the harness fail on `warn` readiness during a deploy probe, so a permanent warning cannot hide again (Low, S, Quality).
-40. T27: send the owner ask in one list (sign-off, fleet definition, SystemNix, `FLAKE_PAT`, Forgejo visibility, docs-gates pin) (Medium, S, Decision).
+~~37. Add a spec that `compliance-hub describe` still lists every serve flag after the discovery flag lands (Low, S, Quality).~~ NOT-DO/DUPLICATE — the serve flag contract is pinned by a struct-tag spec on ServeFlags.DiscoverPaths in refresher_discovery_internal_test.go
+~~38. Add the citation check to the release runbook's pre-tag sequence (Low, S, Process).~~ done at `77c2c45` 2026-11-27: docs/notes/release-runbook.md step 4
+~~39. Make the harness fail on `warn` readiness during a deploy probe, so a permanent warning cannot hide again (Low, S, Quality).~~ done at `77c2c45` 2026-11-27: scripts/deploy-hub.sh fails when any readiness check is not pass after 10s
+~~40. T27: send the owner ask in one list (sign-off, fleet definition, SystemNix, `FLAKE_PAT`, Forgejo visibility, docs-gates pin) (Medium, S, Decision).~~ done at `77c2c45` 2026-11-27: the ask is the closing section of the 2026-11-27 execution status report
 
 ## g) Questions I cannot answer myself
 
