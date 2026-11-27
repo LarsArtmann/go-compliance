@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +33,10 @@ type ServeFlags struct {
 	QueryFlags
 
 	Addr string `default:"127.0.0.1:8477" flag:"addr" help:"Listen address (localhost-only default by policy)"`
+
+	// DiscoverPaths feeds the never-covered set: comma-separated search
+	// roots for the discovery daemon. Empty disables discovery.
+	DiscoverPaths string `default:"~/projects" flag:"discover-paths" help:"Comma-separated discovery search roots for never-covered (empty disables discovery)"`
 }
 
 // TableFlags extends the query flags with the table command's output
@@ -43,6 +49,44 @@ type TableFlags struct {
 
 	Format string `default:"table"    flag:"format"  help:"Output format for the fleet table"                                                   values:"table,json,jsonl,yaml,toml,csv,tsv,markdown,html,xml,asciidoc"`
 	SortBy string `default:"failures" flag:"sort-by" help:"Tiebreak inside the state rank (state always sorts first): findings, failures, name" values:"findings,failures,name"`
+}
+
+// parseDiscoverPaths turns the --discover-paths flag into the absolute
+// roots sent to the discovery daemon: comma-separated, ~ expanded, blanks
+// dropped, duplicates collapsed. An empty result disables discovery (the
+// daemon rejects a request without roots).
+func parseDiscoverPaths(raw string) ([]string, error) {
+	seen := make(map[string]struct{})
+
+	roots := make([]string, 0)
+
+	for _, part := range strings.Split(raw, ",") {
+		root := strings.TrimSpace(part)
+		if root == "" {
+			continue
+		}
+
+		if root == "~" || strings.HasPrefix(root, "~/") {
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return nil, compliance.NewValidationError(
+					"--discover-paths %q needs the home directory: %v", root, err)
+			}
+			
+			root = filepath.Join(home, strings.TrimPrefix(root, "~"))
+		}
+
+		root = filepath.Clean(root)
+
+		if _, dup := seen[root]; dup {
+			continue
+		}
+
+		seen[root] = struct{}{}
+		roots = append(roots, root)
+	}
+
+	return roots, nil
 }
 
 // resolveSource builds the Source the flags select. The cache store is

@@ -55,6 +55,9 @@ type refresher struct {
 	window     time.Duration
 	debounce   time.Duration
 
+	// discoverPaths are the discovery search roots (empty = disabled).
+	discoverPaths []string
+
 	// trigger has capacity 1: sends never block and a send while a
 	// refresh is already pending is a no-op (that IS the coalescing).
 	trigger chan struct{}
@@ -72,9 +75,13 @@ type refresher struct {
 	lastRefreshSuccess atomic.Int64
 
 	// lastDiscoverySuccess is the unix-nano stamp of the last successful
-	// discovery contact (watch connect or snapshot); 0 = never contacted.
-	// The discovery health check reads it via LastDiscoverySuccess.
+	// discovery contact (watch connect, snapshot, or stream event); 0 =
+	// never contacted. The discovery health check reads it via
+	// LastDiscoverySuccess and consults discoveryState first.
 	lastDiscoverySuccess atomic.Int64
+
+	// discoveryState tells the health check whether the stamp matters.
+	discoveryState atomic.Uint32
 
 	// queryTimeout defaults to refreshTimeout; tests shrink it.
 	queryTimeout time.Duration
@@ -127,13 +134,36 @@ func (r *refresher) LastRefreshSuccess() time.Time {
 	return time.Time{}
 }
 
+// discoveryState values: a LIVE watch stream is continuous contact even
+// when the fleet is quiet, OFF means the operator disabled discovery, and
+// IDLE falls back to the age of the last contact.
+const (
+	discoveryIdle uint32 = iota
+	discoveryLive
+	discoveryOff
+)
+
 // markDiscoverySuccess stamps a successful discovery contact.
 func (r *refresher) markDiscoverySuccess() {
 	r.lastDiscoverySuccess.Store(time.Now().UnixNano())
 }
 
+// DisableDiscovery records that no roots were configured: the watch loop
+// is not started and the health check stays green instead of reporting a
+// daemon that was never meant to be contacted.
+func (r *refresher) DisableDiscovery() {
+	r.discoveryState.Store(discoveryOff)
+}
+
+// DiscoveryLive reports whether discovery needs no staleness verdict: a
+// connected stream is contact by itself, and a disabled feature cannot
+// be stale.
+func (r *refresher) DiscoveryLive() bool {
+	return r.discoveryState.Load() != discoveryIdle
+}
+
 // LastDiscoverySuccess returns when the daemon last answered (watch
-// connect or snapshot); zero before the first contact.
+// connect, snapshot, or stream event); zero before the first contact.
 func (r *refresher) LastDiscoverySuccess() time.Time {
 	if nanos := r.lastDiscoverySuccess.Load(); nanos != 0 {
 		return time.Unix(0, nanos)
@@ -234,20 +264,27 @@ func runDiscoveryWatch(ctx context.Context, client *discovery.Client, refresh *r
 		}
 
 		refresh.markDiscoverySuccess()
+		refresh.discoveryState.Store(discoveryLive)
 
 		slog.Info("compliance-hub: discovery watch connected", "socket", client.SocketPath())
 
-		if err := refresh.refreshDiscovered(ctx, client); err != nil {
+		if err := refresh.refreshDiscovered(ctx, client, refresh.discoverPaths); err != nil {
 			slog.Warn("compliance-hub: discovery snapshot failed", "error", err)
 		} else {
 			refresh.markDiscoverySuccess()
 		}
 
 		for event := range eventCh {
+			// Every frame proves the daemon is answering; only project
+			// changes re-derive the rows.
+			refresh.markDiscoverySuccess()
+
 			if event.Project != nil {
 				refresh.Kick()
 			}
 		}
+
+		refresh.discoveryState.Store(discoveryIdle)
 
 		// Stream ended (daemon restart): re-subscribe after a beat.
 		if !sleepCtx(ctx, time.Second) {
@@ -256,15 +293,15 @@ func runDiscoveryWatch(ctx context.Context, client *discovery.Client, refresh *r
 	}
 }
 
-// refreshDiscovered pulls one discovery snapshot and stores it as the
-// never-covered completion set.
-func (r *refresher) refreshDiscovered(ctx context.Context, client *discovery.Client) error {
-	projects, err := client.Discover(ctx, nil)
+// refreshDiscovered pulls one discovery snapshot for the search paths and
+// stores the fleet-eligible projects as the never-covered completion set.
+func (r *refresher) refreshDiscovered(ctx context.Context, client *discovery.Client, searchPaths []string) error {
+	projects, err := client.Discover(ctx, searchPaths)
 	if err != nil {
 		return err
 	}
 
-	names := discovery.RepoNames(projects)
+	names := discovery.RepoNames(discovery.FleetEligible(projects))
 	r.discovered.Store(&names)
 	r.Kick()
 
