@@ -103,12 +103,13 @@ mandate for consumer sessions filing upstream TODOs in library repos
 (cmdguard Nd duration codec, cmdguard/lint published-go.mod
 replace-directive bug, go-datastar MarshalSignals determinism,
 templ-components signal-mode FilterChips, a-h/templ LSP embedlit false
-positive); **go-humanize adopt/suppress/accept** and **samber/lo
-adopt-or-suppress** policy (together the only thing keeping
+positive); **samber/lo
+adopt-or-suppress** policy (go-humanize was adopted 2026-11-20; samber/lo is
+together the only thing keeping
 `buildflow --build-mode=full` from a green findings gate — 6
-error-severity findings + ~25 withheld rewrites); **core v0.1.1 tag
-timing** (v0.1.0 predates the Wave 1-3 core splits; the hub `replace`
-drop executes ~15m after the tag); firefox permission for agent sessions
+error-severity findings + ~25 withheld rewrites); core tag timing
+is no longer queued (the hub replace-drop shipped with the v0.2.0 tag on
+2026-11-20); firefox permission for agent sessions
 (index.html screenshot).
 
 ## Dashboard/UI raw ideas (2026-11-19 self-review)
