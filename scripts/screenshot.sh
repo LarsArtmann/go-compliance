@@ -6,7 +6,8 @@
 # errors, a theme that did not apply, an empty fleet table, horizontal
 # overflow, text or control contrast under WCAG AA, a fleet table that does
 # not take the layout its width calls for, scrolls the page instead of its own
-# box, or loses its pinned column header, and a keyboard pass that fails to
+# box, loses its pinned column header, hides its scroll shadow while rows
+# follow or keeps it at the fleet's end, and a keyboard pass that fails to
 # reach, focus, or activate the chips and the theme toggle.
 #
 # Without a URL argument the hub is built from the working tree and serves

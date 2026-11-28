@@ -1,12 +1,13 @@
 // screenshot.mjs drives a headless chromium over the DevTools protocol and
-// captures the compliance dashboard in three views: light, dark, and a
-// narrow phone-width viewport. Every view lands as a viewport PNG plus a
-// full-page PNG and one row in dom-truth.json. Failed requests, console
-// errors, and uncaught page exceptions are written to console-errors.json
-// and fail the run. Beyond the pictures it measures what a string test
-// cannot see: text and control contrast per theme (WCAG AA), a fleet table
-// that scrolls inside its box under a pinned column header while the page
-// itself stays still, and a keyboard pass over the chips and the theme
+// captures the compliance dashboard in four views: light, dark, just-wide
+// (768px), and a narrow phone-width viewport. Every view lands as a viewport
+// PNG plus a full-page PNG and one row in dom-truth.json. Failed requests,
+// console errors, and uncaught page exceptions are written to
+// console-errors.json and fail the run. Beyond the pictures it measures what
+// a string test cannot see: text and control contrast per theme (WCAG AA), a
+// fleet table that scrolls inside its box under a pinned column header, with
+// a scroll shadow while rows follow and none at the fleet's end, while the
+// page itself stays still, and a keyboard pass over the chips and the theme
 // toggle.
 //
 // Usage: node scripts/screenshot.mjs <url> <outDir>
