@@ -94,17 +94,17 @@ templ-components (justifies retiring hand-rolled `chips.templ`). **→ routed to
     192.168.1.150:8477 or unix-socket per bind-posture, evidence path) —
     blocked on §g q2. **→ routed to TODO_LIST Blocked (owner decisions) row "Move both user units (`compliance-hub.service`, `fleet-evidence.timer`) and the library-policy pin into SystemNix" — the unit IS deployed and running (Verified 2026-11-28: systemctl --user is-active compliance-hub → active); the durable/dedicated-user SystemNix decision is the row**
     ~~22. Resolve `/var/lib/overview/compliance.json` ownership (overview-user writer flow vs chown/ACL vs XDG default).~~ done — by documenting both tiers (2026-11-27): system deployments keep `/var/lib/overview/compliance.json`, user deployments read `~/.local/state/overview/compliance.json`, `GO_COMPLIANCE_EVIDENCE_FILE` overrides both (README.md:40, docs/guides/integrate.md:45, bind-posture.md:70); the user-level hub reads XDG today (Verified 2026-11-28)
-22. g1 auth posture: LAN exposure now exists ad-hoc — decide middleware auth
+23. g1 auth posture: LAN exposure now exists ad-hoc — decide middleware auth
     or document LAN-trust acceptance in bind-posture.md. **→ routed to TODO_LIST Blocked (owner decisions) row "LAN-trust sign-off for the always-on hub on `192.168.1.150:8477`" — the threat sketch and recommendation are in `docs/decisions/bind-posture.md` ("Sign-off. Open.", line 141) (Verified 2026-11-28)**
     ~~24. Document the LAN serve recipe (bind-posture appendix or runbook: --addr, trustedInterfaces note, dnsblockd hostname).~~ done — `docs/decisions/bind-posture.md` carries the LAN recipe (explicit `--addr` at :76, `trustedInterfaces`/dnsblockd at :84-86) plus `scripts/deploy-hub.sh` (CHANGELOG purge row 2026-11-25, Appendix A) (Verified 2026-11-28)
     ~~25. Discovery-file wiring for fleet + hub (carried).~~ done — fleet `--discovery-file` (`command_fleet.go:36`) and hub `--discover-paths` (`flags.go:39`) wired; CHANGELOG Added row (Verified 2026-11-28)
-23. FLAKE_PAT secret for CI hub/flake jobs (carried, owner-only). **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" — still open there (Verified 2026-11-28)**
+26. FLAKE_PAT secret for CI hub/flake jobs (carried, owner-only). **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" — still open there (Verified 2026-11-28)**
     ~~27. Push go-compliance master (~9 commits) and watch 14/14 CI (carried g1).~~ done — master is pushed — Verified 2026-11-28 `git status`: master...github/master 0 ahead, 0 behind; CI at the tip is 13/14 per the TODO_LIST High row (docs gates red on audit-all over 30 open items — the 2026-11-28 annotate sweeps clear them)
-24. docs-gates pin parity: CI pin `e305834` lacks the `rows` verb vs the
+28. docs-gates pin parity: CI pin `e305834` lacks the `rows` verb vs the
     local binary (carried). **→ routed to TODO_LIST Low Impact row "Fleet docs-gates pin bump past `e305834` (adds the `rows` verb)" — still BLOCKED (crush-config/fleet nix bump; in-repo writer aliases cover the gap) (Verified 2026-11-28)**
     ~~29. CI drift-check: css pin rev vs flake.lock (carried).~~ done — same fix as the 21-24 report, item 7: the CSS gate job reads the nixpkgs rev from `flake.lock` at run time (2026-11-28)
-25. Benchmark re-record decision (carried, owner call). **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)" — VERIFY half done, only the owner re-record call remains (Verified 2026-11-28)**
-26. Forgejo repo visibility decision (carried, owner-only). **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)" (Verified 2026-11-28)**
+29. Benchmark re-record decision (carried, owner call). **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)" — VERIFY half done, only the owner re-record call remains (Verified 2026-11-28)**
+30. Forgejo repo visibility decision (carried, owner-only). **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)" (Verified 2026-11-28)**
 
 **Consumers / policies (carried):**
 

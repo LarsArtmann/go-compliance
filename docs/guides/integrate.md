@@ -98,11 +98,8 @@ there is more than one:
 A hand-built `library-policy` binary carries no stamp and therefore writes
 a `dev` version; the next timed scan records the same repository again,
 newer, and replaces the row. Mixed version stamps in the fleet document
-are expected, not a defect.
-
-Rows are replaced only when the new result is at least as new as the
-stored one (the core's write rule), so parallel writers cannot regress the
-document.
+are expected, not a defect. (The replace rule above is what makes several
+writers safe.)
 
 ## Viewing
 

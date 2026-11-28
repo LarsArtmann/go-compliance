@@ -62,8 +62,8 @@
 ## c) NOT STARTED
 
 - Injectable clock seam (`now func() time.Time`) for `FileSource` — deliberate YAGNI choice this session; needs an owner decision (see Q2). Escalation trigger recorded: any recurrence of this flake class.
-- Repo-wide timing-assertion audit (safe/unsafe direction classification) — only sleeps were swept; `Eventually` timeouts and debounce windows unclassified.
-- HARVEST of this report's section (f) into `TODO_LIST.md` / `ROADMAP.md` (per docs-health HARVEST ritual; `TODO_LIST.md` exists).
+~~- Repo-wide timing-assertion audit (safe/unsafe direction classification) — only sleeps were swept; `Eventually` timeouts and debounce windows unclassified.~~ done — audited 2026-11-28: sleeps inventoried — core adapter_test.go:106 (200ms = 2× TTL), hub wait.go:22, refresher :48/:161/:191/:204, watcher :119, all safe-direction; the rule is codified at AGENTS.md:170-175 and debounce windows have dedicated bounded specs (refresher_internal_test.go:150-209)
+~~- HARVEST of this report's section (f) into `TODO_LIST.md` / `ROADMAP.md` (per docs-health HARVEST ritual; `TODO_LIST.md` exists).~~ done — overtaken by events: item 15's route arrow → TODO_LIST Blocked row (which cites this report's §f, TODO_LIST.md:49), and `docs-gates freshness . --audit-all` replays this report against the living docs at 0 unharvested (2026-11-28)
 - Cross-project lesson write-up (`crush-config` → `references/lessons.md`: timing-spec protocol) — candidate, not written.
 - Concurrent-miss spec for `FileSource` (parallel `QueryEvidence` readers under `-race` exercising the mutex path directly).
 
