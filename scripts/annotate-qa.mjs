@@ -155,6 +155,8 @@ function missingWords(base, block) {
 		.filter((word) => word !== "" && !have.has(word));
 }
 
+// Re-inserts the spaces `ref` has before each character; both strings must
+// carry the same characters in the same order.
 function insertSpaces(cur, ref) {
 	let result = "";
 	let refIndex = 0;
@@ -164,7 +166,8 @@ function insertSpaces(cur, ref) {
 			pending += ch;
 			continue;
 		}
-		const refSpace = refIndex > 0 && /\s/.test(ref[refIndex - 1]);
+		let refSpace = false;
+		for (let back = refIndex - 1; back >= 0 && /\s/.test(ref[back]); back--) refSpace = true;
 		result += (pending === "" && refSpace ? " " : pending) + ch;
 		refIndex++;
 		pending = "";
@@ -187,14 +190,14 @@ function inspect(lines, baseLines) {
 			add("T", item, `diverges from base item ${base.number} at "${marker}"`);
 		}
 		else if (kind === "new" && baseIndex.items.length > 0) add("T", item, "no base item matches");
-		const closeOffset = item.struck ? rawStrikeOffset(item.text, 1) : -1;
+		const closeOffset = item.struck ? rawStrikeOffset(item.text, 0) : -1;
 		const head = item.struck && closeOffset >= 0 ? item.text.slice(0, closeOffset) : item.text;
 		if (base) {
 			if (base.number !== item.number) add("R", item, `base number ${base.number}`);
 			if (base.indent === "" && item.indent !== "") add("I", item, `indent ${item.indent.length}, base 0`);
 			const lost = missingWords(base, block);
 			if (lost.length > 0) add("L", item, `${lost.length} word(s): ${lost.slice(0, 8).join(" ")}`);
-			if (head !== base.text && normalize(head) === normalize(base.headKey === undefined ? "" : base.text) && normalize(head) !== "") {
+			if (head !== base.text && normalize(head) === normalize(base.text) && normalize(head) !== "") {
 				const fixed = insertSpaces(head, base.text);
 				if (fixed !== head) {
 					add("W", item, `base: ${JSON.stringify(base.text.slice(0, 60))}`);
@@ -241,12 +244,12 @@ function applyFixes(lines, report) {
 		if (codes.size === 0) continue;
 		let { indent, struck, number, text } = item;
 		if (codes.has("W") && item.whitespaceFix) {
-			const closeOffset = struck ? rawStrikeOffset(text, 1) : -1;
+			const closeOffset = struck ? rawStrikeOffset(text, 0) : -1;
 			text = item.whitespaceFix + (closeOffset >= 0 ? text.slice(closeOffset) : "");
 			changes++;
 		}
 		if (codes.has("X") && item.splitFix) {
-			const closeOffset = rawStrikeOffset(text, 1);
+			const closeOffset = rawStrikeOffset(text, 0);
 			const tail = text.slice(closeOffset + 2).trim();
 			text = text.slice(0, closeOffset);
 			lines[item.end] = `${lines[item.end].trimEnd()}~~ ${tail}`.trimEnd();
