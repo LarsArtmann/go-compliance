@@ -130,16 +130,18 @@ templ fleetTable(rows []events.RepoRow, counts map[string]int, total int, select
 		</div>
 		for _, chip := range filterChips {
 			if chip.State != "all" {
+				// A chip's own message speaks only for a fleet that has evidence:
+				// an empty fleet is explained once, below, whatever the chip.
 				<div
-					data-show={ fmt.Sprintf("$stateFilter==='%s' && !$counts['%s']", chip.State, chip.State) }
-					if !(len(rows) == 0 && chip.State == selected) {
+					data-show={ chipEmptyShowExpression(chip.State) }
+					if !(total > 0 && len(rows) == 0 && chip.State == selected) {
 						style="display:none"
 					}
 				>
 					@display.SimpleEmptyState(chip.Empty)
 				</div>
 			}
-		}
+			}
 		<div
 			data-show={ noEvidenceShowExpression }
 			if total != 0 {
@@ -159,6 +161,12 @@ const tableShowExpression = "$total > 0 && ($stateFilter==='all' || $stateFilter
 // noEvidenceShowExpression shows the page's no-evidence message for a fleet
 // without a single row.
 const noEvidenceShowExpression = "$total===0"
+
+// chipEmptyShowExpression shows a state chip's message while that chip is
+// selected, the fleet has evidence, and no repo is in that state.
+func chipEmptyShowExpression(state string) string {
+	return fmt.Sprintf("$total > 0 && $stateFilter==='%s' && !$counts['%s']", state, state)
+}
 
 // noEvidenceMessage says what an empty fleet means and what fills it.
 const noEvidenceMessage = "No compliance evidence yet. The first refresh publishes it here."

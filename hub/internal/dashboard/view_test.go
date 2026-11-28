@@ -216,10 +216,10 @@ var _ = Describe("fleet page render", func() {
 			Expect(html).To(MatchRegexp(`<div data-show="[^"]*" style="display:none"><div class="overflow-x-auto`))
 			Expect(
 				html,
-			).To(MatchRegexp(`data-show="\$stateFilter===&#39;stale&#39; &amp;&amp; !\$counts\[&#39;stale&#39;\]">\s*<div class="text-center py-8"><p[^>]*>No stale repos</p>`))
+			).To(MatchRegexp(`data-show="\$total &gt; 0 &amp;&amp; \$stateFilter===&#39;stale&#39; &amp;&amp; !\$counts\[&#39;stale&#39;\]">\s*<div class="text-center py-8"><p[^>]*>No stale repos</p>`))
 			Expect(
 				html,
-			).To(MatchRegexp(`data-show="\$stateFilter===&#39;compliant&#39; &amp;&amp; !\$counts\[&#39;compliant&#39;\]" style="display:none">`))
+			).To(MatchRegexp(`data-show="\$total &gt; 0 &amp;&amp; \$stateFilter===&#39;compliant&#39; &amp;&amp; !\$counts\[&#39;compliant&#39;\]" style="display:none">`))
 		})
 
 		It("hides the table for a fleet without evidence and keeps the message outside the patched rows", func() {
