@@ -79,8 +79,8 @@ _Ranked; inherited items carry their source. Verdicts inline where I could settl
 12. ✎ lychee 4 path-excluded files confirmation (routed to TODO_LIST this session).
 13. 🔵 buildflow.db VACUUM 1.03 GB (Blocked, owner machine hygiene).
 14. 🔵 expendable 0.51 GB cache DB deletion (Blocked, owner data deletion).
-15. 📌 SECURITY.md (23-40 §f6).
-16. 📌 CI `permissions:` per cue-policy schema (23-40 §f7).
+~~15. 📌 SECURITY.md (23-40 §f6).~~ done — `SECURITY.md` exists (CHANGELOG [0.1.0]: response-time commitment, practices, verification; securitymd-clean)
+~~16. 📌 CI `permissions:` per cue-policy schema (23-40 §f7).~~ done — `.github/workflows/ci.yml` sets `permissions: contents: read` (the cue-policy ci_workflow schema; actionlint and the CI workflow pass)
 17. 📌 `hub/go.mod` go-directive floor `1.27.2` → `1.27` (23-40 §f8; 5m, real).
 18. 📌 `-race` wired into CI (23-40 §f9; AGENTS.md already mandates it locally — the gate exists, CI just lacks it).
 19. 📌 GO-2026-6859: toolchain bump + govulncheck 0-reachable confirmation (23-40 §f10).
@@ -89,9 +89,9 @@ _Ranked; inherited items carry their source. Verdicts inline where I could settl
 22. 📌 go-humanize for CLI relative-time vs accept-with-reason (23-40 §f15; dashboard RelativeTime is a separate surface).
 23. 📌 discovery `http.Client` timeout or accept-with-reason (unix-socket + watch-backoff rationale exists) (23-40 §f16).
 24. ✅ branching-flow `context.Background()` in `serveListener` — RESOLVED this session: intentional, verified, annotated in place (23-40 §f17).
-25. 📌 branching-flow `gateJSON`/`severityJSON` branding vs accept (23-40 §f18).
+25. 📌 branching-flow `gateJSON`/`severityJSON` branding vs accept (23-40 §f18). **→ routed to docs/status/owner-decisions-digest.md, row "`gateJSON`/`severityJSON` branding vs accept" (owner type-branding decision). Verified 2026-11-28: `hub/internal/cache/queries.go` still scans both as plain strings**
 26. 📌 branching-flow mixin verdicts: expected accept-with-reason (wire-contract mirroring intentional) — record once (23-40 §f19).
-27. 📌 nix-checker vendorHashes extraction vs fleet-convention accept (23-40 §f20).
+~~27. 📌 nix-checker vendorHashes extraction vs fleet-convention accept (23-40 §f20).~~ done — accept-with-reason recorded in AGENTS.md (BuildFlow warning triage, 2026-11-27): hashes stay inline, `buildflow -s nix-hash-fix --fix` rewrites them in place
 28. 📌 flake meta `homepage` (23-40 §f21).
 29. 📌 flake-parts duplicate input via `follows` or accept-and-silence (23-40 §f22).
 30. 📌 Layout items: README install section (cheap, real); assets/internal/scripts accepts (23-40 §f23).
@@ -102,7 +102,7 @@ _Ranked; inherited items carry their source. Verdicts inline where I could settl
 35. 🔵 FLAKE_PAT secrets creation (Blocked, owner-only; unblocks CI hub/flake jobs).
 36. 📌 Forgejo repo visibility + master push (Blocked, owner push policy).
 37. 📌 `/v1/compliance` + `/startupz` unreachable-through-serve contracts: keep as embedder contracts; revisit ONLY if tolerant-boot ever revives (deliberate, no action).
-38. 📌 `Store.OnWrite` fan-out: only if a second consumer appears (documented conditional).
+~~38. 📌 `Store.OnWrite` fan-out: only if a second consumer appears (documented conditional).~~ done — documented at the hook: the `OnWrite` godoc in `hub/internal/cache/cache.go` (synchronous, on the writer goroutine, registered once before serving). One consumer today (`serve.go` kicks the refresher), so there is no fan-out
 39. 📌 go-health federation/aggregate adoption: only when a second probe-owning service exists (ROADMAP).
 40. 📌 Next full-code-review pass should visit table.go/view.go/rows.templ line-by-line (20-02 f26).
 

@@ -122,7 +122,7 @@ Nothing destroyed or corrupted. The honest entries:
 7. Push master to github; watch CI to green (14 jobs); push forgejo for parity
 8. Create annotated tag `v0.2.0` at the green commit; push tag to both remotes
 9. Post-push: proxy `.info` shows v0.2.0 (wait 2–10 min propagation)
-10. pkg.go.dev fetch trigger + render check
+~~10. pkg.go.dev fetch trigger + render check~~ done — pkg.go.dev renders the module at v0.2.0, published 2026-11-20 (README, examples, and godoc verified by fetch on 2026-11-28)
 11. Clean-dir `go get github.com/larsartmann/go-compliance@v0.2.0` (GONOSUMDB='*' then without)
 12. `gh release create v0.2.0` with notes — decide `--prerelease` (§g)
 13. Retro-create v0.1.0 GitHub Release so the releases page isn't a hole
@@ -134,7 +134,7 @@ Nothing destroyed or corrupted. The honest entries:
 17. Simplify flake `postPatchExtra` `_core_only` story (replace-drop makes the sed dead)
 18. Full battery re-run after replace-drop (tests, lint, `nix flake check`)
 19. Update the flake comment about "replace => ../ resolves core in-tree" (now lies)
-20. STACK.md decision-log entry for the replace-drop
+~~20. STACK.md decision-log entry for the replace-drop~~ done — recorded 2026-11-28 in the STACK.md decision log ("The hub consumes the released core, not a replace"), together with the stale wiring note
 21. AGENTS.md Module Rules rewrite: go-daemon/_local_deps + replace wiring text goes stale
 22. TODO_LIST: tick the replace-drop row (also fix its "v0.1.1-class" text → done-as-v0.2.0)
 23. ROADMAP: update the "core v0.1.1 tag" owner-decision line to shipped-v0.2.0

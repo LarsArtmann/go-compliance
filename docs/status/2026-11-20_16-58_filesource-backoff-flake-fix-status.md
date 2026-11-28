@@ -89,8 +89,8 @@ Nothing authored this session is broken — but three honest entries:
 Format: task — Impact / Effort / Category.
 
 1. Re-run the canonical full `buildflow` gate to convert go-test-green into BuildFlow-green. — Critical / S / Quality
-2. Recover the original gomega failure diff from the failed run's artifacts (see Q1). — High / S / Bug
-3. Mutation-verify the corrupt-doc trip-wire (disable `rememberMiss`, expect ErrParse failure, revert). — High / S / Quality
+~~2. Recover the original gomega failure diff from the failed run's artifacts (see Q1). — High / S / Bug~~ **NOT-DO — the stored artifact cannot hold it. BuildFlow keeps the failed run as `step_outputs` row `20261120-105922-fc096d59`, step `test-race`, git head `80afd3a`: a 1855-byte head-and-tail excerpt whose middle is truncated. It names the failure (`FileSource` "backs off repeated reads of a missing file", `adapter_test.go:104`) but not the gomega block. The mechanism is proven by the mutation test in item 3.**
+~~3. Mutation-verify the corrupt-doc trip-wire (disable `rememberMiss`, expect ErrParse failure, revert). — High / S / Quality~~ done — 2026-11-28, in a scratch copy of the core module: with `rememberMiss` made a no-op the spec fails at `adapter_test.go:102` (`[parse] parse compliance document: jsontext: invalid character`, "to match error" `<io>`), exactly the parse error the trip-wire exists to raise; unmutated it passes
 4. Replay the ORIGINAL failure red: recreate the old spec body in a scratch worktree, run `-race -shuffle=1795172402955618615` under CPU load until red. — Medium / M / Quality
 5. Verify hub module: `cd hub && GOWORK=off go build ./... && go vet ./... && go test -race -count=1 ./...`. — Medium / S / Quality
 6. Run the `docs-gates run .` 5-gate battery after the AGENTS.md edits (mine + slimming session) land. — High / S / Quality
@@ -104,7 +104,7 @@ Format: task — Impact / Effort / Category.
 14. Add a concurrent-readers spec for `FileSource` (parallel `QueryEvidence`, `-race`) exercising the mutex path directly. — Low / S / Quality
 15. Add a `WithMissingBackoff` godoc example (zero-value semantics: `<=0` ⇒ no caching). — Low / S / Documentation
 16. Execute the libs-audit TODO_LIST rows (4 High/Med + 7 Low, routed 2026-11-19). — High / M–L / Feature
-17. Finish the templ-components recovery follow-ups (audit verdict: "recovering"). — Medium / M / Quality
+17. Finish the templ-components recovery follow-ups (audit verdict: "recovering"). — Medium / M / Quality **→ routed to TODO_LIST Medium Impact row "Adopt the templ-components signal chip once it is tagged" (the audit verdict is still "recovering": FilterChips and the empty-state ladder wait on a tagged release)**
 18. Widen cmdguard usage per its UNDERUSED verdict (`docs/review/libs/`). — Medium / L / Feature
 19. Widen go-datastar usage per its UNDERUSED verdict. — Medium / L / Feature
 20. Widen go-output usage per its UNDERUSED verdict. — Medium / L / Feature
@@ -123,7 +123,7 @@ Format: task — Impact / Effort / Category.
 33. Same idea for `watcher_internal_test.go:53` (300ms arming). — Low / M / Quality
 34. Write the cross-project timing-spec lesson into crush-config `references/lessons.md` (commit there, not in-session global). — Medium / S / Documentation
 35. Make the backoff spec hermetic: replace the golden-fixture length assert with a tiny inline v1 doc (drops 170KB IO from the spec entirely). — Low / S / Quality
-36. Mirror the zero-value TTL note in `WithMissingBackoff` godoc (currently only on the field comment). — Low / S / Documentation
+~~36. Mirror the zero-value TTL note in `WithMissingBackoff` godoc (currently only on the field comment). — Low / S / Documentation~~ done — 2026-11-28: the `WithMissingBackoff` godoc in `adapter.go` states that a ttl of zero or less caches nothing, and that the TTL is set before the source serves queries
 37. ROADMAP idea: failing-producer backoff for `CommandSource` (mirror of FileSource miss-backoff) — likely YAGNI, record the flip trigger. — Low / L / Feature
 38. ROADMAP idea: should the miss-cache also cache parse failures? (Probably no — corrupt file is actionable immediately; record the decision.) — Low / L / Feature
 39. Verify `compliance-hub report` exit-75 contract still holds after the next core error-model change (probe ritual). — Low / S / Quality

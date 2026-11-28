@@ -174,8 +174,8 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
     (CellPadding/Flush) for 204 rows.
 15. Bump templ-components v1.27.0 → v1.27.2 (ScriptComponent `</script>`
     escape guard; toast fix).
-16. Screenshot-based visual QA of the dashboard (pixels, not DOM).
-17. Decide design direction: quiet/disciplined vs distinctive (§g q1).
+~~16. Screenshot-based visual QA of the dashboard (pixels, not DOM).~~ done — shipped: `scripts/screenshot.sh` renders light, dark, just-wide, and narrow views in headless Chromium and fails on contrast, keyboard, layout, and console findings; `scripts/deploy-hub.sh` refuses a red page
+~~17. Decide design direction: quiet/disciplined vs distinctive (§g q1).~~ done — decided by shipping: the dashboard runs the quiet, data-first direction (the `@theme` re-skin in `app.css`: one accent, muted severity ramps, the system font stack). §g q1 was never answered, so the choice stands unless the owner reopens it
 18. Contribute a Datastar signal-mode chip variant upstream to
     templ-components (justifies retiring hand-rolled `chips.templ`).
 19. After the pin bump, evaluate StatusBadge/StatusDot vs the local
@@ -198,7 +198,7 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
 27. Push go-compliance master (~9 commits) and watch 14/14 CI (carried g1).
 28. docs-gates pin parity: CI pin `e305834` lacks the `rows` verb vs the
     local binary (carried).
-29. CI drift-check: css pin rev vs flake.lock (carried).
+~~29. CI drift-check: css pin rev vs flake.lock (carried).~~ done — same fix as the 21-24 report, item 7: the CSS gate job reads the nixpkgs rev from `flake.lock` at run time (2026-11-28)
 30. Benchmark re-record decision (carried, owner call).
 31. Forgejo repo visibility decision (carried, owner-only).
 
@@ -212,7 +212,7 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
     `policy.NewCVE`.
 35. Severity wire-enum fork: `SeverityInfo` sorts as priority 0 and coerces
     to Moderate on round-trip (routed previously).
-36. `companion_checker.go:60` invalid `finding.Finding` literal (routed).
+~~36. `companion_checker.go:60` invalid `finding.Finding` literal (routed).~~ done — in library-policy at `8812c22` (2026-11-20): missing-companion findings go through `detection.NewMissingCompanionFinding` with a `Validate()` guard (library-policy CHANGELOG, "Invalid `finding.Finding` literal")
 37. go-idempotency Q2 parent exemption + Q3 idemtest release prep (owner,
     prior session).
 

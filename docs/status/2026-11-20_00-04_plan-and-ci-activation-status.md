@@ -170,7 +170,7 @@ not duplicated. New items beyond the plan are marked ★._
 2. T3: bench verify + re-record per g2 answer (3.1–3.3).
 3. T4: `--sort-by` parity (4.1–4.5).
 4. T5: `queryRows` error-path specs (5.1–5.3).
-5. T6: check-citations shellcheck + `rg` pin (6.1–6.5).
+~~5. T6: check-citations shellcheck + `rg` pin (6.1–6.5).~~ done — citation-gate hardening, `a204282` (2026-11-20): `extract_cites` prefers ripgrep and falls back to `grep -oE`, shellcheck clean (CHANGELOG [0.1.0])
 6. T7: embedder-docs five-checks sweep (7.1–7.3).
 7. T8: corpus drain — strike the done-subset of 23-09/23-40/00-53, owner
    digest, archive two (8.1–8.5).
@@ -188,7 +188,7 @@ not duplicated. New items beyond the plan are marked ★._
 
 14. FLAKE_PAT secrets — ALSO the only way CI ever proves the flake truth
     (§b3); until then CI's flake green is a skip.
-15. v0.1.1 go-signal → T21 replace-drop executes (~34m).
+~~15. v0.1.1 go-signal → T21 replace-drop executes (~34m).~~ done — the replace directive was dropped at the `v0.2.0` tag (`5010082`, 2026-11-20) instead of a v0.1.1 tag; `hub/go.mod` requires `go-compliance v0.2.0` with no replace
 16. go-humanize + samber/lo verdicts (the findings-gate blocker).
 17. M26 overview endgame (g2).
 18. Forgejo visibility click.

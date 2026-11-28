@@ -146,7 +146,7 @@ WHAT shipped; this one covers what I did WRONG, forgot, and should improve).
    firefox`).
 6. go-humanize adopt/suppress/accept decision (gates 6 buildflow
    error-severity findings every full run).
-7. samber/lo adoption-or-suppress policy (fleet-wide).
+7. samber/lo adoption-or-suppress policy (fleet-wide). **→ routed to docs/status/owner-decisions-digest.md, row "samber/lo adopt-or-suppress" (owner verdict; ROADMAP owner queue). Verified 2026-11-28: samber/do is still a transitive dependency only (`hub/go.mod`, through cmdguard)**
 8. Fleet SSE-parser canonical owner decision (ParseSSEData vs sseparse).
 9. Upstream-TODO mandate decision — queue now holds FOUR candidates:
    cmdguard Nd codec, go-datastar MarshalSignals determinism,

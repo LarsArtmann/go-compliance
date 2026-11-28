@@ -83,7 +83,7 @@ _Owner decisions (the standing queue, unchanged this session):_
 24. Digest: vendorHash inline-vs-extracted fleet convention.
 25. Digest: `gateJSON`/`severityJSON` branding decision at the cache seam.
 26. Digest: flake `homepage` meta (needs a URL decision — docs site does not exist).
-27. Digest: flake-parts `follows` consolidation or silence.
+27. Digest: flake-parts `follows` consolidation or silence. **→ routed to docs/status/owner-decisions-digest.md, row "`flake-parts` duplicate input → `follows` go-nix-helpers, or silence" (owner input-graph decision). Verified 2026-11-28: `flake.lock` still carries `flake-parts` and `flake-parts_2`, both at rev `ea2630b`, so nothing diverges today**
 28. Digest: structure-linter layout accept-with-reason record (README half is item 4).
 29. Digest: minimal `.buildflow.yml` vs permanent auto-detection.
 30. Digest: full `buildflow --build-mode=full` re-run after verdicts (target 114/114, 0 error findings).
@@ -103,7 +103,7 @@ _Docs/tooling hygiene (small, unblocked):_
 38. Re-run `scripts/check-citations.sh` after the NEXT refactor that moves cited code (ratchet ritual; currently 0 stale).
 39. Pre-flight usage: adopt `docs-gates freshness . --pre-flight` for future living-doc line edits (the flag exists on the installed pin; nobody has used it in-repo yet).
 40. `--land-parity` stamp adoption after the first pre-flight batch (closes the retyped-bullet class).
-41. dprint-check the digest at every future touch (it IS dprint-managed, unlike CHANGELOG).
+~~41. dprint-check the digest at every future touch (it IS dprint-managed, unlike CHANGELOG).~~ done — standing rule, held: `dprint check docs/status/owner-decisions-digest.md` passes on 2026-11-28 and the CI `dprint + actionlint` job checks it on every push
 42. Domain-language drift check after the next feature (T7-style sweep took 5m; keep it per-feature).
 43. Bench: record the T3 deltas into `benchmarks/` as a SECOND file (`baseline-2026-11-20.txt`, untracked or tracked per owner call) IF g2 says keep history — cheap, preserves the comparison chain.
 44. CI: consider a `dprint fmt`-parity job on the digest + drafts (markdown-heavy files the daemon touches often).

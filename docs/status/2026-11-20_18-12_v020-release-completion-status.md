@@ -106,7 +106,7 @@
 14. Post-release AGENTS.md check: the Module Rules go-daemon/_local_deps text vs the post-replace-drop reality (partially updated; verify no stale `_core_only` references remain anywhere: `rg _core_only`)
 15. STACK.md decision-log entry for the replace-drop + the go-humanize adoption (new direct dep)
 16. `go work sync` / go.work.sum drift check after the replace-drop tides
-17. Verify `go.work` still gives local dev the live-core experience post-replace (documented expectation, untested explicitly)
+~~17. Verify `go.work` still gives local dev the live-core experience post-replace (documented expectation, untested explicitly)~~ done — verified 2026-11-28: `go.work` is `use .` plus `use ./hub`; with the workspace on, `go list -m` resolves the core to `/home/lars/projects/go-compliance`; `hub/go.mod` carries no replace
 
 **Fleet/hardening:**
 19. FLAKE_PAT secret decision (GitHub + Forgejo) — hub/flake CI jobs still skip; vendorHash has ZERO CI coverage
@@ -142,7 +142,7 @@
 43. Nightly `nix flake update` bot with auto-regen of css artifacts (keeps the pin honest)
 44. Add the hub module to the release shape QUESTION: hub/vX.Y.Z tags were deliberately never cut (binary-via-nix posture) — document that decision in STACK.md so future sessions don't re-litigate
 45. Release smoke test: `nix build .#compliance-hub` + `serve --help` boot probe as a release-gate step
-46. Evaluate GoReleaser for the compliance-hub binary (GitHub Release currently ships no artifacts)
+~~46. Evaluate GoReleaser for the compliance-hub binary (GitHub Release currently ships no artifacts)~~ **Won't implement — the hub ships as a nix flake package built from the committed tree (`scripts/deploy-hub.sh`, `git+file://<repo>?rev=HEAD#compliance-hub`) and the hub module is deliberately not go-get-able; nothing downloads a GitHub Release artifact, so a second release pipeline would be a split brain. Revisit if the hub must run on a host without nix (verdict 2026-11-28).**
 47. Wire the exit-code probe + BD003 + stack-drift into a single local `just`-style script (flake.nix app) so the battery is one command
 48. Cross-repo: go-health-dashboard citation (`handlers.go:280`) lives in a SIBLING repo — its own citation drift is invisible to this gate; propose the fleet citation checker
 49. Consider making the citation gate cover docs/status + docs/guides too (currently only docs/review/libs)

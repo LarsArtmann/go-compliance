@@ -196,7 +196,7 @@ verification. Verdicts were executed under the owner's blanket green light with 
 19. Verify the fixture benchmark shape (341 repos) still matches after `latestRecords` refactor (`bench` targets queryLatestRecords indirectly via cache.QueryEvidence).
 
 **Decisions (owner taste, minutes each):**
-21. Tag v0.1.0 now? (the only irreversible act left; everything is staged — see §g1).
+~~21. Tag v0.1.0 now? (the only irreversible act left; everything is staged — see §g1).~~ done — tagged `v0.1.0` at `96b0803` on 2026-11-19 and `v0.2.0` at `5010082` on 2026-11-20 (`git tag`; CHANGELOG `## [0.1.0] - 2026-11-19`)
 22. Should warn-degradation (freshness/discovery/SSE) surface as a visible banner on the dashboard page, or is /readyz + logs the intended operator surface?
 23. Approve the `scanner.Err()` behavior change (slog the stream error before re-subscribe vs current silence).
 24. Approve the docs-gates rule change proposal: struck report items may anchor to CHANGELOG entries (would end the annotate-vs-DONE-legend tension, §d8).

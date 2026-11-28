@@ -305,7 +305,7 @@ All of these are specified in rev 2 with their order; none was started.
 36. Contribute the DataStar signal-mode chip to templ-components (rev 2 T22) (Low, L, Feature).
 37. Owner ask batch: SystemNix pin for `library-policy`, Forgejo visibility, benchmark re-record, BuildFlow DB VACUUM and cache delete, docs-gates fleet pin, cmdguard OG.5 mandate, M26 and g2, auth sign-off (rev 2 T27) (Medium, S, Decision).
 38. Decide whether the evidence directory keeps the deprecated `overview` name (Low, S, Cleanup).
-39. Run the `modern-web-guidance` search for the templ and CSS work, done and upcoming, and disclose it (Low, S, Process).
+~~39. Run the `modern-web-guidance` search for the templ and CSS work, done and upcoming, and disclose it (Low, S, Process).~~ done — 2026-11-28: the skill was loaded and searched for the table, scroll, theme-color, and keyboard work (`responsive-table`, `scrollability-affordance-hints`, and `color` guides retrieved); the disclosure stands in the closing report of the session
 
 ## g) Questions I can NOT figure out myself
 
