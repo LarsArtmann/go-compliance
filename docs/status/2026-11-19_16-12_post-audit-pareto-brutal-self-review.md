@@ -24,14 +24,8 @@ WHAT shipped; this one covers what I did WRONG, forgot, and should improve).
 
 ## b) PARTIALLY DONE
 
-~~1. **CI end-to-end verification**: four new jobs (citation-gate,~~ done — Overtaken by events, Verified 2026-11-28: real runner executions happened — CHANGELOG.md:90 ("the owner-ordered push ran the workflow for the FIRST time ... full matrix 13/13 in run 44612235355; the four newest gates now hold real green runner executions (citation-gate, css-freshness, cmdguard-usage, templ-fmt)"); the rg assumption was made moot by the grep -ERE fallback (scripts/check-citations.sh:53-60); the remaining CI debt is the docs-gates audit-all row (TODO_LIST.md:25)
-   css-freshness, cmdguard-usage, templ-fmt) are actionlint-clean and
-   locally de-risked (each command ran green here), but ZERO real runner
-   executions. `css-freshness` has the most novel surface (nix shell on
-   the runner + module downloads); `citation-gate` assumes `rg` exists on
-   ubuntu-latest (it is in the runner image, but I did not pin it).
-~~2. **T10.4 index screenshot**: firefox blocked by the session permission~~ done — Verified 2026-11-28: docs/assets/libs-index.png exists (2026-11-27), captured headlessly by scripts/screenshot-page.sh and linked from the audit index (11-52 report :138: "capture rendered and checked by eye") — no firefox permission was ultimately needed
-   hook — needs the owner (or `permissions safe firefox`).
+~~1. **CI end-to-end verification**: four new jobs (citation-gate, css-freshness, cmdguard-usage, templ-fmt) are actionlint-clean and locally de-risked (each command ran green here), but ZERO real runner executions. `css-freshness` has the most novel surface (nix shell on the runner + module downloads); `citation-gate` assumes `rg` exists on ubuntu-latest (it is in the runner image, but I did not pin it).~~ done — Overtaken by events, Verified 2026-11-28: real runner executions happened — CHANGELOG.md:90 ("the owner-ordered push ran the workflow for the FIRST time ... full matrix 13/13 in run 44612235355; the four newest gates now hold real green runner executions (citation-gate, css-freshness, cmdguard-usage, templ-fmt)"); the rg assumption was made moot by the grep -ERE fallback (scripts/check-citations.sh:53-60); the remaining CI debt is the docs-gates audit-all row (TODO_LIST.md:25)
+~~2. **T10.4 index screenshot**: firefox blocked by the session permission hook — needs the owner (or `permissions safe firefox`).~~ done — Verified 2026-11-28: docs/assets/libs-index.png exists (2026-11-27), captured headlessly by scripts/screenshot-page.sh and linked from the audit index (11-52 report :138: "capture rendered and checked by eye") — no firefox permission was ultimately needed
 3. **Upstream findings queue**: I PROVED two new upstream bugs (published **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", owner-decision row "mandate for consumer sessions filing upstream TODOs in library repos" (lists the cmdguard/lint published-go.mod replace-directive bug and the a-h/templ LSP embedlit false positive). Verified 2026-11-28: both drafts sit voice-checked in docs/drafts/ (TODO_LIST.md:40)**
    `cmdguard/lint` go.mod carries local-dev replace directives breaking
    `go run @version`; templ LSP `embedlit` suggests invalid Go) — recorded
@@ -46,41 +40,14 @@ WHAT shipped; this one covers what I did WRONG, forgot, and should improve).
 
 ## d) TOTALLY FUCKED UP (my mistakes this session — all caught + fixed)
 
-~~1. **STACK.md wiring drift shipped and nearly missed**: I landed the~~ done — Verified 2026-11-28: the drift gate is now CI-enforced (ci.yml:149 "stack drift check") and STACK.md carries the wiring rows (go-error-family :43, go-filewatcher/v2 :53, boot contract :107-108)
-   errorpage/go-error-family/go-filewatcher dep changes WITHOUT running
-   `stack-drift-check.sh` (a documented flake/CI gate). The self-review
-   caught it 30 minutes later; CI would have gone red on push. Root
-   cause: I treated "nix flake check" as the whole nix gate and forgot
-   the repo's OWN drift gate exists.
-~~2. **The annotate-writer mis-strike**: struck item numbers without the~~ done — Verified 2026-11-28: both affected reports (14-43, 15-50) sit archived with correct per-item strikes (14-43 :206-209, 15-50 :68-70) and the lesson is codified AGENTS.md:193 (`N@substring` disambiguator)
-   `@substring` disambiguator in two reports with duplicate item numbers
-   across sections — the writer hit the FIRST match (wrong lines, wrong
-   verdicts on them). docs-gates caught it; one repair cycle burned.
-~~3. **`go get errorpage@v1.9.0` downgraded the root templ-components~~ done — Verified 2026-11-28: hub/go.mod pins templ-components v1.27.2 uniformly across all seven module requires (:28-31, :89-90) — no downgrade present
-   module** to v1.9.0 (shared tag namespace) — the lockstep rule was in
-   the loaded skill; I applied the fix immediately but should have read
-   the tag list before the get.
-~~4. **Mangled CI checkout SHA** (`...da90b1` garbage) written into~~ done — Verified 2026-11-28: ci.yml:171-172 carry full 40-char pinned action SHAs with version comments; a grep for the old garbage ("da90b1") in ci.yml finds nothing
-   ci.yml — caught and fixed in the same minute, but I pasted a checksum
-   by hand instead of copying it.
-~~5. **Broken-first code**: styles.go's const-then-init-reassign (consts~~ done — Verified 2026-11-28: health.go:45 `const cacheDiskMinFreeBytes = 128 << 20` (the honest const-hoist shipped); styles.go:25-30 `appCSSVersion` (the typo is gone); routes.go:71 `page = "/{$}"` (single string)
-   cannot be assigned), `appCSSEVersion` typo, `"/{$" + "}"` split
-   string; a tautological `Expect(128<<20).To(Equal(128<<20))`
-   placeholder I started writing before doing the honest const-hoist.
-   All caught by compile/review within minutes — but three of them were
-   avoidable by thinking before typing.
-~~6. **Two bash-script bugs in check-citations.sh before first green run**~~ done — Verified 2026-11-28: scripts/check-citations.sh is shellcheck 0.11.0 clean (my run, exit 0) and green (checked=427 ok=427 stale=0, my run); the rg permission-hook trap is session folklore, not a repo defect
-   (`((x++))` returning 1 under `set -e`; a heredoc-mangled `do`), plus
-   the `rg -rn`/`rg -rln` permission hook fired on me AGAIN (twice) —
-   the same documented trap, despite the warning being in my context.
-~~7. **A baseline row for my OWN minutes-old report**: wrote~~ done — Verified 2026-11-28: docs/review/libs/.citations-baseline (mtime 2026-11-19 15:44) carries NO branded.go row — the minutes-old report was fixed, not baselined
-   `branded.go:14-40` (file is 30 lines), baselined the drift instead of
-   fixing my own fresh text, then reversed course. Fresh files should be
-   FIXED, never baselined.
-~~8. **AGENTS.md/FEATURES.md left stale through the whole session** while I~~ done — Verified 2026-11-28: the fix is in the tree — STACK.md:43,53 wiring rows; FEATURES.md:41-52 feature rows; README.md:188 "22 audited"; AGENTS.md:198 library-audit pointer
-   updated README/CHANGELOG/TODO_LIST/index — the audit-section counts
-   (20 reports, 10 NOT-ADOPTED) and the feature rows drifted until this
-   self-review. docs-gates routing could not catch class of staleness.
+~~1. **STACK.md wiring drift shipped and nearly missed**: I landed the errorpage/go-error-family/go-filewatcher dep changes WITHOUT running `stack-drift-check.sh` (a documented flake/CI gate). The self-review caught it 30 minutes later; CI would have gone red on push. Root cause: I treated "nix flake check" as the whole nix gate and forgot the repo's OWN drift gate exists.~~ done — Verified 2026-11-28: the drift gate is now CI-enforced (ci.yml:149 "stack drift check") and STACK.md carries the wiring rows (go-error-family :43, go-filewatcher/v2 :53, boot contract :107-108)
+~~2. **The annotate-writer mis-strike**: struck item numbers without the `@substring` disambiguator in two reports with duplicate item numbers across sections — the writer hit the FIRST match (wrong lines, wrong verdicts on them). docs-gates caught it; one repair cycle burned.~~ done — Verified 2026-11-28: both affected reports (14-43, 15-50) sit archived with correct per-item strikes (14-43 :206-209, 15-50 :68-70) and the lesson is codified AGENTS.md:193 (`N@substring` disambiguator)
+~~3. **`go get errorpage@v1.9.0` downgraded the root templ-components module** to v1.9.0 (shared tag namespace) — the lockstep rule was in the loaded skill; I applied the fix immediately but should have read the tag list before the get.~~ done — Verified 2026-11-28: hub/go.mod pins templ-components v1.27.2 uniformly across all seven module requires (:28-31, :89-90) — no downgrade present
+~~4. **Mangled CI checkout SHA** (`...da90b1` garbage) written into ci.yml — caught and fixed in the same minute, but I pasted a checksum by hand instead of copying it.~~ done — Verified 2026-11-28: ci.yml:171-172 carry full 40-char pinned action SHAs with version comments; a grep for the old garbage ("da90b1") in ci.yml finds nothing
+~~5. **Broken-first code**: styles.go's const-then-init-reassign (consts cannot be assigned), `appCSSEVersion` typo, `"/{$" + "}"` split string; a tautological `Expect(128<<20).To(Equal(128<<20))` placeholder I started writing before doing the honest const-hoist. All caught by compile/review within minutes — but three of them were avoidable by thinking before typing.~~ done — Verified 2026-11-28: health.go:45 `const cacheDiskMinFreeBytes = 128 << 20` (the honest const-hoist shipped); styles.go:25-30 `appCSSVersion` (the typo is gone); routes.go:71 `page = "/{$}"` (single string)
+~~6. **Two bash-script bugs in check-citations.sh before first green run** (`((x++))` returning 1 under `set -e`; a heredoc-mangled `do`), plus the `rg -rn`/`rg -rln` permission hook fired on me AGAIN (twice) — the same documented trap, despite the warning being in my context.~~ done — Verified 2026-11-28: scripts/check-citations.sh is shellcheck 0.11.0 clean (my run, exit 0) and green (checked=427 ok=427 stale=0, my run); the rg permission-hook trap is session folklore, not a repo defect
+~~7. **A baseline row for my OWN minutes-old report**: wrote `branded.go:14-40` (file is 30 lines), baselined the drift instead of fixing my own fresh text, then reversed course. Fresh files should be FIXED, never baselined.~~ done — Verified 2026-11-28: docs/review/libs/.citations-baseline (mtime 2026-11-19 15:44) carries NO branded.go row — the minutes-old report was fixed, not baselined
+~~8. **AGENTS.md/FEATURES.md left stale through the whole session** while I updated README/CHANGELOG/TODO_LIST/index — the audit-section counts (20 reports, 10 NOT-ADOPTED) and the feature rows drifted until this self-review. docs-gates routing could not catch class of staleness.~~ done — Verified 2026-11-28: the fix is in the tree — STACK.md:43,53 wiring rows; FEATURES.md:41-52 feature rows; README.md:188 "22 audited"; AGENTS.md:198 library-audit pointer
 
 ## e) WHAT WE SHOULD IMPROVE (process, from this session's scars)
 

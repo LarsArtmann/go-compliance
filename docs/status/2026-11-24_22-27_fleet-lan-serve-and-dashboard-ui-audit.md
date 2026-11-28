@@ -17,14 +17,14 @@ source or live commands; no repo code changed except docs/memory.
 ~~6. **templ-components utilization audit (owner question: "who doesn't use it well?").** library-policy is NOT a consumer: templ-components is `// indirect` in its go.mod (transitive via go-health-dashboard), zero direct imports, no `.templ` files — the matches in `policies/*.go` are ban-rule STRINGS naming the import path. go-compliance IS the consumer, and a good one at the component layer: `view.templ` uses layout.Base, ThemeScript, ThemeToggle, Container, display.Table, display.PageHeader, display.RelativeTime, datastar.SDKScript ×2, datastar.LiveRegion; `statcards.templ` uses display.StatCard ×4 + display.Grid; `rows.templ` maps compliance.State → typed Badge tones (BadgeNeutral/Error/Warning/ Success, `rows.templ:61-73`); `notfound.templ` uses errorpage.NotFound404. Real underuse found: (a) **ZERO `@theme` overrides** in the hub CSS — the library's sanctioned re-skin lever ("theme by overriding Tailwind variables in `@theme`; never add color props to Go") is unexercised, which IS the root cause of the generic look; (b) pin v1.27.0 is one patch behind the released v1.27.2 (ScriptComponent `</script>` escape guard + toast fix); (c) `chips.templ` hand-rolls filter chips — but JUSTIFIEDLY: it needs Datastar signal-mode instant filtering, while the library only ships link/radio-mode FilterChips/SegmentedControl. Candidate upstream contribution, not a defect.~~ done — standing audit, re-verified 2026-11-28; every named underuse since closed: `@theme` at `app.css:42`, pin v1.27.2 (`hub/go.mod:28-31`), the StateBadge→`display.Badge*` mapping now at `rows.templ:76-86`, chip contribution on templ-components master (`5eaa2696`/`bb6b3197`, TODO_LIST Blocked row)
 ~~7. **Self-correction (provenance).** My earlier critique implied the table, badges, and theme toggle were hand-rolled (DOM class-spotting). Source verification proved all three are library components; the generic look is the library's DEFAULT THEME shipped unmodified. Corrected here and in the chat answer.~~ done — standing, re-confirmed 2026-11-28: `rows.templ:77-86` maps compliance.State onto library `display.Badge*` tones — the table/badges are library components exactly as the correction claims
 
-   **Addendum (2026-11-27, later history; the item above stays as
-   written):** every underuse named in item 6 is closed. The hub CSS now
-   carries an `@theme` block (one accent, muted severity ramps, system
-   fonts), the pin is v1.27.2, the four stat cards are gone (a headline
-   sentence, a state bar, and count chips replaced them), and the
-   signal-mode chip is being contributed to templ-components. Evidence:
-   `hub/internal/dashboard/app.css`, `CHANGELOG.md` Unreleased,
-   `docs/status/2026-11-26_17-47_fleet-governance-rev2-execution-status.md`.
+**Addendum (2026-11-27, later history; the item above stays as
+written):** every underuse named in item 6 is closed. The hub CSS now
+carries an `@theme` block (one accent, muted severity ramps, system
+fonts), the pin is v1.27.2, the four stat cards are gone (a headline
+sentence, a state bar, and count chips replaced them), and the
+signal-mode chip is being contributed to templ-components. Evidence:
+`hub/internal/dashboard/app.css`, `CHANGELOG.md` Unreleased,
+`docs/status/2026-11-26_17-47_fleet-governance-rev2-execution-status.md`.
 
 ## b) Partially done
 
@@ -81,10 +81,10 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
 ~~13. Hierarchy pass: make the failing ratio the page's story; demote zero-value cards (Stale 0, Never covered —) to inline chips.~~ done — the stat cards are gone (zero StatCard in `hub/internal/dashboard/`); `view.templ:47` "The headline and the freshness line carry the story" + count chips and per-filter empty states (CHANGELOG Added row) (Verified 2026-11-28)
 14. ~~Density pass on the fleet table using library Table knobs (CellPadding/Flush) for 204 rows.~~ done — shipped: `display.TableCellPaddingCompact` with `px-4 py-1.5` row cells and `LazyRows` on the fleet table (`view.templ`, `rows.templ`)
 ~~15. Bump templ-components v1.27.0 → v1.27.2 (ScriptComponent `</script>` escape guard; toast fix).~~ done — `hub/go.mod:28-31` pins templ-components v1.27.2 (CHANGELOG purge row; CSS artifacts regenerated) (Verified 2026-11-28)
-    ~~16. Screenshot-based visual QA of the dashboard (pixels, not DOM).~~ done — shipped: `scripts/screenshot.sh` renders light, dark, just-wide, and narrow views in headless Chromium and fails on contrast, keyboard, layout, and console findings; `scripts/deploy-hub.sh` refuses a red page
-    ~~17. Decide design direction: quiet/disciplined vs distinctive (§g q1).~~ done — decided by shipping: the dashboard runs the quiet, data-first direction (the `@theme` re-skin in `app.css`: one accent, muted severity ramps, the system font stack). §g q1 was never answered, so the choice stands unless the owner reopens it
+~~16. Screenshot-based visual QA of the dashboard (pixels, not DOM).~~ done — shipped: `scripts/screenshot.sh` renders light, dark, just-wide, and narrow views in headless Chromium and fails on contrast, keyboard, layout, and console findings; `scripts/deploy-hub.sh` refuses a red page
+~~17. Decide design direction: quiet/disciplined vs distinctive (§g q1).~~ done — decided by shipping: the dashboard runs the quiet, data-first direction (the `@theme` re-skin in `app.css`: one accent, muted severity ramps, the system font stack). §g q1 was never answered, so the choice stands unless the owner reopens it
 16. Contribute a Datastar signal-mode chip variant upstream to
-    templ-components (justifies retiring hand-rolled `chips.templ`). **→ routed to TODO_LIST Blocked (owner decisions) row "Adopt the templ-components signal chip once it is tagged" — the chip sits on templ-components master (`5eaa2696`/`bb6b3197`, 2026-11-27) with no release tag; adoption + chips.templ retirement wait on the tag (Verified 2026-11-28)**
+templ-components (justifies retiring hand-rolled `chips.templ`). **→ routed to TODO_LIST Blocked (owner decisions) row "Adopt the templ-components signal chip once it is tagged" — the chip sits on templ-components master (`5eaa2696`/`bb6b3197`, 2026-11-27) with no release tag; adoption + chips.templ retirement wait on the tag (Verified 2026-11-28)**
 ~~17. After the pin bump, evaluate StatusBadge/StatusDot vs the local StateBadge→Badge mapping.~~ done — decided 2026-11-26 — `display.SimpleEmptyState` adopted; the local `StateBadge` stays because it encodes the four compliance states (`rows.templ:77-86`; CHANGELOG purge row) (Verified 2026-11-28)
 ~~18. EmptyState/DataState for never-covered/stale empty views.~~ done — `display.SimpleEmptyState` per filter and for the no-evidence case (`view.templ:141`, `view.templ:151`) (Verified 2026-11-28)
 
@@ -93,18 +93,18 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
 21. Deploy compliance-hub for real: systemd unit (user, bind
     192.168.1.150:8477 or unix-socket per bind-posture, evidence path) —
     blocked on §g q2. **→ routed to TODO_LIST Blocked (owner decisions) row "Move both user units (`compliance-hub.service`, `fleet-evidence.timer`) and the library-policy pin into SystemNix" — the unit IS deployed and running (Verified 2026-11-28: systemctl --user is-active compliance-hub → active); the durable/dedicated-user SystemNix decision is the row**
-~~22. Resolve `/var/lib/overview/compliance.json` ownership (overview-user writer flow vs chown/ACL vs XDG default).~~ done — by documenting both tiers (2026-11-27): system deployments keep `/var/lib/overview/compliance.json`, user deployments read `~/.local/state/overview/compliance.json`, `GO_COMPLIANCE_EVIDENCE_FILE` overrides both (README.md:40, docs/guides/integrate.md:45, bind-posture.md:70); the user-level hub reads XDG today (Verified 2026-11-28)
-23. g1 auth posture: LAN exposure now exists ad-hoc — decide middleware auth
+    ~~22. Resolve `/var/lib/overview/compliance.json` ownership (overview-user writer flow vs chown/ACL vs XDG default).~~ done — by documenting both tiers (2026-11-27): system deployments keep `/var/lib/overview/compliance.json`, user deployments read `~/.local/state/overview/compliance.json`, `GO_COMPLIANCE_EVIDENCE_FILE` overrides both (README.md:40, docs/guides/integrate.md:45, bind-posture.md:70); the user-level hub reads XDG today (Verified 2026-11-28)
+22. g1 auth posture: LAN exposure now exists ad-hoc — decide middleware auth
     or document LAN-trust acceptance in bind-posture.md. **→ routed to TODO_LIST Blocked (owner decisions) row "LAN-trust sign-off for the always-on hub on `192.168.1.150:8477`" — the threat sketch and recommendation are in `docs/decisions/bind-posture.md` ("Sign-off. Open.", line 141) (Verified 2026-11-28)**
-~~24. Document the LAN serve recipe (bind-posture appendix or runbook: --addr, trustedInterfaces note, dnsblockd hostname).~~ done — `docs/decisions/bind-posture.md` carries the LAN recipe (explicit `--addr` at :76, `trustedInterfaces`/dnsblockd at :84-86) plus `scripts/deploy-hub.sh` (CHANGELOG purge row 2026-11-25, Appendix A) (Verified 2026-11-28)
-~~25. Discovery-file wiring for fleet + hub (carried).~~ done — fleet `--discovery-file` (`command_fleet.go:36`) and hub `--discover-paths` (`flags.go:39`) wired; CHANGELOG Added row (Verified 2026-11-28)
-26. FLAKE_PAT secret for CI hub/flake jobs (carried, owner-only). **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" — still open there (Verified 2026-11-28)**
-~~27. Push go-compliance master (~9 commits) and watch 14/14 CI (carried g1).~~ done — master is pushed — Verified 2026-11-28 `git status`: master...github/master 0 ahead, 0 behind; CI at the tip is 13/14 per the TODO_LIST High row (docs gates red on audit-all over 30 open items — the 2026-11-28 annotate sweeps clear them)
-28. docs-gates pin parity: CI pin `e305834` lacks the `rows` verb vs the
+    ~~24. Document the LAN serve recipe (bind-posture appendix or runbook: --addr, trustedInterfaces note, dnsblockd hostname).~~ done — `docs/decisions/bind-posture.md` carries the LAN recipe (explicit `--addr` at :76, `trustedInterfaces`/dnsblockd at :84-86) plus `scripts/deploy-hub.sh` (CHANGELOG purge row 2026-11-25, Appendix A) (Verified 2026-11-28)
+    ~~25. Discovery-file wiring for fleet + hub (carried).~~ done — fleet `--discovery-file` (`command_fleet.go:36`) and hub `--discover-paths` (`flags.go:39`) wired; CHANGELOG Added row (Verified 2026-11-28)
+23. FLAKE_PAT secret for CI hub/flake jobs (carried, owner-only). **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" — still open there (Verified 2026-11-28)**
+    ~~27. Push go-compliance master (~9 commits) and watch 14/14 CI (carried g1).~~ done — master is pushed — Verified 2026-11-28 `git status`: master...github/master 0 ahead, 0 behind; CI at the tip is 13/14 per the TODO_LIST High row (docs gates red on audit-all over 30 open items — the 2026-11-28 annotate sweeps clear them)
+24. docs-gates pin parity: CI pin `e305834` lacks the `rows` verb vs the
     local binary (carried). **→ routed to TODO_LIST Low Impact row "Fleet docs-gates pin bump past `e305834` (adds the `rows` verb)" — still BLOCKED (crush-config/fleet nix bump; in-repo writer aliases cover the gap) (Verified 2026-11-28)**
     ~~29. CI drift-check: css pin rev vs flake.lock (carried).~~ done — same fix as the 21-24 report, item 7: the CSS gate job reads the nixpkgs rev from `flake.lock` at run time (2026-11-28)
-29. Benchmark re-record decision (carried, owner call). **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)" — VERIFY half done, only the owner re-record call remains (Verified 2026-11-28)**
-30. Forgejo repo visibility decision (carried, owner-only). **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)" (Verified 2026-11-28)**
+25. Benchmark re-record decision (carried, owner call). **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)" — VERIFY half done, only the owner re-record call remains (Verified 2026-11-28)**
+26. Forgejo repo visibility decision (carried, owner-only). **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)" (Verified 2026-11-28)**
 
 **Consumers / policies (carried):**
 
@@ -112,7 +112,7 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
 ~~33. library-policy M15: migrate the ADR-0009 gate remnants to `WhenAnyPresent` (still zero call sites).~~ done — library-policy `policies/ecosystem_combos.go:9` "Migrated 2026-11-20 from the ADR-0009 mixed-list hack"; `WhenAnyPresent` gates at `ecosystem.go:132` and `banned_libraries_doc.go:190-195` (Verified 2026-11-28)
 ~~34. Route the 7 raw CVE literals in `policies/security.go` through `policy.NewCVE`.~~ done — library-policy `policies/security.go:14-24` declares CVEs as `[]policy.CVE` via `mustCVE` → `policy.NewCVE` (parsed once); no raw literals remain (Verified 2026-11-28)
 35. ~~Severity wire-enum fork: `SeverityInfo` sorts as priority 0 and coerces to Moderate on round-trip (routed previously).~~ done — in library-policy (2026-11-20): an exhaustive severity mapper at the DSL bridge; `SeverityInfo` and `SeverityRecommended` no longer sort as priority 0 and "info" no longer coerces (library-policy CHANGELOG, "Severity sort + round-trip"; commit `5f6168e` of 2026-11-24 keeps info companions at info level)
-    ~~36. `companion_checker.go:60` invalid `finding.Finding` literal (routed).~~ done — in library-policy at `8812c22` (2026-11-20): missing-companion findings go through `detection.NewMissingCompanionFinding` with a `Validate()` guard (library-policy CHANGELOG, "Invalid `finding.Finding` literal")
+~~36. `companion_checker.go:60` invalid `finding.Finding` literal (routed).~~ done — in library-policy at `8812c22` (2026-11-20): missing-companion findings go through `detection.NewMissingCompanionFinding` with a `Validate()` guard (library-policy CHANGELOG, "Invalid `finding.Finding` literal")
 36. go-idempotency Q2 parent exemption + Q3 idemtest release prep (owner, prior session). **→ routed to docs/status/owner-decisions-digest.md, row "go-idempotency Q2 parent exemption + Q3 idemtest release prep"**
 
 **Hygiene:**
@@ -120,14 +120,14 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
 ~~38. Clean my probe artifacts (`/tmp/dash.html`, `/tmp/app.min.css`, `/tmp/hub-*.json`); check `/tmp/library-policy` freshness before reuse.~~ done — Verified 2026-11-28 `ls /tmp/dash.html /tmp/app.min.css /tmp/hub-*.json` → all absent; nothing left to trash
 ~~39. CHANGELOG rows for any tracked docs this session lands (daemon commits).~~ done — CHANGELOG Unreleased carries rows for the docs this session landed (`docs/notes/live-architecture.md`, bind-posture deployment appendix, TODO_LIST purge rows) (Verified 2026-11-28)
 40. After the next `fleet --record`, verify the running dashboard live-reloaded
-    (watcher contract under real writes).
+(watcher contract under real writes).
 
 ## g) Questions I can NOT figure out myself
 
 ~~1. **Design direction**: quiet and disciplined (tool-grade, data-first) or distinctive (a recognizable identity)? This sets the character of the `@theme` token pass — palette, type, emphasis — before I write a line.~~ done — answered by shipping: the quiet data-first direction is live (the `@theme` re-skin in `app.css:42`; the §f verdict on the struck design-direction item); stands unless the owner reopens it (Verified 2026-11-28)
 2. **Hub deployment shape**: systemd now? Which user (lars vs dedicated),
-   which bind (LAN IP `192.168.1.150:8477` vs unix socket per
-   bind-posture.md), and does the evidence file move to
-   `/var/lib/overview/compliance.json` (overview-user writer) or stay under
-   `~/.local/state/overview/`? **→ routed to TODO_LIST Blocked (owner decisions) row "Move both user units (`compliance-hub.service`, `fleet-evidence.timer`) and the library-policy pin into SystemNix" — the user-unit shape was decided by shipping (LAN unicast bind, XDG evidence, unit active 2026-11-28); the SystemNix/dedicated-user move is the open decision**
+which bind (LAN IP `192.168.1.150:8477` vs unix socket per
+bind-posture.md), and does the evidence file move to
+`/var/lib/overview/compliance.json` (overview-user writer) or stay under
+`~/.local/state/overview/`? **→ routed to TODO_LIST Blocked (owner decisions) row "Move both user units (`compliance-hub.service`, `fleet-evidence.timer`) and the library-policy pin into SystemNix" — the user-unit shape was decided by shipping (LAN unicast bind, XDG evidence, unit active 2026-11-28); the SystemNix/dedicated-user move is the open decision**
 ~~3. **Push + sweep timing**: push go-compliance master (~9 commits) and sweep the consumers (library-policy, md-go-validator, BuildFlow) onto core v0.2.0 now, or hold both until a natural trigger?~~ done — push verified (master...github/master 0 ahead/0 behind, 2026-11-28) and the sweep landed (v0.2.0 in `hub/go.mod:12`, library-policy `go.mod:15`, md-go-validator `go.mod:8`, BuildFlow `go.mod:40`) (Verified 2026-11-28)
