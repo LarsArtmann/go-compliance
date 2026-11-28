@@ -60,17 +60,15 @@ A redeploy is the same script again. The hub reports its commit as the
 version (`compliance-hub --version`, `/version`, and the `buildflow_version`
 of the document it serves).
 
-Evidence file locations (two defaults, no code change):
-
-| Deployment       | Default evidence file                     | Who writes it                                       |
-| ---------------- | ----------------------------------------- | --------------------------------------------------- |
-| System           | `/var/lib/overview/compliance.json`       | the BuildFlow daemon pipes `compliance --json`      |
-| User (this host) | `~/.local/state/overview/compliance.json` | the `fleet-evidence` timer (`library-policy fleet`) |
-
-`GO_COMPLIANCE_EVIDENCE_FILE` overrides both for every reporter, and
-`--evidence-file` / `--file` override it per command. The core's
-`DefaultEvidenceFile` constant stays the system path; user deployments
-pass the XDG state file explicitly, which is what both deploy scripts do.
+Evidence-file locations have their single home in the [integration
+guide's locations table](../guides/integrate.md#where-the-evidence-lives)
+(system `/var/lib/overview/compliance.json`, user
+`~/.local/state/overview/compliance.json`, `GO_COMPLIANCE_EVIDENCE_FILE`
+override, per-command `--file` on the hub and `--evidence-file` on
+`library-policy`); on this host the user unit reads the XDG path, its
+writer is the `fleet-evidence` timer (`library-policy fleet`), and a
+system deployment's writer is the BuildFlow daemon piping
+`compliance --json`.
 
 The unit runs `serve --source file --file
 ~/.local/state/overview/compliance.json --addr 192.168.1.150:8477` as the
@@ -92,7 +90,11 @@ Verify after every change:
 ```bash
 systemctl --user status compliance-hub.service
 journalctl --user -u compliance-hub -n 20
-scripts/screenshot.sh http://192.168.1.150:8477/   # page, themes, filter clicks
+scripts/screenshot.sh http://192.168.1.150:8477/
+#   four views: layout each view must produce, table scroll and column-header
+#   pin, keyboard walk with the toggle's aria-checked trail, filter clicks
+#   judged against the rendered fleet, WCAG AA contrast, the empty-fleet run
+#   (ALLOW_EMPTY=1), console errors minus classified browser noise.
 ```
 
 The units are plain user files, not home-manager managed; moving them (and

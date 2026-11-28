@@ -35,9 +35,9 @@ compliance.Record(ctx, compliance.NewRepoName("my-repo"),
     compliance.RunResult{Verdict: compliance.VerdictPassed})
 ```
 
-The run lands in the fleet evidence file: `/var/lib/overview/compliance.json`
-for a system deployment, `~/.local/state/overview/compliance.json` for a user
-deployment, or wherever `GO_COMPLIANCE_EVIDENCE_FILE` points.
+The run lands in the fleet evidence file; the paths (system, user, and the
+`GO_COMPLIANCE_EVIDENCE_FILE` override) have their single home in the
+[locations table of the integration guide](docs/guides/integrate.md#where-the-evidence-lives).
 
 The `compliance-hub` binary is not `go install`-able (the hub module is
 untagged by design); run it from a checkout of this repo:
@@ -116,6 +116,10 @@ Never-covered needs the project-discovery daemon: `--discover-paths`
 (default `~/projects`) names the roots it scans, and a discovered project
 counts only when it has a `go.mod` (the same rule the producer uses), so
 non-Go projects never show as gaps. An empty value disables discovery.
+
+A fleet that has not recorded evidence yet is not a blank page: the
+dashboard hides the empty table and explains what will fill it, and the
+first producer run replaces the explanation with rows.
 
 ### Fleet table
 
