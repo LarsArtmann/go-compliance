@@ -159,17 +159,18 @@ function missingWords(base, block) {
 // carry the same characters in the same order.
 function insertSpaces(cur, ref) {
 	let result = "";
-	let refIndex = 0;
 	let pending = "";
+	let position = 0;
+	while (position < ref.length && /\s/.test(ref[position])) position++;
 	for (const ch of cur) {
 		if (/\s/.test(ch)) {
 			pending += ch;
 			continue;
 		}
-		let refSpace = false;
-		for (let back = refIndex - 1; back >= 0 && /\s/.test(ref[back]); back--) refSpace = true;
+		const refSpace = position > 0 && /\s/.test(ref[position - 1]);
 		result += (pending === "" && refSpace ? " " : pending) + ch;
-		refIndex++;
+		position++;
+		while (position < ref.length && /\s/.test(ref[position])) position++;
 		pending = "";
 	}
 	return result + pending;
