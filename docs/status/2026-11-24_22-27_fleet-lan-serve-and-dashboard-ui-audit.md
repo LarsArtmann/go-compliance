@@ -127,8 +127,7 @@ templ-components (justifies retiring hand-rolled `chips.templ`). **→ routed to
 
 ~~38. Clean my probe artifacts (`/tmp/dash.html`, `/tmp/app.min.css`, `/tmp/hub-*.json`); check `/tmp/library-policy` freshness before reuse.~~ done — Verified 2026-11-28 `ls /tmp/dash.html /tmp/app.min.css /tmp/hub-*.json` → all absent; nothing left to trash
 ~~39. CHANGELOG rows for any tracked docs this session lands (daemon commits).~~ done — CHANGELOG Unreleased carries rows for the docs this session landed (`docs/notes/live-architecture.md`, bind-posture deployment appendix, TODO_LIST purge rows) (Verified 2026-11-28)
-40. After the next `fleet --record`, verify the running dashboard live-reloaded
-(watcher contract under real writes).
+~~40. After the next `fleet --record`, verify the running dashboard live-reloaded (watcher contract under real writes).~~ done — the watcher contract under real writes is pinned by the hardened cross-process armWatch spec: it probes with throwaway rows until the hub refreshes, then measures the 2s budget (CHANGELOG Fixed row 2026-11-27; watcher_internal_test.go wall-clock hardening, six -race runs green); in production the timer has written real evidence with the hub live since (2026-11-27 05:49, 2026-11-28 05:11) and /readyz was 200 at 2026-11-28 04:40 (the 2026-11-28_04-44 report) (Verified 2026-11-28)
 
 ## g) Questions I can NOT figure out myself
 

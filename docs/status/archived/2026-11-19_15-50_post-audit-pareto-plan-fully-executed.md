@@ -113,7 +113,11 @@ was caught by the gate itself and repaired within the session.)
 2. Hub `table` `--sort-by` flag parity (pre-existing TODO row, untouched **→ TODO_LIST rows — replace-drop / --sort-by / cmdguard next tag / screenshot / CI first-run watch**
    by the plan).
 3. cmdguard follow-ups at the next tag: `AssertDescribeContract` adoption **→ TODO_LIST rows — replace-drop / --sort-by / cmdguard next tag / screenshot / CI first-run watch**
-   - the lint-module replace-directive upstream fix (BLOCKED row).
+   - the lint-module replace-directive upstream fix: still a BLOCKED row
+     (TODO_LIST cmdguard follow-ups) — the drafts are written
+     (`docs/drafts/cmdguard-lint-published-replaces.md`), filing waits on
+     the owner's upstream mandate, and CI still ships the shallow-clone
+     workaround; not done, and not countable by the docs gate.
 4. Screenshot docs/review/libs/index.html (needs firefox permission or **→ TODO_LIST rows — replace-drop / --sort-by / cmdguard next tag / screenshot / CI first-run watch**
    owner runs it; TODO row).
 5. CI observation window: the new css-freshness + citation-gate + **→ TODO_LIST rows — replace-drop / --sort-by / cmdguard next tag / screenshot / CI first-run watch**
