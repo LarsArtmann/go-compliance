@@ -12,19 +12,32 @@ Thanks for your interest in contributing!
 ## Development Setup
 
 Two modules: the repo root is the publishable core library, `hub/` is the
-server + CLI. A `go.work` workspace sits at the root — per-module work
-needs `GOWORK=off` because the workspace hides replace-directive drift.
+server + CLI. A `go.work` workspace sits at the root; per-module work runs
+with `GOWORK=off`, so a command sees what CI and a consumer of the tagged
+core see, not the working tree.
 
-    GOWORK=off go test ./... -race                    # core module
-    golangci-lint run ./...                           # core (root config)
-    cd hub && GOWORK=off go test ./... -race          # hub module
-    cd hub && golangci-lint run -c ../.golangci.yml ./...
+    GOWORK=off go test -race -count=1 ./...             # core module
+    cd hub && GOWORK=off go test -race -count=1 ./...   # hub module
 
-Run `go test` invocations sequentially (a shared GOCACHE produces
-transient failures under concurrency). After editing any `.templ` file,
-run `go tool templ generate ./internal/dashboard/` and commit the
-generated `*_templ.go` diff together with the edit (generated files are
-committed deliberately). The full gate: `nix flake check`.
+Run `go test` invocations sequentially (a shared build cache produces
+transient failures under concurrency). The quality gate is BuildFlow
+(`buildflow --dry-run --verbose` lists what it would run); it owns linting
+and formatting for both modules, so there is no separate lint command.
+`nix flake check` builds and checks both modules sandboxed.
+
+After editing a dashboard `.templ` file, format and generate from `hub/`
+(never from the repo root, which rewrites the paths inside the generated
+files), then rebuild the stylesheet from the repo root:
+
+    cd hub && go tool templ fmt -fail ./internal/dashboard/ && go tool templ generate ./internal/dashboard/
+    nix shell .#tailwindcss -c bash scripts/regen-ui.sh
+
+Commit the generated `*_templ.go` diff together with the edit (generated
+files are committed deliberately), and the three CSS artifacts
+`scripts/regen-ui.sh` rewrites: CI regenerates them and fails on any
+difference. Anything visual also goes through the real-browser gate,
+`scripts/screenshot.sh` (themes, a narrow and a just-wide layout, contrast,
+keyboard, filters), before it ships.
 
 ## Reporting Issues
 
