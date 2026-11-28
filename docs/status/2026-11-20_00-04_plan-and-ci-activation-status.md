@@ -113,7 +113,7 @@ not duplicated. New items beyond the plan are marked ★._
 
 ~~1. T2: CHANGELOG `[0.1.0]` cut at 77881b3 (2.1–2.4 in the plan).~~ done — 2026-11-20: CHANGELOG.md:109 `## [0.1.0] - 2026-11-19` (11-30 execution report §a1). Verified 2026-11-28
 
-2. T3: bench verify + re-record per g2 answer (3.1–3.3).~~~~ **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)"; VERIFY half done 2026-11-20 — claim PROVEN (fold @341 = 107µs vs ≈150µs; 11-30 report §a2). Verified 2026-11-28: row still BLOCKED**
+2. ~~T3: bench verify + re-record per g2 answer (3.1–3.3).~~ **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)"; VERIFY half done 2026-11-20 — claim PROVEN (fold @341 = 107µs vs ≈150µs; 11-30 report §a2). Verified 2026-11-28: row still BLOCKED**
 
 ~~3. T4: `--sort-by` parity (4.1–4.5).~~ done — 2026-11-20: hub/internal/cli/table_sort.go + README "Fleet table" section (README.md:120-129). Verified 2026-11-28
 
@@ -139,21 +139,21 @@ not duplicated. New items beyond the plan are marked ★._
 
 **Owner-gated (rows exist):**
 
-14. FLAKE_PAT secrets — ALSO the only way CI ever proves the flake truth (§b3); until then CI's flake green is a skip.~~~~ **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" (digest §00-04 §g row "g3: FLAKE_PAT creation"). Verified 2026-11-28: still OPEN, ci.yml still guards**
+14. ~~FLAKE_PAT secrets — ALSO the only way CI ever proves the flake truth (§b3); until then CI's flake green is a skip.~~ **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" (digest §00-04 §g row "g3: FLAKE_PAT creation"). Verified 2026-11-28: still OPEN, ci.yml still guards**
 
 ~~15. v0.1.1 go-signal → T21 replace-drop executes (~34m).~~ done — the replace directive was dropped at the `v0.2.0` tag (`5010082`, 2026-11-20) instead of a v0.1.1 tag; `hub/go.mod` requires `go-compliance v0.2.0` with no replace
 
-16. go-humanize + samber/lo verdicts (the findings-gate blocker).~~~~ **→ routed to docs/status/owner-decisions-digest.md Linter/policy rows "samber/lo adopt-or-suppress" and "go-humanize adopt/accept-with-reason" (ROADMAP owner queue). Verified 2026-11-28: both rows open**
+16. ~~go-humanize + samber/lo verdicts (the findings-gate blocker).~~ **→ routed to docs/status/owner-decisions-digest.md Linter/policy rows "samber/lo adopt-or-suppress" and "go-humanize adopt/accept-with-reason" (ROADMAP owner queue). Verified 2026-11-28: both rows open**
 
-17. M26 overview endgame (g2).~~~~ **→ routed to TODO_LIST Blocked (owner decisions) row "M26: overview endgame (replace vs coexist) + migration note" (ROADMAP section "Endgame question (owner, g2 — BLOCKED)"). Verified 2026-11-28: open**
+17. ~~M26 overview endgame (g2).~~ **→ routed to TODO_LIST Blocked (owner decisions) row "M26: overview endgame (replace vs coexist) + migration note" (ROADMAP section "Endgame question (owner, g2 — BLOCKED)"). Verified 2026-11-28: open**
 
-18. Forgejo visibility click.~~~~ **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)". Verified 2026-11-28: open**
+18. ~~Forgejo visibility click.~~ **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)". Verified 2026-11-28: open**
 
-19. Upstream-TODO filing mandate (5 queued candidates; T10 pre-writes drafts).~~~~ **→ routed to ROADMAP "Fleet adoption waves" owner-decisions item "mandate for consumer sessions filing upstream TODOs in library repos" (the 5 candidates listed there); the drafts are READY (TODO_LIST Low cmdguard row). Verified 2026-11-28: mandate still pending**
+19. ~~Upstream-TODO filing mandate (5 queued candidates; T10 pre-writes drafts).~~ **→ routed to ROADMAP "Fleet adoption waves" owner-decisions item "mandate for consumer sessions filing upstream TODOs in library repos" (the 5 candidates listed there); the drafts are READY (TODO_LIST Low cmdguard row). Verified 2026-11-28: mandate still pending**
 
-20. VACUUM buildflow DB + delete the 0.51 GB cache DB.~~~~ **→ routed to TODO_LIST Blocked (owner decisions) rows "`sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM`" and "Delete the expendable 0.51 GB cache DB". Verified 2026-11-28: both open**
+20. ~~VACUUM buildflow DB + delete the 0.51 GB cache DB.~~ **→ routed to TODO_LIST Blocked (owner decisions) rows "`sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM`" and "Delete the expendable 0.51 GB cache DB". Verified 2026-11-28: both open**
 
-21. Firefox permission → index.html screenshot row closes.~~~~ **→ routed to ROADMAP "Fleet adoption waves" owner-decisions item "firefox permission for agent sessions (index.html screenshot)". Verified 2026-11-28: the ask still stands there; scripts/screenshot.sh meanwhile also serves screenshots headless**
+21. ~~Firefox permission → index.html screenshot row closes.~~ **→ routed to ROADMAP "Fleet adoption waves" owner-decisions item "firefox permission for agent sessions (index.html screenshot)". Verified 2026-11-28: the ask still stands there; scripts/screenshot.sh meanwhile also serves screenshots headless**
 
 **Watch / standing:**
 

@@ -1,3 +1,8 @@
+> **Live remainder:** archived 2026-11-28 by the cadence ritual. All open rows were verified
+> harvested/routed at archive time (freshness --audit-all + routing +
+> annotate green over the corpus); owning sections live in the living
+> docs (TODO_LIST.md, ROADMAP.md).
+
 # Status: docs-health AUDIT — full-corpus annotate + archive (living docs superb sweep)
 
 **Created:** 2026-11-19 21:17 CET · author: Crush (glm-5.3-flash) docs-health session ·

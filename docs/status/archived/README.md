@@ -24,6 +24,7 @@ below and the commit that archived them.
 | 2026-11-19_15-50_post-audit-pareto-plan-fully-executed.md        | 2026-11-19 | Plan-fully-executed report; §f remainders are TODO_LIST rows, owner questions routed to ROADMAP owner decisions                                                          |
 | 2026-11-18_23-40_buildflow-full-run-vs-manual-gate-sweep.md      | 2026-11-20 | Gate-sweep snapshot; the 8-gate matrix re-verified green 2026-11-20, §f items struck done/routed (owner env + policy rows live in docs/status/owner-decisions-digest.md) |
 | 2026-11-19_00-53_samber-do-health-rereview-status.md             | 2026-11-20 | samber/do re-review follow-up; fully annotated by the 2026-11-19 third pass (0 bare rows), nothing open at archive time                                                  |
+| 2026-11-19_21-17_docs-health-full-corpus-annotate-archive.md     | 2026-11-28 | docs-health corpus audit; every item carries an inline verdict after the 2026-11-28 sweep (0 bare rows, QA and annotate gates clean), nothing open at archive time       |
 
 Archive rule (docs-health skill): a report lands here only when ANNOTATE
 resolved every item; the docs-gates cadence gate keeps the unarchived count
