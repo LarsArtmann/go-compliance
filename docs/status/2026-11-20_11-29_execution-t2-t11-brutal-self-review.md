@@ -105,15 +105,16 @@ _Docs/tooling hygiene (small, unblocked):_
 40. ~~`--land-parity` stamp adoption after the first pre-flight batch (closes the retyped-bullet class).~~ done — standing fact, re-verified 2026-11-28: `--land-parity` is on the installed freshness surface (help output)
 
 ~~41. dprint-check the digest at every future touch (it IS dprint-managed, unlike CHANGELOG).~~ done — standing rule, held: `dprint check docs/status/owner-decisions-digest.md` passes on 2026-11-28 and the CI `dprint + actionlint` job checks it on every push
-41. Domain-language drift check after the next feature (T7-style sweep took 5m; keep it per-feature).
-42. Bench: record the T3 deltas into `benchmarks/` as a SECOND file (`baseline-2026-11-20.txt`, untracked or tracked per owner call) IF g2 says keep history — cheap, preserves the comparison chain. **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)" (the second dated file is gated on the same g2 answer; benchmarks/ still holds only baseline.txt on 2026-11-28)**
-43. ~~CI: consider a `dprint fmt`-parity job on the digest + drafts (markdown-heavy files the daemon touches often).~~ done — CI runs the "dprint + actionlint" job (.github/workflows/ci.yml:115) over the markdown-heavy files on every push
-44. ~~TODO_LIST: the High/Medium sections are empty — consider folding the Blocked table's med-impact rows up when g-answers land (structure, not content).~~ done — premise stale 2026-11-28: TODO_LIST High and Medium sections now carry rows (High: the CI-green row; Medium: contrast, sticky-header, keyboard rows); the med-impact Blocked rows still wait on the g-answers
-45. AGENTS: add the stale-context/disk-wins bullet (§e6) next to the daemon-race rule.
-46. AGENTS: consider one line on nixOS-realistic PATH simulation for scripts (§e8) — or drop; it's marginal.
-47. ~~Next session start: `git log v0.1.0..HEAD --oneline | wc -l` — if the daemon-commit count since the tag grows past ~40, consider nudging the owner toward the v0.1.1 tag (release-history hygiene, not a blocker).~~ done — moot: `v0.2.0` was tagged 2026-11-20 (`5010082`) and the release shipped — the count-nudge is overtaken
-48. The two upstream drafts: after OG.5 says file, use `gh issue create --body-file <extracted>` (never `--body-file -`), then `gh issue view` to confirm landing (github-voice procedure step 8). **→ routed to TODO_LIST Low Impact row "cmdguard follow-ups" (the OG.5 gate and both draft paths live in that row)**
-49. ~~Nothing else queued: the corpus is drained, the backlog is TODO_LIST + digest, and both are small.~~ done — standing fact, re-verified 2026-11-28: TODO_LIST (four sections) and docs/status/owner-decisions-digest.md remain the whole backlog
+
+42. Domain-language drift check after the next feature (T7-style sweep took 5m; keep it per-feature).
+43. Bench: record the T3 deltas into `benchmarks/` as a SECOND file (`baseline-2026-11-20.txt`, untracked or tracked per owner call) IF g2 says keep history — cheap, preserves the comparison chain. **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)" (the second dated file is gated on the same g2 answer; benchmarks/ still holds only baseline.txt on 2026-11-28)**
+44. ~~CI: consider a `dprint fmt`-parity job on the digest + drafts (markdown-heavy files the daemon touches often).~~ done — CI runs the "dprint + actionlint" job (.github/workflows/ci.yml:115) over the markdown-heavy files on every push
+45. ~~TODO_LIST: the High/Medium sections are empty — consider folding the Blocked table's med-impact rows up when g-answers land (structure, not content).~~ done — premise stale 2026-11-28: TODO_LIST High and Medium sections now carry rows (High: the CI-green row; Medium: contrast, sticky-header, keyboard rows); the med-impact Blocked rows still wait on the g-answers
+46. AGENTS: add the stale-context/disk-wins bullet (§e6) next to the daemon-race rule.
+47. AGENTS: consider one line on nixOS-realistic PATH simulation for scripts (§e8) — or drop; it's marginal.
+48. ~~Next session start: `git log v0.1.0..HEAD --oneline | wc -l` — if the daemon-commit count since the tag grows past ~40, consider nudging the owner toward the v0.1.1 tag (release-history hygiene, not a blocker).~~ done — moot: `v0.2.0` was tagged 2026-11-20 (`5010082`) and the release shipped — the count-nudge is overtaken
+49. The two upstream drafts: after OG.5 says file, use `gh issue create --body-file <extracted>` (never `--body-file -`), then `gh issue view` to confirm landing (github-voice procedure step 8). **→ routed to TODO_LIST Low Impact row "cmdguard follow-ups" (the OG.5 gate and both draft paths live in that row)**
+50. ~~Nothing else queued: the corpus is drained, the backlog is TODO_LIST + digest, and both are small.~~ done — standing fact, re-verified 2026-11-28: TODO_LIST (four sections) and docs/status/owner-decisions-digest.md remain the whole backlog
 
 ## g) Three questions I cannot answer myself
 

@@ -5,7 +5,9 @@
 // the docs gates do not see. With --fix it applies the repairs that are
 // purely mechanical; everything else is listed for a human decision.
 //
-//   node scripts/annotate-qa.mjs --base <rev> [--fix] [--json] <file>...
+//   node scripts/annotate-qa.mjs --base <rev|add> [--fix] [--json] <file>...
+//
+// `add` compares with the commit that added the file (the unswept text).
 //
 // Findings:
 //   R  renumbered: the item's base text sits under another number
@@ -17,18 +19,19 @@
 //   W  whitespace: the base's spaces are gone from the item's first line
 //   T  text: the item's first line diverges from its base text
 //   L  lost: words of the base item are missing
-//   B  blank: a struck item above the next item, or a code-led item below one
+//   B  blank: a struck item directly above the next numbered item
+//   P  blank: a struck item directly below a bare item
 //
 // Repairs (--fix): X (strike extended over the continuation lines, the
 // verdict moves to the item's end), W (base spaces restored), R (base
-// number restored), B (blank line inserted). Exit code 1 when
+// number restored), B and P (blank line inserted). Exit code 1 when
 // any finding remains after the repair.
 
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 
-const NUMBERED = /^(\s*)(~~)?(\d+)\.(?:\s+|$)(.*)$/;
+const NUMBERED = /^(\s*)(~~)?(\d+)\.(?:\s*)(.*)$/;
 const MIN_COMMON_PREFIX = 24;
 
 function parseArgs(argv) {
@@ -41,7 +44,7 @@ function parseArgs(argv) {
 		else options.files.push(arg);
 	}
 	if (!options.base || options.files.length === 0) {
-		console.error("usage: annotate-qa.mjs --base <rev> [--fix] [--json] <file>...");
+		console.error("usage: annotate-qa.mjs --base <rev|add> [--fix] [--json] <file>...");
 		process.exit(2);
 	}
 	return options;
@@ -155,7 +158,7 @@ function missingWords(base, block) {
 		.join(" ")
 		.split(/\s+/)
 		.map((word) => normalize(word))
-		.filter((word) => word !== "" && !have.has(word));
+		.filter((word) => word !== "" && !have.has(word) && !/^\d+\.$/.test(word));
 }
 
 // Re-inserts the spaces `ref` has before each character; both strings must
@@ -230,14 +233,17 @@ function inspect(lines, baseLines) {
 			add("X", item, `${item.end - closeLine} continuation line(s)${repairable ? "" : " (manual)"}`);
 			item.splitFix = repairable;
 		}
-		const next = item.end + 1 < lines.length ? splitHead(lines[item.end + 1]) : null;
-		if (item.struck && next) {
-			add("B", item, "struck item directly above the next numbered item; dprint eats spaces there");
-			item.blankFix = true;
-		}
-		if (!item.struck && item.text.startsWith("`") && item.start > 0 && lines[item.start - 1].trim() !== "" && splitHead(lines[item.start - 1])) {
-			add("B", item, "code-led item directly below another item; dprint nests it");
-			item.blankAboveFix = true;
+		if (item.struck) {
+			const next = item.end + 1 < lines.length ? splitHead(lines[item.end + 1]) : null;
+			if (next) {
+				add("B", item, "struck item directly above the next numbered item; dprint eats spaces there");
+				item.blankAfterFix = true;
+			}
+			const above = items.find((other) => other.end === item.start - 1);
+			if (above && !above.struck) {
+				add("P", item, "struck item directly below a bare item; dprint nests it");
+				item.blankAboveFix = true;
+			}
 		}
 		if (!item.struck) {
 			const markerOffset = block.findIndex((line) => /→\s*routed/.test(line));
@@ -251,7 +257,6 @@ function applyFixes(lines, report) {
 	let changes = 0;
 	const codesOf = (item) =>
 		new Set(report.findings.filter((finding) => finding.line === item.start + 1).map((finding) => finding.code));
-	const inserts = [];
 	for (const item of [...report.items].sort((left, right) => right.start - left.start)) {
 		const codes = codesOf(item);
 		if (codes.size === 0) continue;
@@ -268,38 +273,43 @@ function applyFixes(lines, report) {
 			lines[item.end] = `${lines[item.end].trimEnd()}~~ ${tail}`.trimEnd();
 			changes++;
 		}
-		if (codes.has("B") && item.blankAboveFix && lines[item.start - 1].trim() !== "") {
-			lines.splice(item.start, 0, "");
-			changes++;
-		}
-		if (codes.has("B") && item.blankFix) {
-			if (item.end + 1 < lines.length && lines[item.end + 1].trim() !== "") {
-				lines.splice(item.end + 1, 0, "");
-				changes++;
-			}
-		}
 		if (codes.has("R") && item.base) {
 			number = item.base.number;
 			changes++;
 		}
 		if (codes.has("I") && item.base && item.base.indent === "") {
 			for (let index = item.start; index <= item.end; index++) lines[index] = lines[index].trimStart();
-			if (item.start > 0 && lines[item.start - 1].trim() !== "") inserts.push(item.start);
 			indent = "";
 			changes++;
 		}
 		lines[item.start] = `${indent}${struck ? "~~" : ""}${number}. ${text}`.trimEnd();
+		if (codes.has("B") && item.blankAfterFix && item.end + 1 < lines.length && lines[item.end + 1].trim() !== "") {
+			lines.splice(item.end + 1, 0, "");
+			changes++;
+		}
+		if (codes.has("P") && item.blankAboveFix && lines[item.start - 1].trim() !== "") {
+			lines.splice(item.start, 0, "");
+			changes++;
+		}
 	}
-	for (const index of inserts.sort((left, right) => right - left)) lines.splice(index, 0, "");
 	return changes;
 }
 
 function run(options, file) {
 	const abs = resolve(file);
 	const rel = relative(process.cwd(), abs);
+	let revision = options.base;
+	if (revision === "add") {
+		const adds = execFileSync("git", ["log", "--format=%H", "--diff-filter=A", "--", rel], {
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		}).trim();
+		if (adds === "") return { file: rel, error: "not tracked" };
+		revision = adds.split("\n").at(-1);
+	}
 	let baseText;
 	try {
-		baseText = execFileSync("git", ["show", `${options.base}:${rel}`], {
+		baseText = execFileSync("git", ["show", `${revision}:${rel}`], {
 			encoding: "utf8",
 			stdio: ["ignore", "pipe", "ignore"],
 		});
