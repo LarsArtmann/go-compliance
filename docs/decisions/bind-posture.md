@@ -60,8 +60,7 @@ A redeploy is the same script again. The hub reports its commit as the
 version (`compliance-hub --version`, `/version`, and the `buildflow_version`
 of the document it serves).
 
-Evidence-file locations have their single home in the [integration
-guide's locations table](../guides/integrate.md#where-the-evidence-lives)
+Evidence-file locations have their single home in the [integration guide's locations table](../guides/integrate.md#where-the-evidence-lives)
 (system `/var/lib/overview/compliance.json`, user
 `~/.local/state/overview/compliance.json`, `GO_COMPLIANCE_EVIDENCE_FILE`
 override, per-command `--file` on the hub and `--evidence-file` on

@@ -40,8 +40,7 @@ err := compliance.RecordTo(ctx, compliance.NewFileStore(path),
     })
 ```
 
-Or with the default fleet document (see [Where the evidence
-lives](#where-the-evidence-lives) for its location):
+Or with the default fleet document (see [Where the evidence lives](#where-the-evidence-lives) for its location):
 
 ```go
 err := compliance.Record(ctx, compliance.NewRepoName("my-repo"),
@@ -68,11 +67,11 @@ go run ./examples/reporter compliance-example.json
 
 One fleet document holds every repository's rows. Where it sits:
 
-| Deployment             | Fleet document                             |
-| ---------------------- | ------------------------------------------ |
-| System (the default)   | `/var/lib/overview/compliance.json`        |
+| Deployment                | Fleet document                            |
+| ------------------------- | ----------------------------------------- |
+| System (the default)      | `/var/lib/overview/compliance.json`       |
 | User (`systemctl --user`) | `~/.local/state/overview/compliance.json` |
-| Override               | `GO_COMPLIANCE_EVIDENCE_FILE`              |
+| Override                  | `GO_COMPLIANCE_EVIDENCE_FILE`             |
 
 The system path is the core's `DefaultEvidenceFile` constant
 (`reporter.go`) and the `Record` helper's fallback; user deployments pass
