@@ -123,24 +123,24 @@
 ~~30. Retire `/tmp/test-core` scratch dirs (consumer-verify leftovers)~~ done — resolved 2026-11-24: /tmp/test-core does not exist anymore (tmp cleanup retired the consumer-verify leftovers; nothing to delete)
 
 **Docs/docs-health:**
-31. Annotate the 12-06 release-run status report with its post-run resolutions (done-at verdicts; §f1-13 now history)
-32. Annotate THIS report's predecessor items as they close (docs-health cadence)
-33. CHANGELOG [Unreleased]: promote the HTML-comment-era replace-drop row styling consistency check (dprint already green; just verify section headers stayed canonical)
-34. Verify pkg.go.dev renders the HUB module docs or intentionally shows nothing (hub is untagged by design — confirm the "not go-get-able" posture is visible somewhere user-facing: README or FEATURES)
-35. Release-notes file: confirm the in-repo copy (`docs/notes/v0.2.0-release-notes.md`) stays the single source for future regenerations of the GitHub Release body
+~~31. Annotate the 12-06 release-run status report with its post-run resolutions (done-at verdicts; §f1-13 now history)~~ done — verified 2026-11-28: the 12-06 release-run report now carries inline post-run resolutions (docs/status/2026-11-20_12-06_v020-release-run-status.md was annotated in the 2026-11-28 docs-health sweep; its pkg.go.dev and STACK.md entries re-verified today)
+~~32. Annotate THIS report's predecessor items as they close (docs-health cadence)~~ done — 2026-11-28: this report's open items were annotated inline in this docs-health pass (see the verdicts below)
+~~33. CHANGELOG [Unreleased]: promote the HTML-comment-era replace-drop row styling consistency check (dprint already green; just verify section headers stayed canonical)~~ done — verified 2026-11-28: CHANGELOG.md headers are canonical (## [Unreleased] line 7, ## [0.2.0] line 68, ## [0.1.0] line 109); dprint.json:18 excludes CHANGELOG.md, so no formatter styling applies to it
+~~34. Verify pkg.go.dev renders the HUB module docs or intentionally shows nothing (hub is untagged by design — confirm the "not go-get-able" posture is visible somewhere user-facing: README or FEATURES)~~ done — verified 2026-11-28: the posture is user-facing in README.md:41-42 ("The compliance-hub binary is not go-install-able (the hub module is untagged by design)")
+~~35. Release-notes file: confirm the in-repo copy (`docs/notes/v0.2.0-release-notes.md`) stays the single source for future regenerations of the GitHub Release body~~ done — verified 2026-11-28: docs/notes/release-runbook.md:24-27 makes the in-repo notes file the single source for the GitHub release body, and docs/notes/v0.2.0-release-notes.md matches the live v0.2.0 release body
 
 **Owner-decision queue (from the digest):**
-36. go-humanize/samber-lo fleet decisions (dustin is now a direct dep — re-affirm or plan the swap)
-37. Forgejo repo visibility (public?)
-38. `sqlite3` VACUUM + cache-DB deletion machine hygiene rows (blocked, owner-only)
-39. docs-gates fleet pin bump past `e305834` (adds `rows` verb)
-40. README installation section (structure-linter's cheap half)
+36. go-humanize/samber-lo fleet decisions (dustin is now a direct dep — re-affirm or plan the swap) **→ routed to docs/status/owner-decisions-digest.md rows "go-humanize adopt/accept-with-reason" and "samber/lo adopt-or-suppress" (both still open; dustin/go-humanize v1.1.0 is a direct dep in hub/go.mod, verified 2026-11-28)**
+37. Forgejo repo visibility (public?) **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)"**
+38. `sqlite3` VACUUM + cache-DB deletion machine hygiene rows (blocked, owner-only) **→ routed to TODO_LIST Blocked (owner decisions) rows "`sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB)" and "Delete the expendable 0.51 GB cache DB" (same rows in docs/status/owner-decisions-digest.md, Environment hygiene)**
+39. docs-gates fleet pin bump past `e305834` (adds `rows` verb) **→ routed to TODO_LIST Low Impact row "Fleet docs-gates pin bump past `e305834` (adds the `rows` verb)" (same item in docs/status/owner-decisions-digest.md, Fleet-layer)**
+40. README installation section (structure-linter's cheap half) **→ routed to docs/status/owner-decisions-digest.md row "structure-linter layout items (`assets/`, root `internal/`, README install section)" ("README install section is the cheap half")**
 
 **Stretch/architecture:**
 41. Consider `git-cliff`-style CHANGELOG automation from commit history (the daemon's commit messages are the only signal today)
 42. Consider a `compliance-hub version` subcommand stamping the ldflags version (release verification would stop needing proxy round-trips)
 43. Nightly `nix flake update` bot with auto-regen of css artifacts (keeps the pin honest)
-44. Add the hub module to the release shape QUESTION: hub/vX.Y.Z tags were deliberately never cut (binary-via-nix posture) — document that decision in STACK.md so future sessions don't re-litigate
+~~44. Add the hub module to the release shape QUESTION: hub/vX.Y.Z tags were deliberately never cut (binary-via-nix posture) — document that decision in STACK.md so future sessions don't re-litigate~~ done — in the release runbook rather than STACK.md: docs/notes/release-runbook.md:12-18 records the never-tagged hub posture and the do-not-re-litigate rule; note the runbook's own pointer "STACK.md records the decision" is dangling — STACK.md carries no such entry (checked 2026-11-28)
 45. Release smoke test: `nix build .#compliance-hub` + `serve --help` boot probe as a release-gate step
 ~~46. Evaluate GoReleaser for the compliance-hub binary (GitHub Release currently ships no artifacts)~~ **Won't implement — the hub ships as a nix flake package built from the committed tree (`scripts/deploy-hub.sh`, `git+file://<repo>?rev=HEAD#compliance-hub`) and the hub module is deliberately not go-get-able; nothing downloads a GitHub Release artifact, so a second release pipeline would be a split brain. Revisit if the hub must run on a host without nix (verdict 2026-11-28).**
 47. Wire the exit-code probe + BD003 + stack-drift into a single local `just`-style script (flake.nix app) so the battery is one command
@@ -150,6 +150,6 @@
 
 ## g) Questions I can NOT figure out myself
 
-1. **The red tag check:** v0.2.0's CI is permanently 13/14 (css-freshness red at tag time). Leave it documented as known-and-fixed-on-master (my recommendation), or cut a fast v0.2.1 so the newest tag is fully green? This is release-optics policy.
-2. **The css ping-pong:** the parallel session's environment still emits old-wrapped CSS (`c5b6ae7`). Do I coordinate with/stop that session's css regenerations, or is there a reason they need a different tailwind build I can't see?
-3. **Consumer propagation timing:** bump md-go-validator + BuildFlow onto core v0.2.0 now (go-ecosystem-upgrade, ~30m), or leave them on v0.1.0 until they next need a change? The reporter SDK contract is additive, so v0.1.0 keeps working — this is a policy call, not a necessity.
+~~1. **The red tag check:** v0.2.0's CI is permanently 13/14 (css-freshness red at tag time). Leave it documented as known-and-fixed-on-master (my recommendation), or cut a fast v0.2.1 so the newest tag is fully green? This is release-optics policy.~~ done — resolved by the documented path: the tag's red css check is recorded as known-and-fixed-on-master (docs/notes/release-runbook.md:31-34, AGENTS.md:93-97) and ci.yml:15 re-runs the matrix on v* pushes so any future tag carries its own verdict; no v0.2.1 was cut. Verified 2026-11-28
+~~2. **The css ping-pong:** the parallel session's environment still emits old-wrapped CSS (`c5b6ae7`). Do I coordinate with/stop that session's css regenerations, or is there a reason they need a different tailwind build I can't see?~~ done — moot since 0cf9562 (2026-11-28 04:11): CI regenerates the artifacts with the flake.lock rev (ci.yml:232) and diffs them, css-freshness is green on the latest master run 46105857772 (2026-11-28), and the worktree is clean — no second toolchain output in play. Verified 2026-11-28
+~~3. **Consumer propagation timing:** bump md-go-validator + BuildFlow onto core v0.2.0 now (go-ecosystem-upgrade, ~30m), or leave them on v0.1.0 until they next need a change? The reporter SDK contract is additive, so v0.1.0 keeps working — this is a policy call, not a necessity.~~ done — happened 2026-11-27 (fleet consumer sweep): md-go-validator/go.mod:8 and BuildFlow/go.mod:40 require github.com/larsartmann/go-compliance v0.2.0 (both sibling repos read today). Verified 2026-11-28

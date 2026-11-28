@@ -406,15 +406,20 @@ const keyboardPass = async (sessionId) => {
 	};
 };
 
-// fleetTableScrollState reports how far the fleet table's box is scrolled and
-// how far the header row sits from the box's top edge: an offset of 0 means
-// the sticky header stayed pinned over the rows.
+// fleetTableScrollState reports how far the fleet table's box is scrolled,
+// how far the header row sits from the box's top edge (an offset of 0 means
+// the sticky header stayed pinned over the rows), and whether the box's
+// scroll shadow is showing (1) or hidden (0).
 const fleetTableScrollState = async (sessionId) =>
 	evaluate(
 		`(() => {
 			const box = document.querySelector("#fleet-region .fleet-table").parentElement;
 			const head = box.querySelector("thead");
-			return { scrollTop: box.scrollTop, headerPinOffset: Math.abs(head.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientTop) };
+			return {
+				scrollTop: box.scrollTop,
+				headerPinOffset: Math.abs(head.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientTop),
+				scrollShadow: Number(getComputedStyle(box, "::after").opacity),
+			};
 		})()`,
 		sessionId,
 	);
@@ -423,6 +428,15 @@ const fleetTableScrollState = async (sessionId) =>
 const scrollFleetTable = async (sessionId) => {
 	await evaluate(
 		`(() => { const box = document.querySelector("#fleet-region .fleet-table").parentElement; box.scrollTop = Math.min(1400, box.scrollHeight - box.clientHeight); })()`,
+		sessionId,
+	);
+	await sleep(300);
+};
+
+// scrollFleetTableToEnd scrolls the fleet table's box to its last row.
+const scrollFleetTableToEnd = async (sessionId) => {
+	await evaluate(
+		`(() => { const box = document.querySelector("#fleet-region .fleet-table").parentElement; box.scrollTop = box.scrollHeight; })()`,
 		sessionId,
 	);
 	await sleep(300);
@@ -487,6 +501,14 @@ try {
 			);
 			// Measured after the capture, so the numbers describe the picture.
 			scrolled.push({ view: view.name, ...(await fleetTableScrollState(sessionId)) });
+			// The shadow must vanish at the last row: the fleet ends where the
+			// box stops scrolling, whatever the height of that last row.
+			await scrollFleetTableToEnd(sessionId);
+			const atEnd = await fleetTableScrollState(sessionId);
+			Object.assign(scrolled[scrolled.length - 1], {
+				endScrollTop: atEnd.scrollTop,
+				scrollShadowAtEnd: atEnd.scrollShadow,
+			});
 			await evaluate(
 				'document.querySelector("#fleet-region .fleet-table").parentElement.scrollTop = 0',
 				sessionId,
@@ -535,7 +557,7 @@ for (const entry of truth) {
 }
 
 for (const entry of scrolled) {
-	console.log(`scrolled ${entry.view}: scrollTop=${entry.scrollTop} headerPinOffset=${entry.headerPinOffset}`);
+	console.log(`scrolled ${entry.view}: scrollTop=${entry.scrollTop} headerPinOffset=${entry.headerPinOffset} scrollShadow=${entry.scrollShadow}->${entry.scrollShadowAtEnd}`);
 }
 
 if (keyboard) {
@@ -604,6 +626,16 @@ for (const entry of scrolled) {
 	if (entry.headerPinOffset > 1)
 		failures.push(
 			`scrolled ${entry.view}: the column header moved ${entry.headerPinOffset}px away from the top of the table box`,
+		);
+	// The scroll shadow says that rows follow below, also when the last
+	// visible row is not cut off; at the end of the fleet nothing follows.
+	if (entry.scrollShadow !== 1)
+		failures.push(
+			`scrolled ${entry.view}: the table box shows no scroll shadow at ${entry.scrollTop}px although rows follow (opacity ${entry.scrollShadow})`,
+		);
+	if (entry.scrollShadowAtEnd !== 0)
+		failures.push(
+			`scrolled ${entry.view}: the table box still shows its scroll shadow at the end of the fleet (opacity ${entry.scrollShadowAtEnd}, scrollTop ${entry.endScrollTop})`,
 		);
 }
 
