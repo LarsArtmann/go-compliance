@@ -67,7 +67,7 @@ now.
   only: 21-17 39 changes, 18-12 5; the copies passed QA except the three
   items above. It was not applied to the repo.
 - Formatter experiment on the repaired copy of the 18-12 report: with the
-  spaces restored by hand (`block`$?`reads`, `22.`--all-systems`flake`),
+  spaces restored by hand (three inline-code spans that had lost their neighbours),
   `dprint fmt --config dprint.json` removed both spaces again; the same
   formatter left the same lines unchanged in an isolated three-line sample
   file. The list sits directly under a struck paragraph there.
