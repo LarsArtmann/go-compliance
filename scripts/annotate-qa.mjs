@@ -17,7 +17,7 @@
 //   W  whitespace: the base's spaces are gone from the item's first line
 //   T  text: the item's first line diverges from its base text
 //   L  lost: words of the base item are missing
-//   B  blank: a struck item directly above the next numbered item
+//   B  blank: a struck item above the next item, or a code-led item below one
 //
 // Repairs (--fix): X (strike extended over the continuation lines, the
 // verdict moves to the item's end), W (base spaces restored), R (base
@@ -230,9 +230,14 @@ function inspect(lines, baseLines) {
 			add("X", item, `${item.end - closeLine} continuation line(s)${repairable ? "" : " (manual)"}`);
 			item.splitFix = repairable;
 		}
-		if (item.struck && item.end + 1 < lines.length && splitHead(lines[item.end + 1])) {
+		const next = item.end + 1 < lines.length ? splitHead(lines[item.end + 1]) : null;
+		if (item.struck && next) {
 			add("B", item, "struck item directly above the next numbered item; dprint eats spaces there");
 			item.blankFix = true;
+		}
+		if (!item.struck && item.text.startsWith("`") && item.start > 0 && lines[item.start - 1].trim() !== "" && splitHead(lines[item.start - 1])) {
+			add("B", item, "code-led item directly below another item; dprint nests it");
+			item.blankAboveFix = true;
 		}
 		if (!item.struck) {
 			const markerOffset = block.findIndex((line) => /→\s*routed/.test(line));
@@ -261,6 +266,10 @@ function applyFixes(lines, report) {
 			const tail = text.slice(closeOffset + 2).trim();
 			text = text.slice(0, closeOffset);
 			lines[item.end] = `${lines[item.end].trimEnd()}~~ ${tail}`.trimEnd();
+			changes++;
+		}
+		if (codes.has("B") && item.blankAboveFix && lines[item.start - 1].trim() !== "") {
+			lines.splice(item.start, 0, "");
 			changes++;
 		}
 		if (codes.has("B") && item.blankFix) {
