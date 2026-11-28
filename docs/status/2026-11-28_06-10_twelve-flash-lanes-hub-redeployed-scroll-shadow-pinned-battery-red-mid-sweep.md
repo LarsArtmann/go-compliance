@@ -14,9 +14,20 @@ of
 after the owner's "get shit done, use subagents on z.ai GLM-5.3-flash" and
 stopped at the owner's order for this report. Against the tip that report
 described (`93272b5`, the first commit of this session), 22 files changed
-(+861, -959), all committed by the daemon. Nine write subagents were still
-running when this was written; they were left to finish their bounded files
-and nothing new was dispatched.
+(+861, -959), all committed by the daemon. Eight write subagents were still
+running when this was written.
+
+> **Addendum (09:05 CET).** All eight stopped at about 06:20 on the
+> provider's five-hour usage limit (`Usage limit reached for 5 hour. Your
+> limit will reset at 2026-11-28 15:47:05`); none filed a report. Their
+> files hold whatever each had written by then: five archive lanes (16-12,
+> 21-17, 11-29, 11-30, 22-27, 16-58, 18-12), the living-docs lane, the
+> templ-components repair and the discovery worktree fix. By 09:03 the
+> daemon had pushed every go-compliance commit (`github/master` equals
+> HEAD `24aa932`); templ-components still held the 11 modified files
+> uncommitted, project-discovery-daemon a modified `TODO_LIST.md`, a
+> modified `scripts/admin-qa-cdp.mjs` and an untracked
+> `worktree_discovery_test.go`.
 
 **Verified in this session (command, result):**
 
@@ -98,7 +109,7 @@ and nothing new was dispatched.
 
 **NOT verified here:**
 
-- Everything the nine running lanes will report: the five archive lanes
+- Everything the eight lanes that stopped on the usage limit leave behind: the five archive lanes
   still sweeping (16-12, 21-17, 11-29, 11-30, 22-27, 16-58, 18-12), the
   living-docs lane (CHANGELOG, FEATURES, README, live-architecture,
   bind-posture, integrate guide, STACK.md, digest, the 15-50 bullet), the
@@ -184,8 +195,8 @@ The tip is not shippable as a green run: the docs battery is red on three
 gates in the middle of the sweep, 17 local commits are unpushed, and
 templ-components master holds an uncommitted, unproven repair.
 
-Numbers: 12 lanes (4 finished, 9 running, counting the library-policy
-follow-up as finished); 22 files changed (+861, -959) in this repo; 121
+Numbers: 12 lanes (4 finished with a report, 8 stopped on the usage limit);
+22 files changed (+861, -959) in this repo; 121
 items resolved in two reports by lanes; 31 QA findings on those two files;
 18 unarchived reports with this one; 17 unpushed commits; about $1.67 lane
 spend.
@@ -285,7 +296,7 @@ spend.
 | A sweep starts before the rows it routes to exist                                    | 16 items stay bare in the first two files alone       | collect the missing rows first, route second (the rule existed; it needs a step before dispatch)                    |
 | One report left out of the lane plan                                                 | `audit-all` stays red on that file                    | derive the lane list from `docs-gates rows --bare`, not from a hand-written list                                    |
 | A formatter renumbers items after a strike                                           | citations break silently                              | struck items start in column 0 and get a blank line before the next open item; record the rule (section f, item 26) |
-| Nine write lanes at once in one docs folder                                          | the daemon pushes half-states; CI runs red repeatedly | fewer lanes per wave, or one wave per folder, with a battery run between waves                                      |
+| Eight write lanes at once in one docs folder                                         | the daemon pushes half-states; CI runs red repeatedly | fewer lanes per wave, or one wave per folder, with a battery run between waves                                      |
 | A CSS fallback branch no gate can reach                                              | it may be broken and nobody would know                | one Firefox run of the harness on the working tree, or drop the branch (section f, item 20)                         |
 | Shell commands composed from two fragments                                           | unintended deploys                                    | one command per call; read the command before it runs                                                               |
 | `AGENTS.md` points at a table another lane is still writing                          | a pointer into nothing for some minutes               | write pointers in the same change as their target, or after it                                                      |
@@ -297,7 +308,7 @@ that pseudo-element's opacity.
 
 ## f) Next things (up to 50, ranked by impact)
 
-1. Let the nine running lanes finish, read every report in full, and re-run their file gates myself within minutes of each report. (Critical, S, Process)
+1. Take over the eight lanes that stopped on the usage limit: read every file they left, re-run its file gates, and finish or undo each half-done edit before anything new starts. (Critical, S, Process)
 2. Repair what the QA script finds in every swept report: the renumbered items (23-09 §e, 4 → 2 and 9 → 3), the routed markers that end the first line of a multi-line item (23-09 L58, 00-04 L61), the ten unmatched lines in 00-04; then `dprint fmt` and the gates again. (Critical, M, Documentation)
 3. Move `/tmp/gsd/qa_annotate.py` into the repo as a script and run it after every `dprint fmt` in the archive ritual. (Critical, S, Tooling)
 4. Sweep the 2026-11-20 12-06 report: 26 bare table rows, about 77 open numbered lines, and the one item `audit-all` flags. (High, M, Documentation)
