@@ -221,12 +221,15 @@ jobs:
       # Byte-freshness: regenerating from go.mod truth + app.css must
       # reproduce the committed artifacts exactly — an adopted component
       # whose utilities never reached the stylesheet renders unstyled.
-      # The tailwind tool is pinned to the flake.lock's nixpkgs rev:
-      # the registry build moved under the same version and re-wrapped
-      # the output, red-flagging runs until artifacts were regenerated.
+      # The tailwind tool comes from the flake.lock's nixpkgs rev, READ from
+      # the lock at run time (never written here): the registry build moved
+      # under the same version and re-wrapped the output, red-flagging runs
+      # until artifacts were regenerated, so local (`nix shell .#tailwindcss`)
+      # and CI must use one toolchain. A rev written by hand drifts: the
+      # handwritten one had been behind the lock since 2026-11-23.
       # (The rev URL avoids evaluating this flake — that would fetch the
       # private go-daemon input, unavailable without FLAKE_PAT.)
-      - run: nix shell github:NixOS/nixpkgs/0bb8272318b4ca41bf0edc6224df3e3e3046b70d#tailwindcss_4 -c bash scripts/regen-ui.sh
+      - run: nix shell "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#tailwindcss_4" -c bash scripts/regen-ui.sh
       - run: git diff --exit-code -- hub/internal/dashboard/library-classes.txt hub/internal/dashboard/library-custom.css hub/internal/dashboard/app.min.css
 
   docs-gates:
