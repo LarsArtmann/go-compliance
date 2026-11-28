@@ -51,35 +51,24 @@ WHAT shipped; this one covers what I did WRONG, forgot, and should improve).
 
 ## e) WHAT WE SHOULD IMPROVE (process, from this session's scars)
 
-~~1. **A "dep-change checklist" gate**: any session that edits go.mod must~~ done — Codified, Verified 2026-11-28: AGENTS.md:200-204 (the vendorHash/nix-hash-fix/flake-check block) + the CI "stack drift check" job (ci.yml:149) enforces the drift half on every push
-   run stack-drift-check + vendorHash ritual + govulncheck as ONE block
-   before declaring green (today: drift was forgotten until self-review).
-~~2. **Annotate-writer discipline**: ALWAYS `@substring` keys in reports~~ done — Codified, Verified 2026-11-28: AGENTS.md:193 "Multi-section annotate keys need the `N@substring` disambiguator; run `emit-keys` and `--dry-run` first"
-   with multiple numbered sections; a number-only key is a footgun.
-   Worth an AGENTS.md line in the docs-health workflow.
+~~1. **A "dep-change checklist" gate**: any session that edits go.mod must run stack-drift-check + vendorHash ritual + govulncheck as ONE block before declaring green (today: drift was forgotten until self-review).~~ done — Codified, Verified 2026-11-28: AGENTS.md:200-204 (the vendorHash/nix-hash-fix/flake-check block) + the CI "stack drift check" job (ci.yml:149) enforces the drift half on every push
+~~2. **Annotate-writer discipline**: ALWAYS `@substring` keys in reports with multiple numbered sections; a number-only key is a footgun. Worth an AGENTS.md line in the docs-health workflow.~~ done — Codified, Verified 2026-11-28: AGENTS.md:193 "Multi-section annotate keys need the `N@substring` disambiguator; run `emit-keys` and `--dry-run` first"
 3. **Copy pinned SHAs from the file, never from memory** (the ci.yml
    mangling); better: a YAML anchor or a single reusable step.
 4. **Living-doc sweep as part of "done"**: when a session changes
    user-visible behavior, FEATURES.md + AGENTS.md counts update in the
    SAME breath as CHANGELOG — not at self-review time.
-~~5. **CI jobs need a first-run observation note**: 4 new jobs, 0 runner~~ done — Overtaken by events, Verified 2026-11-28: all four jobs hold real green runner executions (CHANGELOG.md:90; FEATURES.md:60 "all with real green runner executions") — "pushed but never run" is no longer true of any gate
-   executions — treat "pushed but never run" as PARTIALLY DONE honestly
-   (this report does).
-~~6. **Pin `rg` in the citation-gate job** (or switch the script to~~ done — Done differently 2026-11-20, Verified 2026-11-28: no pin needed — `extract_cites` prefers ripgrep and falls back to `grep -ERE` (scripts/check-citations.sh:53-60; CHANGELOG.md:83 "runner-image drift cannot break the gate and no install step is needed")
-   grep-able extraction) so runner-image drift can't break the gate.
-~~7. **shellcheck the two new scripts** (they run green, but are not~~ done — Verified 2026-11-28: shellcheck 0.11.0 clean on scripts/check-citations.sh (my run, exit 0); the second script (stack-drift-check.sh) is fetched by CI from the tooling repo (ci.yml:154), not in-tree
-   shellcheck-verified; dprint does not cover shell).
+~~5. **CI jobs need a first-run observation note**: 4 new jobs, 0 runner executions — treat "pushed but never run" as PARTIALLY DONE honestly (this report does).~~ done — Overtaken by events, Verified 2026-11-28: all four jobs hold real green runner executions (CHANGELOG.md:90; FEATURES.md:60 "all with real green runner executions") — "pushed but never run" is no longer true of any gate
+~~6. **Pin `rg` in the citation-gate job** (or switch the script to grep-able extraction) so runner-image drift can't break the gate.~~ done — Done differently 2026-11-20, Verified 2026-11-28: no pin needed — `extract_cites` prefers ripgrep and falls back to `grep -ERE` (scripts/check-citations.sh:53-60; CHANGELOG.md:83 "runner-image drift cannot break the gate and no install step is needed")
+~~7. **shellcheck the two new scripts** (they run green, but are not shellcheck-verified; dprint does not cover shell).~~ done — Verified 2026-11-28: shellcheck 0.11.0 clean on scripts/check-citations.sh (my run, exit 0); the second script (stack-drift-check.sh) is fetched by CI from the tooling repo (ci.yml:154), not in-tree
 8. **templ LSP false-positive upstream**: the embedlit proof is worth an **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", owner-decision row "a-h/templ LSP embedlit false positive" (upstream-mandate queue). Verified 2026-11-28: the in-tree FP verdict stands at AGENTS.md:88-90**
    a-h/templ issue (blocker: upstream mandate question).
 
 ## f) Top things to get done next (ordered)
 
-~~1. Push to remotes (owner policy — 40+ commits behind on the GitHub~~ done — Done, Verified 2026-11-28: the push happened and CI ran — CHANGELOG.md:90 (first push run 44611411587 12/13 green; full matrix 13/13 in run 44612235355); the residual CI debt is the docs-gates audit-all row (TODO_LIST.md:25 High)
-   mirror) and WATCH the four new CI jobs' first real runs.
+~~1. Push to remotes (owner policy — 40+ commits behind on the GitHub mirror) and WATCH the four new CI jobs' first real runs.~~ done — Verified 2026-11-28: the push happened and CI ran — CHANGELOG.md:90 (first push run 44611411587 12/13 green; full matrix 13/13 in run 44612235355); the residual CI debt is the docs-gates audit-all row (TODO_LIST.md:25 High)
 ~~2. `--sort-by` flag parity on hub `table` (findings/failures/name).~~ done — Done, Verified 2026-11-28: hub/internal/cli/flags.go:51 `--sort-by` (findings, failures, name — tiebreak inside the state rank) + table_test.go:255-262; CHANGELOG.md:81
-~~3. Tag core v0.1.1 (current tree), then execute the hub replace-drop row~~ done — Executed at v0.2.0 instead, Verified 2026-11-28: v0.2.0 = f906ae5 (2026-11-20 17:12 +0100); hub/go.mod:12 requires core v0.2.0, no replace; flake.nix:150 "no _core_only copy needed"
-   (require v0.1.1, drop `=> ../`, tidy, vendorHash ritual, simplify the
-   `_core_only` postPatchExtra story).
+~~3. Tag core v0.1.1 (current tree), then execute the hub replace-drop row (require v0.1.1, drop `=> ../`, tidy, vendorHash ritual, simplify the `_core_only` postPatchExtra story).~~ done — Executed at v0.2.0 instead, Verified 2026-11-28: v0.2.0 = f906ae5 (2026-11-20 17:12 +0100); hub/go.mod:12 requires core v0.2.0, no replace; flake.nix:150 "no _core_only copy needed"
 4. cmdguard next tag: adopt `AssertDescribeContract`; re-evaluate the **→ routed to TODO_LIST Low Impact row "cmdguard follow-ups: cmdguard-lint CI gate DONE 2026-11-19 ..." (AssertDescribeContract verified on master but NOT in v5.1.0 — adopt at the next tag; Nd-codec + lint-replaces drafts voice-checked; filing waits on the OG.5 mandate). Verified 2026-11-28: zero AssertDescribeContract uses under hub/**
    lint CI recipe if upstream drops the replace directives.
 ~~5. Screenshot `docs/review/libs/index.html` (owner or `permissions safe~~ done — Done, Verified 2026-11-28: docs/assets/libs-index.png (2026-11-27) captured by scripts/screenshot-page.sh, linked from the audit index (11-52 report :138)
@@ -96,29 +85,23 @@ WHAT shipped; this one covers what I did WRONG, forgot, and should improve).
 11. M26 overview endgame (replace vs coexist) — owner question g2. **→ routed to TODO_LIST Blocked (owner decisions) row "M26: overview endgame (replace vs coexist) + migration note" (also ROADMAP "Endgame question (owner, g2 — BLOCKED)")**
 12. Repo visibility decision; VACUUM buildflow state DB (1.04 GB); **→ routed to TODO_LIST Blocked (owner decisions) rows "Forgejo repo visibility (lars/go-compliance → public?)", "`sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB)", "Delete the expendable 0.51 GB cache DB (`~/.cache/buildflow/cache.db`)"**
     delete the 0.51 GB cache DB (owner machine hygiene).
-~~13. `check-rows --strict` + `bare-rows` validation pass over the~~ done — Standing practice, re-verified 2026-11-28: `docs-gates rows --strict` + `--bare` over docs/status/archived/*.md + docs/planning/archived/*.md → "20 file(s) clean", exit 0 (my runs)
-    remaining aged status reports as their items close (archive cadence).
-~~14. shellcheck + `rg` pin hardening for `scripts/check-citations.sh` /~~ done — Done, Verified 2026-11-28: CHANGELOG.md:83 records the 2026-11-20 hardening (rg-preferred, grep -ERE fallback, shellcheck clean); re-verified today: shellcheck 0.11.0 clean + checked=427 stale=0 (my runs)
-    CI job.
+~~13. `check-rows --strict` + `bare-rows` validation pass over the remaining aged status reports as their items close (archive cadence).~~ done — Standing practice, re-verified 2026-11-28: `docs-gates rows --strict` + `--bare` over docs/status/archived/*.md + docs/planning/archived/*.md → "20 file(s) clean", exit 0 (my runs)
+~~14. shellcheck + `rg` pin hardening for `scripts/check-citations.sh` / CI job.~~ done — Verified 2026-11-28: CHANGELOG.md:83 records the 2026-11-20 hardening (rg-preferred, grep -ERE fallback, shellcheck clean); re-verified today: shellcheck 0.11.0 clean + checked=427 stale=0 (my runs)
 15. Consider verifying EXTERNAL (lib-side) citations against local
     checkouts when `~/projects/<lib>` exists (140 cites currently
     presumed).
-~~16. Watch the cross-process watcher spec on CI for timing flakiness~~ done — Overtaken, Verified 2026-11-28: the watcher spec rides CI's build+test jobs (core/hub -race, ci.yml:37-39, 60), green in the first real runs (CHANGELOG.md:90 full matrix 13/13); no watcher-spec flake recorded in CI to date
-    (2s budget; loosen only with evidence).
+~~16. Watch the cross-process watcher spec on CI for timing flakiness (2s budget; loosen only with evidence).~~ done — Overtaken, Verified 2026-11-28: the watcher spec rides CI's build+test jobs (core/hub -race, ci.yml:37-39, 60), green in the first real runs (CHANGELOG.md:90 full matrix 13/13); no watcher-spec flake recorded in CI to date
 17. io_metrics ratchet: now that the churn correlation is understood,
     consider a per-run churn-normalized expectation (upstream buildflow
     idea, not this repo's to fix).
 18. app.min.css + library-classes.txt (3.5 MB) churn on every **→ routed to ROADMAP "Dashboard/UI raw ideas (2026-11-19 self-review)", row "a per-bundle diff-size budget for the `app.min.css` + `library-classes.txt` churn on templ-components bumps"**
     templ-components bump — acceptable per fleet pattern, but a
     per-bundle diff-size budget would catch accidental explosions.
-~~19. CSS: `errorpage`'s `text-[8rem]` etc. ride the shared artifact; a~~ done — Shipped stronger, Verified 2026-11-28: scripts/screenshot.sh renders light/dark/just-wide/narrow headlessly and fails on console errors, theme, empty-fleet table, overflow, WCAG-AA contrast, layout, pinned-header and keyboard findings (script header :3-11); the visual smoke exists well beyond a byte-gate
-    visual smoke (screenshot diff) would catch unstyled-class regressions
-    the byte-gate cannot see.
+~~19. CSS: `errorpage`'s `text-[8rem]` etc. ride the shared artifact; a visual smoke (screenshot diff) would catch unstyled-class regressions the byte-gate cannot see.~~ done — Shipped stronger, Verified 2026-11-28: scripts/screenshot.sh renders light/dark/just-wide/narrow headlessly and fails on console errors, theme, empty-fleet table, overflow, WCAG-AA contrast, layout, pinned-header and keyboard findings (script header :3-11); the visual smoke exists well beyond a byte-gate
 20. HEAD-request explicit test for `/app.css` (the handler relies on net/ **→ routed to ROADMAP "Dashboard/UI raw ideas (2026-11-19 self-review)", row "an explicit HEAD-request test for `/app.css`". Verified 2026-11-28: still no explicit HEAD test under hub/ (grep empty)**
     http's implicit HEAD body suppression; ScriptHandler handles HEAD
     explicitly — match that bar if it ever matters).
-~~21. FEATURES.md: consider a row for the citation/stack/css CI gates~~ done — Done, Verified 2026-11-28: FEATURES.md:60 CI row names the 14-job matrix incl. dupl-gate, templ-fmt, citation-gate, cmdguard-usage, branded-ID, css-freshness — "all with real green runner executions"
-    (infra inventory completeness).
+~~21. FEATURES.md: consider a row for the citation/stack/css CI gates (infra inventory completeness).~~ done — Verified 2026-11-28: FEATURES.md:60 CI row names the 14-job matrix incl. dupl-gate, templ-fmt, citation-gate, cmdguard-usage, branded-ID, css-freshness — "all with real green runner executions"
 ~~22. AGENTS.md docs-health workflow line for the @substring rule (from §e2).~~ done — Done, Verified 2026-11-28: AGENTS.md:193 carries the `N@substring` rule
 
 ## g) Questions I can NOT answer myself
@@ -127,10 +110,7 @@ WHAT shipped; this one covers what I did WRONG, forgot, and should improve).
    suppress with baseline, or accept-with-reason? Gates 6 error-severity
    findings on every buildflow full run — the ONLY thing keeping
    `buildflow --build-mode=full` from exit 0 on this repo.
-~~2. **Core v0.1.1 timing** (new): v0.1.0 predates the Wave 1-3 core~~ **Superseded — superseded by docs/status/2026-11-20_12-06_v020-release-run-status.md — the question answered itself: core tagged v0.2.0 (f906ae5, 2026-11-20 17:12 +0100) and the hub replace-drop executed (hub/go.mod:12, no replace); no v0.1.1 was ever needed.**
-   splits (no filestore.go, no toolchain line). Tag v0.1.1 as-is so the
-   hub replace-drop can execute, or hold for a review pass / more
-   changes first?
+~~2. **Core v0.1.1 timing** (new): v0.1.0 predates the Wave 1-3 core splits (no filestore.go, no toolchain line). Tag v0.1.1 as-is so the hub replace-drop can execute, or hold for a review pass / more changes first?~~ superseded by docs/status/2026-11-20_12-06_v020-release-run-status.md — Verified 2026-11-28: the question answered itself; core was tagged v0.2.0 (f906ae5, 2026-11-20 17:12 +0100) and the hub replace-drop executed (hub/go.mod:12, no replace); no v0.1.1 was ever needed
 3. **Upstream-filing mandate** (carried Q3, now 5 candidates): may **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", row "mandate for consumer sessions filing upstream TODOs in library repos" (both proven findings listed; drafts voice-checked per TODO_LIST.md:40)**
    sessions file issues/PRs in library repos (cmdguard, go-datastar,
    templ-components, a-h/templ) in your name? Two of this session's

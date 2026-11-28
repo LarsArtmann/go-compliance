@@ -59,31 +59,31 @@
 
 ## c) NOT STARTED
 
-1. Consumer propagation: md-go-validator + BuildFlow → core v0.2.0 (go-ecosystem-upgrade)
-2. Retro v0.1.0 GitHub Release (v0.1.0 ships tag-only, zero notes)
-3. Tag-triggered CI workflow (`on: push: tags`) — the v0.2.0 tag never got its own CI verdict
-4. README install/`go get` snippets → v0.2.0; FEATURES CI row → 14 jobs; README CI gate list + branded-ID
-5. Exit-code contract probe re-run (75) on the released binary
-6. `scripts/pre-release-check.sh` + release runbook doc (this session's sequence distilled)
-7. FLAKE_PAT decision (hub/flake CI jobs still skip without it — vendorHash has no CI coverage)
-8. Benchmark re-record decision (107µs vs 127µs baseline; owner call)
+~~1. Consumer propagation: md-go-validator + BuildFlow → core v0.2.0 (go-ecosystem-upgrade)~~ done — md-go-validator/go.mod:8 and BuildFlow/go.mod:40 require go-compliance v0.2.0 (both sibling repos read 2026-11-28)
+~~2. Retro v0.1.0 GitHub Release (v0.1.0 ships tag-only, zero notes)~~ done — the retro v0.1.0 GitHub Release exists, published 2026-11-24T20:18:41Z (gh release list, verified 2026-11-28); docs/notes/v0.1.0-release-notes.md exists too
+~~3. Tag-triggered CI workflow (`on: push: tags`) — the v0.2.0 tag never got its own CI verdict~~ done — .github/workflows/ci.yml:15 declares tags: ["v*"] — tag pushes re-run the matrix (verified 2026-11-28)
+~~4. README install/`go get` snippets → v0.2.0; FEATURES CI row → 14 jobs; README CI gate list + branded-ID~~ done — README.md:25 go get @v0.2.0, README.md:167-174 CI gate list with the branded-ID gate, FEATURES.md:60 the 14-job matrix row. Verified 2026-11-28
+~~5. Exit-code contract probe re-run (75) on the released binary~~ done — probe re-run 2026-11-28 — nix run .#compliance-hub -- report --db /nonexistent/x.db exits 75 (un-piped capture)
+~~6. `scripts/pre-release-check.sh` + release runbook doc (this session's sequence distilled)~~ done — scripts/pre-release-check.sh (177 lines) and docs/notes/release-runbook.md (82 lines) both exist and cross-reference each other (verified 2026-11-28)
+7. FLAKE_PAT decision (hub/flake CI jobs still skip without it — vendorHash has no CI coverage) **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs"**
+8. Benchmark re-record decision (107µs vs 127µs baseline; owner call) **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)"**
 9. Forgejo release mirroring policy
-10. AGENTS.md line for "css tool pin moves WITH flake.lock bumps" (drift-check or documented ritual)
+~~10. AGENTS.md line for "css tool pin moves WITH flake.lock bumps" (drift-check or documented ritual)~~ done — superseded by structure: ci.yml:232 reads the tailwind tool rev from flake.lock at run time (0cf9562, 2026-11-28), so the pin cannot drift from the lock; the ritual is documented anyway (AGENTS.md:29, docs/notes/release-runbook.md:73-77). Verified 2026-11-28
 
 ## d) TOTALLY FUCKED UP
 
-1. **The v0.2.0 tag's CI is permanently red (13/14, css-freshness).** Root cause: I tagged on a pipe-masked green watch. The tag is immutable and proxy-served; the fix is on master, the red check on the tag is forever. This is the exact failure mode the go-release skill's #1 rules exist to prevent — I had the tooling and still tripped it via verification discipline.
-2. **Two false-green claims during the run** (BD003, first CI watch) — both self-caught, but they were lies-by-verification-gap while they stood.
-3. **Near-miss, caught in time:** the first battery was green and the tag was NOT cut — plain `buildflow` (never run at that point) had 8 error findings. The repo's own canonical gate is the only reason the release wasn't tagged dirty.
+~~1. **The v0.2.0 tag's CI is permanently red (13/14, css-freshness).** Root cause: I tagged on a pipe-masked green watch. The tag is immutable and proxy-served; the fix is on master, the red check on the tag is forever. This is the exact failure mode the go-release skill's #1 rules exist to prevent — I had the tooling and still tripped it via verification discipline.~~ done — standing fact, updated 2026-11-28: the tag run is verified red (gh run 44771245828 on f906ae5 = 13 success + "dashboard CSS freshness gate: failure", 13/14, immutable) and the documented-as-fixed path won: docs/notes/release-runbook.md:31-34 and AGENTS.md:93-97 record it, ci.yml:15 re-runs the matrix on v* pushes, and no v0.2.1 was needed
+~~2. **Two false-green claims during the run** (BD003, first CI watch) — both self-caught, but they were lies-by-verification-gap while they stood.~~ done — standing fact, re-verified 2026-11-28: the true-exit lesson from these two false greens lives at AGENTS.md:49-50 and crush-config references/lessons.md:469, and docs/notes/release-runbook.md:31-34 records the masked-watch incident
+~~3. **Near-miss, caught in time:** the first battery was green and the tag was NOT cut — plain `buildflow` (never run at that point) had 8 error findings. The repo's own canonical gate is the only reason the release wasn't tagged dirty.~~ done — standing fact, re-verified 2026-11-28: the 8 findings' fixes landed before the tag (ffade0e 11:19 go.mod/humanize, 061ab8f 12:27 table_sort.go split, 7322b07 16:57 AGENTS.md trim + three notes files) and the tag f906ae5 (17:12) came after them on 2026-11-20; docs/notes/release-runbook.md:39-41 records the near-miss
 
 ## e) WHAT WE SHOULD IMPROVE
 
-1. **True-exit discipline as a hard rule**: every gate read uses `cmd > file; echo $?` or `--exit-status` with `$?` captured outside any pipeline. Recorded in AGENTS.md; should also be a fleet-wide lessons.md entry (crush-config, by commit).
-2. **Canonical gate first**: plain `buildflow` before ANY "release-ready" language, not after the drill-downs pass. The drill-down sweep is a subset, not a substitute.
-3. **Pin every tool a byte-exact gate diffs** — registry-resolved tools move under identical version strings; the pin must travel with flake.lock bumps (drift-check or the lock-bump ritual regenerates artifacts in the same commit).
-4. **Parallel-session quiescence before tag/push**: `git status` + last-commit mtimes + a ~10-minute quiet window; the css re-revert cost two CI cycles.
-5. **Ask the owner-grade questions when they're open** instead of deciding three of them silently mid-run (all three landed well, but that was luck + skill defaults, not owner input).
-6. **Never verify through a pipeline tail**: the class of error repeats until the environment (hooks) or the habit kills it. Hooks proposal is in the f-list.
+~~1. **True-exit discipline as a hard rule**: every gate read uses `cmd > file; echo $?` or `--exit-status` with `$?` captured outside any pipeline. Recorded in AGENTS.md; should also be a fleet-wide lessons.md entry (crush-config, by commit).~~ done — standing fact, re-verified 2026-11-28: AGENTS.md:49-50 carries the rule and the fleet-wide half landed too (crush-config references/lessons.md:469 and 60-71)
+~~2. **Canonical gate first**: plain `buildflow` before ANY "release-ready" language, not after the drill-downs pass. The drill-down sweep is a subset, not a substitute.~~ done — standing fact, re-verified 2026-11-28: codified in docs/notes/release-runbook.md:39-41 ("The canonical gate is plain buildflow... a manual-green drill-down missed 8 error findings") and scripts/pre-release-check.sh:8-10
+~~3. **Pin every tool a byte-exact gate diffs** — registry-resolved tools move under identical version strings; the pin must travel with flake.lock bumps (drift-check or the lock-bump ritual regenerates artifacts in the same commit).~~ done — superseded by structure: ci.yml:232 derives the css tool from flake.lock at run time (0cf9562, 2026-11-28) — nothing is left to bump in sync; css-freshness green on master run 46105857772 (2026-11-28)
+~~4. **Parallel-session quiescence before tag/push**: `git status` + last-commit mtimes + a ~10-minute quiet window; the css re-revert cost two CI cycles.~~ done — standing fact, re-verified 2026-11-28: codified as runbook step 2, the ~10-minute quiet window (docs/notes/release-runbook.md:28-30)
+~~5. **Ask the owner-grade questions when they're open** instead of deciding three of them silently mid-run (all three landed well, but that was luck + skill defaults, not owner input).~~ done — standing fact, re-verified 2026-11-28: the owner-ask channel now exists as docs/status/owner-decisions-digest.md plus the TODO_LIST Blocked (owner decisions) rows; this report's §g q2/q3 route there (see below)
+~~6. **Never verify through a pipeline tail**: the class of error repeats until the environment (hooks) or the habit kills it. Hooks proposal is in the f-list.~~ done — standing fact, re-verified 2026-11-28: AGENTS.md:49-50 and crush-config references/lessons.md:469 kill the class in prose; the hook proposal itself remains open (§f21 below)
 
 ## f) Up to 50 things to get done next (ordered)
 
