@@ -322,53 +322,7 @@ const keyboardExpression = `JSON.stringify((() => {
 })())`;
 
 const truth = [];
-if (filterChecks.length === 3) {
-	const [stale, failing, all] = filterChecks;
-	const light = truth.find((entry) => entry.view === "dashboard-light");
-	const fleetStates = light?.visibleStates ?? {};
-
-	// After a state chip is pressed the page shows exactly that state's rows
-	// of the unfiltered first paint, or, when the state holds no repo of this
-	// fleet, hides the table and names the empty selection. Either outcome is
-	// judged against the fleet the page rendered, never against a fleet the
-	// harness assumes.
-	const stateFilterFailure = (check, emptyMessage) => {
-		const state = check.clicked.toLowerCase();
-		const wanted = fleetStates[state] ?? 0;
-		if (check.pressedChips.join() !== check.clicked || !check.pressedChipHighlighted)
-			return `filter: after clicking ${check.clicked}, pressed=[${check.pressedChips}], highlighted=${check.pressedChipHighlighted}`;
-		if (wanted === 0) {
-			if (check.visibleRows !== 0 || check.tableDisplay !== "none" || check.emptyMessages.join() !== emptyMessage)
-				return `filter: after clicking ${check.clicked}, which holds no repo of this fleet: ${check.visibleRows} rows are visible, table display is ${check.tableDisplay}, messages are [${check.emptyMessages}]`;
-
-			return null;
-		}
-		if (
-			check.visibleRows !== wanted ||
-			Object.keys(check.visibleStates).join() !== state ||
-			check.tableDisplay === "none" ||
-			check.emptyMessages.length > 0
-		)
-			return `filter: after clicking ${check.clicked}, ${check.visibleRows} rows are visible (${JSON.stringify(check.visibleStates)}), expected ${wanted} ${state}; table display is ${check.tableDisplay}, messages are [${check.emptyMessages}]`;
-
-		return null;
-	};
-
-	const allFilterFailure =
-		all.visibleRows !== all.rows || all.pressedChips.join() !== "All" || all.tableDisplay === "none"
-			? `filter: after clicking All, ${all.visibleRows} of ${all.rows} rows are visible; table display is ${all.tableDisplay}; pressed=[${all.pressedChips}]`
-			: null;
-
-	for (const failure of [stateFilterFailure(stale, "No stale repos"), stateFilterFailure(failing, "No failing repos"), allFilterFailure]) {
-		if (failure) failures.push(failure);
-	}
-
-	for (const check of filterChecks) {
-		console.log(
-			`filter ${check.clicked}: visible=${check.visibleRows} table=${check.tableDisplay} messages=[${check.emptyMessages}] states=${JSON.stringify(check.visibleStates)} pressed=[${check.pressedChips}] highlighted=${check.pressedChipHighlighted}`,
-		);
-	}
-}
+const filterChecks = [];
 const scrolled = [];
 const contrast = [];
 let keyboard = null;
@@ -681,37 +635,42 @@ if (!keyboard || !keyboard.reached) {
 if (filterChecks.length === 3) {
 	const [stale, failing, all] = filterChecks;
 	const light = truth.find((entry) => entry.view === "dashboard-light");
+	const fleetStates = light?.visibleStates ?? {};
 
-	if (
-		stale.visibleRows !== 0 ||
-		stale.pressedChips.join() !== "Stale" ||
-		!stale.pressedChipHighlighted ||
-		stale.tableDisplay !== "none" ||
-		stale.emptyMessages.join() !== "No stale repos"
-	) {
-		failures.push(
-			`filter: after clicking Stale, ${stale.visibleRows} rows are visible, table display is ${stale.tableDisplay}, messages are [${stale.emptyMessages}], pressed=[${stale.pressedChips}]`,
-		);
-	}
+	// After a state chip is pressed the page shows exactly that state's rows
+	// of the unfiltered first paint, or, when the state holds no repo of this
+	// fleet, hides the table and names the empty selection. Either outcome is
+	// judged against the fleet the page rendered, never against a fleet the
+	// harness assumes.
+	const stateFilterFailure = (check, emptyMessage) => {
+		const state = check.clicked.toLowerCase();
+		const wanted = fleetStates[state] ?? 0;
+		if (check.pressedChips.join() !== check.clicked || !check.pressedChipHighlighted)
+			return `filter: after clicking ${check.clicked}, pressed=[${check.pressedChips}], highlighted=${check.pressedChipHighlighted}`;
+		if (wanted === 0) {
+			if (check.visibleRows !== 0 || check.tableDisplay !== "none" || check.emptyMessages.join() !== emptyMessage)
+				return `filter: after clicking ${check.clicked}, which holds no repo of this fleet: ${check.visibleRows} rows are visible, table display is ${check.tableDisplay}, messages are [${check.emptyMessages}]`;
 
-	const failingWanted = light?.visibleStates.failing ?? 0;
-	if (
-		failing.visibleRows !== failingWanted ||
-		Object.keys(failing.visibleStates).join() !== "failing" ||
-		failing.pressedChips.join() !== "Failing" ||
-		!failing.pressedChipHighlighted ||
-		failing.tableDisplay === "none" ||
-		failing.emptyMessages.length > 0
-	) {
-		failures.push(
-			`filter: after clicking Failing, ${failing.visibleRows} rows are visible (${JSON.stringify(failing.visibleStates)}), expected ${failingWanted} failing; pressed=[${failing.pressedChips}]`,
-		);
-	}
+			return null;
+		}
+		if (
+			check.visibleRows !== wanted ||
+			Object.keys(check.visibleStates).join() !== state ||
+			check.tableDisplay === "none" ||
+			check.emptyMessages.length > 0
+		)
+			return `filter: after clicking ${check.clicked}, ${check.visibleRows} rows are visible (${JSON.stringify(check.visibleStates)}), expected ${wanted} ${state}; table display is ${check.tableDisplay}, messages are [${check.emptyMessages}]`;
 
-	if (all.visibleRows !== all.rows || all.pressedChips.join() !== "All") {
-		failures.push(
-			`filter: after clicking All, ${all.visibleRows} of ${all.rows} rows are visible; pressed=[${all.pressedChips}]`,
-		);
+		return null;
+	};
+
+	const allFilterFailure =
+		all.visibleRows !== all.rows || all.pressedChips.join() !== "All" || all.tableDisplay === "none"
+			? `filter: after clicking All, ${all.visibleRows} of ${all.rows} rows are visible; table display is ${all.tableDisplay}; pressed=[${all.pressedChips}]`
+			: null;
+
+	for (const failure of [stateFilterFailure(stale, "No stale repos"), stateFilterFailure(failing, "No failing repos"), allFilterFailure]) {
+		if (failure) failures.push(failure);
 	}
 
 	for (const check of filterChecks) {

@@ -3,6 +3,7 @@ package dashboard_test
 import (
 	"bytes"
 	"context"
+	"regexp"
 	"strings"
 	"time"
 
@@ -221,12 +222,24 @@ var _ = Describe("fleet page render", func() {
 			).To(MatchRegexp(`data-show="\$stateFilter===&#39;compliant&#39; &amp;&amp; !\$counts\[&#39;compliant&#39;\]" style="display:none">`))
 		})
 
-		It("keeps the table visible for the all selection, even with no evidence", func() {
+		It("hides the table for a fleet without evidence and keeps the message outside the patched rows", func() {
+			// The stream replaces the tbody's content on every publish, so a
+			// message inside it would vanish with the first patch of an empty
+			// fleet and leave a bare column header (seen in a real browser on
+			// 2026-11-28).
 			var rendered bytes.Buffer
 			Expect(dashboard.View(pageWith()).Render(context.Background(), &rendered)).To(Succeed())
 
-			Expect(rendered.String()).NotTo(MatchRegexp(`style="display:none"><div class="overflow-x-auto`))
-			Expect(rendered.String()).To(ContainSubstring("No compliance evidence yet"))
+			html := rendered.String()
+			Expect(html).To(MatchRegexp(`<div data-show="[^"]*" style="display:none"><div class="overflow-x-auto`))
+			Expect(
+				html,
+			).To(MatchRegexp(`data-show="\$total===0">\s*<div class="text-center py-8"><p[^>]*>No compliance evidence yet`))
+			body := regexp.MustCompile(`(?s)<tbody[^>]*id="fleet-rows"[^>]*>(.*?)</tbody>`).
+				FindStringSubmatch(html)
+			Expect(body).To(HaveLen(2), "html: %s", html)
+			Expect(body[1]).NotTo(ContainSubstring("No compliance evidence yet"),
+				"the rows region is replaced by the stream; html: %s", html)
 		})
 	})
 

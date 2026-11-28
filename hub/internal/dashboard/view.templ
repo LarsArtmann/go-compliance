@@ -51,7 +51,7 @@ templ View(model ViewModel) {
 						// counter resets on every successful connect).
 						Retry: datastar.RetryAlways,
 					}) {
-						@fleetTable(model.Rows, model.StateFilter)
+						@fleetTable(model.Rows, model.Counts, model.Total, model.StateFilter)
 					}
 				</div>
 			</div>
@@ -100,13 +100,15 @@ templ headContent(model ViewModel) {
 // targets the BodyID region (inner mode) and individual rows via their
 // data-repo selectors. The fleet-table container lets the stylesheet stack
 // the rows once the table gets narrower than its columns. A selection that
-// holds no repo hides the table and says so; the table stays in the DOM
-// because the stream patches its body.
-templ fleetTable(rows []events.RepoRow, selected string) {
+// holds no repo, and a fleet without evidence, hide the table and say so.
+// The table stays in the DOM because the stream patches its body, and every
+// message lives outside the tbody: a message inside it would be erased by the
+// first patch of an empty fleet.
+templ fleetTable(rows []events.RepoRow, counts map[string]int, total int, selected string) {
 	<div class="@container">
 		<div
 			data-show={ tableShowExpression }
-			if len(rows) == 0 && selected != "all" && selected != "unknown" {
+			if !tableShownAtPaint(counts, total, selected) {
 				style="display:none"
 			}
 		>
@@ -123,7 +125,7 @@ templ fleetTable(rows []events.RepoRow, selected string) {
 				CellPadding:  display.TableCellPaddingCompact,
 				LazyRows:     true,
 				BodyID:       DefaultRowsSelector[1:],
-				Body:         fleetRowsBody(rows),
+				Body:         FleetRows(rows),
 			})
 		</div>
 		for _, chip := range filterChips {
@@ -138,20 +140,34 @@ templ fleetTable(rows []events.RepoRow, selected string) {
 				</div>
 			}
 		}
+		<div data-show={ noEvidenceShowExpression } if total != 0 {
+			style="display:none"
+		}>
+			@display.SimpleEmptyState(noEvidenceMessage)
+		</div>
 	</div>
 }
 
-// tableShowExpression keeps the table visible while the selection holds a
-// repo (or selects nothing specific); a missing count reads as zero.
-const tableShowExpression = "$stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0"
+// tableShowExpression keeps the table visible while the fleet has evidence
+// and the selection holds a repo (or selects nothing specific); a missing
+// count reads as zero.
+const tableShowExpression = "$total > 0 && ($stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0)"
 
-templ fleetRowsBody(rows []events.RepoRow) {
-	@FleetRows(rows)
-	if len(rows) == 0 {
-		<tr>
-			<td colspan="4">
-				@display.SimpleEmptyState("No compliance evidence yet. The first refresh publishes it here.")
-			</td>
-		</tr>
+// noEvidenceShowExpression shows the page's no-evidence message for a fleet
+// without a single row.
+const noEvidenceShowExpression = "$total===0"
+
+// noEvidenceMessage says what an empty fleet means and what fills it.
+const noEvidenceMessage = "No compliance evidence yet. The first refresh publishes it here."
+
+// tableShownAtPaint is tableShowExpression evaluated for the first paint, so
+// the markup agrees with the signals the page seeds before the stream
+// connects. counts is the whole fleet's state counts; selected is the
+// initially-selected chip.
+func tableShownAtPaint(counts map[string]int, total int, selected string) bool {
+	if total == 0 {
+		return false
 	}
+
+	return selected == "all" || selected == "unknown" || counts[selected] > 0
 }
