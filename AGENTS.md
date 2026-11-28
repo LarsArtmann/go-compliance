@@ -27,7 +27,9 @@ scripts/pre-release-check.sh vX.Y.Z                        # release (docs/notes
 # Dashboard, in this order, after ANY dashboard .templ edit (always from hub/)
 cd hub && go tool templ fmt -fail ./internal/dashboard/ && go tool templ generate ./internal/dashboard/
 nix shell .#tailwindcss -c bash scripts/regen-ui.sh        # commit the three artifacts with the edit
-scripts/screenshot.sh                                      # real-browser gate: themes, narrow layout, filter clicks
+scripts/screenshot.sh                                      # real-browser gate: 4 views, scroll, keyboard, filters
+SHOTS_EVIDENCE=<empty-v1.json> SHOTS_DISCOVER_PATHS= ALLOW_EMPTY=1 \
+  scripts/screenshot.sh                                    # empty-fleet gate: run before every deploy
 scripts/screenshot-page.sh <url|file> <out.png> [WxH]      # one static capture for docs/assets
 
 # Deployment (host state; both build from the COMMITTED tree)
@@ -48,6 +50,18 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   pipe (`compliance-hub report --db /nonexistent/x.db` exits 75).
 - AGENTS.md stays under 220 lines (structure linter, error level): move
   story to `docs/notes/`, keep contracts here.
+- Harness (`scripts/screenshot.mjs`): four views (light, dark, `just-wide`
+  768px, narrow); the layout is judged per declared view; checks cover the
+  scroll box and pinned header, the keyboard pass (the toggle's
+  `aria-checked` must follow the theme), filter clicks against the rendered
+  fleet, contrast, and console errors versus browser noise. Chromium starts
+  with `--disable-extensions`: a host policy force-installs 22 extensions
+  whose scripts fail the console check. After a harness edit run
+  `node --check` and a real run; the editor's vtsls errors past EOF are
+  phantom.
+- Subagents: one file scope per write subagent, never the same file twice;
+  a write subagent stops at the first red gate and reports, and the
+  coordinator re-runs that gate on its files when the report arrives.
 
 ## Module Rules
 
@@ -77,7 +91,10 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   After touching a dashboard `.templ`, adopting a component, or bumping the
   templ-components pin: `scripts/regen-ui.sh`, then commit
   `library-classes.txt`, `library-custom.css`, and `app.min.css` together
-  (the CI `css-freshness` gate regenerates and diffs byte-fresh).
+  (the CI `css-freshness` gate regenerates and diffs byte-fresh). Test files
+  are excluded from the scan (`@source not "**/*_test.go"`): a class that
+  only a `_test.go` string mentions would otherwise be compiled into
+  `app.min.css`.
 - **DataStar attributes** (runtime 1.0.4): DOM events are `data-on:click`
   with a COLON; `data-on-click` is an unknown plugin and is dropped without
   a log line. `data-class` takes an object of class names to booleans.
@@ -97,6 +114,9 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   every state change; `#fleet-rows` rows are appended, replaced, and removed
   by diff. The header's `rendered X ago` RelativeTime is the ONE AutoRefresh
   script carrier and must stay outside every patched region.
+- An empty fleet hides its table (`$total > 0`) and shows the no-evidence
+  message OUTSIDE `#fleet-rows`: the first patch replaces that body, so a
+  message inside it is erased.
 - The v1 wire contract is frozen by owner decision
   (`docs/decisions/v2-wire-design.md`): severities for external reporters
   ride v2, the dashboard falls back to the findings count.
@@ -110,7 +130,9 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   restarts the unit. It names the concrete store path, binds
   `192.168.1.150:8477` (LAN unicast, never `0.0.0.0`), reads
   `~/.local/state/overview/compliance.json`, and runs on a read-only
-  filesystem. Verify afterwards with `scripts/screenshot.sh
+  filesystem. The script gates itself (answers, every `/readyz` check, the
+  harness on the live address) and rolls the unit file and out-link back on
+  a failed gate. Verify afterwards with `scripts/screenshot.sh
   http://192.168.1.150:8477/` and `journalctl --user -u compliance-hub`.
 - **Evidence file defaults align** across README, the integrate guide, and
   `docs/decisions/bind-posture.md`: system `/var/lib/overview/compliance.json`
@@ -128,7 +150,8 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
 - **Never-covered fleet**: `serve --discover-paths` (default `~/projects`)
   sends real roots to the daemon (empty roots are a 400); only projects
   with a `go.mod` count. `discovery` readiness passes while the watch
-  stream is connected.
+  stream is connected. No paths switches discovery off by design
+  (`startDiscovery`): never-covered stays empty and one log line says so.
 - **CSP**: every response carries a Content-Security-Policy; DataStar
   compiles expressions with `new Function`, so `script-src` needs
   `'unsafe-eval'`. Removing it goes inert with no server-side error; only
@@ -163,10 +186,13 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
 - Dedup: `art-dupl -t 1 --type-aware`; accept intentional clones with
   `// art-dupl:accept <why>` within 5 lines above the clone; CI ratchets
   `.art-dupl-baseline.json`. Policy: `docs/notes/dedup-audit-policy.md`.
-- Docs: `nix run github:Artmann-Technologies/docs-gates -- run .` (the
-  CI build; `docs-gates` on PATH is a stale dev binary that reports green
-  while CI's audit-all fails) and `dprint check`. Multi-section annotate keys
-  need the `N@substring` disambiguator; run `emit-keys` and `--dry-run`
+- Docs: `nix run github:Artmann-Technologies/docs-gates -- run .` (the CI
+  build; on PATH only `~/go/bin/docs-gates` runs it, a wrapper; the
+  `~/.local/bin` and system copies are stale builds that report green while
+  CI's audit-all fails) and `dprint check`. Run the battery before AND after
+  every annotation sweep; `dprint fmt` in the same minute as a markdown edit
+  (the daemon commits unformatted files and CI's dprint job goes red).
+  Multi-section annotate keys need the `N@substring` disambiguator; run
   first (`docs/notes/docs-health-annotate-writer.md`). The CI docs-gates
   job checks out the full history because its annotate gate resolves
   `done at <sha>` verdicts.
