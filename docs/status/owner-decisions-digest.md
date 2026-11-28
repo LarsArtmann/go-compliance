@@ -12,9 +12,9 @@
 | Item                                                                | Source                          | What it needs                                                  |
 | ------------------------------------------------------------------- | ------------------------------- | -------------------------------------------------------------- |
 | samber/lo adopt-or-suppress                                         | 23-40 §f14; ROADMAP owner queue | STACK.md decision-log entry; ~25 withheld rewrites             |
-| go-humanize adopt/accept-with-reason                                | 23-40 §f15; ROADMAP owner queue | 3 CLI relative-time findings (`health.go`, `table.go`)         |
-| branching-flow mixin suggestions: accept-with-reason, recorded once | 23-40 §f19                      | one AGENTS/STACK line (wire-contract mirroring is intentional) |
-| vendorHash inline-vs-`vendorHash.nix` convention                    | 23-40 §f20                      | fleet convention verdict (3+ nix-checker findings)             |
+| go-humanize adopt/accept-with-reason                                | 23-40 §f15; ROADMAP owner queue | ADOPTED (reworded 2026-11-28): `hub/go.mod` requires `github.com/dustin/go-humanize` and STACK.md has the Chosen-foundation row; nothing owner-gated left (the three `humanize.Time` call sites' standing findings live in that row's revisit column) |
+| branching-flow mixin suggestions: accept-with-reason, recorded once | 23-40 §f19                      | SETTLED 2026-11-27: deliberate non-fix, per the BuildFlow warning triage in AGENTS.md "Gates and Notes" (style in both modules; the wire-contract mirroring is intentional) — that triage paragraph is the record; do not "fix" it again |
+| vendorHash inline-vs-`vendorHash.nix` convention                    | 23-40 §f20                      | SETTLED 2026-11-27: deliberate non-fix, per the same triage (hashes stay inline; `buildflow -s nix-hash-fix` rewrites them in place) — no fleet convention change |
 | `gateJSON`/`severityJSON` branding vs accept                        | 23-40 §f18                      | type-branding decision at the cache scan seam                  |
 
 ## Flake / repo-shape conventions
