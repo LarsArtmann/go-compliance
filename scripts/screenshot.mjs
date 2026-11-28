@@ -550,6 +550,7 @@ if (fatal) {
 }
 
 const failures = [...pageErrors];
+const noEvidenceMessage = "No compliance evidence yet";
 
 for (const entry of truth) {
 	const wantsDark = entry.scheme === "dark";
@@ -582,6 +583,19 @@ for (const entry of truth) {
 		);
 	if (stacked && entry.tableScrolls)
 		failures.push(`${entry.view}: the fleet table's box scrolls in the stacked layout, where the page is the scroller`);
+
+	// The stream replaces the table body on every publish, so an empty fleet
+	// must not rely on markup inside it: the table is hidden and the page
+	// says so. Any other fleet shows the table under the All chip, which is
+	// selected at first paint.
+	const emptyFleet = entry.rows === 0;
+	const saysNoEvidence = entry.emptyMessages.some((message) => message.includes(noEvidenceMessage));
+	if (emptyFleet && (entry.tableDisplay !== "none" || !saysNoEvidence))
+		failures.push(
+			`${entry.view}: an empty fleet must hide the table and say that no evidence exists (table display=${entry.tableDisplay}, messages=[${entry.emptyMessages}])`,
+		);
+	if (!emptyFleet && entry.tableDisplay === "none")
+		failures.push(`${entry.view}: the fleet table is hidden although the All chip is selected and the fleet has ${entry.rows} repos`);
 }
 
 for (const entry of scrolled) {
@@ -664,10 +678,17 @@ if (filterChecks.length === 3) {
 		return null;
 	};
 
-	const allFilterFailure =
-		all.visibleRows !== all.rows || all.pressedChips.join() !== "All" || all.tableDisplay === "none"
-			? `filter: after clicking All, ${all.visibleRows} of ${all.rows} rows are visible; table display is ${all.tableDisplay}; pressed=[${all.pressedChips}]`
-			: null;
+	const allFilterFailure = (() => {
+		if (all.visibleRows !== all.rows || all.pressedChips.join() !== "All")
+			return `filter: after clicking All, ${all.visibleRows} of ${all.rows} rows are visible; pressed=[${all.pressedChips}]`;
+		const empty = all.rows === 0;
+		const hidden = all.tableDisplay === "none";
+		const saysNoEvidence = all.emptyMessages.some((message) => message.includes(noEvidenceMessage));
+		if (hidden !== empty || saysNoEvidence !== empty)
+			return `filter: after clicking All, table display is ${all.tableDisplay} and messages are [${all.emptyMessages}], but ${empty ? "an empty fleet must hide the table and say that no evidence exists" : "a fleet of " + all.rows + " repos must show its table"}`;
+
+		return null;
+	})();
 
 	for (const failure of [stateFilterFailure(stale, "No stale repos"), stateFilterFailure(failing, "No failing repos"), allFilterFailure]) {
 		if (failure) failures.push(failure);

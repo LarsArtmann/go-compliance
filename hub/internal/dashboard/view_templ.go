@@ -126,7 +126,7 @@ func View(model ViewModel) templ.Component {
 						}()
 					}
 					ctx = templ.InitializeContext(ctx)
-					templ_7745c5c3_Err = fleetTable(model.Rows, model.StateFilter).Render(ctx, templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = fleetTable(model.Rows, model.Counts, model.Total, model.StateFilter).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -283,9 +283,11 @@ func headContent(model ViewModel) templ.Component {
 // targets the BodyID region (inner mode) and individual rows via their
 // data-repo selectors. The fleet-table container lets the stylesheet stack
 // the rows once the table gets narrower than its columns. A selection that
-// holds no repo hides the table and says so; the table stays in the DOM
-// because the stream patches its body.
-func fleetTable(rows []events.RepoRow, selected string) templ.Component {
+// holds no repo, and a fleet without evidence, hide the table and say so.
+// The table stays in the DOM because the stream patches its body, and every
+// message lives outside the tbody: a message inside it would be erased by the
+// first patch of an empty fleet.
+func fleetTable(rows []events.RepoRow, counts map[string]int, total int, selected string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -309,7 +311,7 @@ func fleetTable(rows []events.RepoRow, selected string) templ.Component {
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templruntime.NewAttributeExpression(tableShowExpression).Resolve(ctx)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 108, Col: 34}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 110, Col: 34}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 		if templ_7745c5c3_Err != nil {
@@ -319,7 +321,7 @@ func fleetTable(rows []events.RepoRow, selected string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if len(rows) == 0 && selected != "all" && selected != "unknown" {
+		if !tableShownAtPaint(counts, total, selected) {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, " style=\"display:none\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -342,7 +344,7 @@ func fleetTable(rows []events.RepoRow, selected string) templ.Component {
 			CellPadding:  display.TableCellPaddingCompact,
 			LazyRows:     true,
 			BodyID:       DefaultRowsSelector[1:],
-			Body:         fleetRowsBody(rows),
+			Body:         FleetRows(rows),
 		}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -360,7 +362,7 @@ func fleetTable(rows []events.RepoRow, selected string) templ.Component {
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templruntime.NewAttributeExpression(fmt.Sprintf("$stateFilter==='%s' && !$counts['%s']", chip.State, chip.State)).Resolve(ctx)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 132, Col: 93}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 134, Col: 93}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
 				if templ_7745c5c3_Err != nil {
@@ -390,7 +392,38 @@ func fleetTable(rows []events.RepoRow, selected string) templ.Component {
 				}
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div data-show=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var13 string
+		templ_7745c5c3_Var13, templ_7745c5c3_Err = templruntime.NewAttributeExpression(noEvidenceShowExpression).Resolve(ctx)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 144, Col: 39}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if total != 0 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, " style=\"display:none\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, ">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = display.SimpleEmptyState(noEvidenceMessage).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -398,47 +431,28 @@ func fleetTable(rows []events.RepoRow, selected string) templ.Component {
 	})
 }
 
-// tableShowExpression keeps the table visible while the selection holds a
-// repo (or selects nothing specific); a missing count reads as zero.
-const tableShowExpression = "$stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0"
+// tableShowExpression keeps the table visible while the fleet has evidence
+// and the selection holds a repo (or selects nothing specific); a missing
+// count reads as zero.
+const tableShowExpression = "$total > 0 && ($stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0)"
 
-func fleetRowsBody(rows []events.RepoRow) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = FleetRows(rows).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if len(rows) == 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<tr><td colspan=\"4\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = display.SimpleEmptyState("No compliance evidence yet. The first refresh publishes it here.").Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</td></tr>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		return nil
-	})
+// noEvidenceShowExpression shows the page's no-evidence message for a fleet
+// without a single row.
+const noEvidenceShowExpression = "$total===0"
+
+// noEvidenceMessage says what an empty fleet means and what fills it.
+const noEvidenceMessage = "No compliance evidence yet. The first refresh publishes it here."
+
+// tableShownAtPaint is tableShowExpression evaluated for the first paint, so
+// the markup agrees with the signals the page seeds before the stream
+// connects. counts is the whole fleet's state counts; selected is the
+// initially-selected chip.
+func tableShownAtPaint(counts map[string]int, total int, selected string) bool {
+	if total == 0 {
+		return false
+	}
+
+	return selected == "all" || selected == "unknown" || counts[selected] > 0
 }
 
 var _ = templruntime.GeneratedTemplate

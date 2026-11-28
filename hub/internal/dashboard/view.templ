@@ -140,9 +140,12 @@ templ fleetTable(rows []events.RepoRow, counts map[string]int, total int, select
 				</div>
 			}
 		}
-		<div data-show={ noEvidenceShowExpression } if total != 0 {
-			style="display:none"
-		}>
+		<div
+			data-show={ noEvidenceShowExpression }
+			if total != 0 {
+				style="display:none"
+			}
+		>
 			@display.SimpleEmptyState(noEvidenceMessage)
 		</div>
 	</div>
