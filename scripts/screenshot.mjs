@@ -26,10 +26,16 @@ const chromiumBin = process.env.CHROMIUM_BIN || "chromium";
 const maxCaptureCssPx = 16000;
 const profileDir = join(outDir, "chromium-profile");
 
+// Every view names the layout its container width must produce: the fleet
+// table keeps its columns inside a scroll box ("wide"), or stacks its rows
+// and lets the page scroll ("stacked"). The container query breaks at 40rem
+// of container width; the page gutter adds 2rem below 640px and 3rem from
+// there up, so 768px is the narrowest common viewport above the breakpoint.
 const views = [
-	{ name: "dashboard-light", width: 1440, height: 900, scale: 1, scheme: "light" },
-	{ name: "dashboard-dark", width: 1440, height: 900, scale: 1, scheme: "dark" },
-	{ name: "dashboard-narrow", width: 390, height: 844, scale: 2, scheme: "light" },
+	{ name: "dashboard-light", width: 1440, height: 900, scale: 1, scheme: "light", layout: "wide" },
+	{ name: "dashboard-dark", width: 1440, height: 900, scale: 1, scheme: "dark", layout: "wide" },
+	{ name: "dashboard-just-wide", width: 768, height: 900, scale: 1, scheme: "light", layout: "wide" },
+	{ name: "dashboard-narrow", width: 390, height: 844, scale: 2, scheme: "light", layout: "stacked" },
 ];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -196,6 +202,10 @@ const truthExpression = `JSON.stringify({
 	theadDisplay: getComputedStyle(document.querySelector("#fleet-region thead")).display,
 	headerSticky: getComputedStyle(document.querySelector("#fleet-region thead")).position === "sticky",
 	tableScrolls: (() => { const box = document.querySelector("#fleet-region .fleet-table")?.parentElement; return box ? box.scrollHeight > box.clientHeight : false; })(),
+	// tableOverflows: the table is taller than the height limit the stylesheet
+	// gives its box (no limit, or no table, reads false). A box scrolls exactly
+	// when its table overflows; anything else is a layout defect.
+	tableOverflows: (() => { const table = document.querySelector("#fleet-region .fleet-table"); const box = table?.parentElement; if (!table || !box) return false; const limit = Number.parseFloat(getComputedStyle(box).maxHeight); return Number.isFinite(limit) && table.getBoundingClientRect().height > limit; })(),
 	pageScrolls: document.documentElement.scrollHeight > window.innerHeight,
 })`;
 
@@ -308,7 +318,7 @@ const keyboardExpression = `JSON.stringify((() => {
 		return el.tagName.toLowerCase() + ":" + (el.getAttribute("aria-label") ?? el.textContent ?? "").trim().replace(/\\s+/g, " ").slice(0, 30);
 	};
 	const outline = el ? getComputedStyle(el).outlineStyle + " " + getComputedStyle(el).outlineWidth : "";
-	return { active: active(), focusVisible: el?.matches?.(":focus-visible") ?? false, outline, dark: document.documentElement.classList.contains("dark") };
+	return { active: active(), focusVisible: el?.matches?.(":focus-visible") ?? false, outline, dark: document.documentElement.classList.contains("dark"), toggleChecked: document.querySelector("[data-theme-toggle]")?.getAttribute("aria-checked") ?? null };
 })())`;
 
 const truth = [];
@@ -355,7 +365,8 @@ const tabUntil = async (want, sessionId, max = 14) => {
 // alone: Tab reaches a chip and Enter selects it; Tab reaches the next chip
 // and Space selects that one; Tab reaches the theme toggle, Enter flips the
 // theme and Space flips it back. Every focused control must show its focus
-// ring. It ends in the theme it started with.
+// ring, and the toggle's aria-checked must follow the theme at every step.
+// It ends in the theme it started with.
 const keyboardPass = async (sessionId) => {
 	await evaluate("document.activeElement?.blur?.()", sessionId);
 	const chip = await tabUntil("button:Failing", sessionId);
@@ -369,11 +380,13 @@ const keyboardPass = async (sessionId) => {
 	const toggle = await tabUntil("button:Toggle dark mode", sessionId);
 	if (!toggle.reached)
 		return { reached: false, stops: toggle.stops, chipActivated: afterChip, spaceActivated: afterSpace };
-	const darkBefore = toggle.state.dark;
+	const themeBefore = JSON.parse(await evaluate(keyboardExpression, sessionId));
 	await press("Enter", sessionId);
-	const darkAfterEnter = JSON.parse(await evaluate(keyboardExpression, sessionId)).dark;
+	const themeAfterEnter = JSON.parse(await evaluate(keyboardExpression, sessionId));
 	await press(" ", sessionId);
-	const darkAfterSpace = JSON.parse(await evaluate(keyboardExpression, sessionId)).dark;
+	const themeAfterSpace = JSON.parse(await evaluate(keyboardExpression, sessionId));
+	const darkTrail = [themeBefore.dark, themeAfterEnter.dark, themeAfterSpace.dark];
+	const ariaTrail = [themeBefore.toggleChecked, themeAfterEnter.toggleChecked, themeAfterSpace.toggleChecked];
 
 	return {
 		reached: true,
@@ -386,7 +399,10 @@ const keyboardPass = async (sessionId) => {
 		stopsToToggle: toggle.stops,
 		toggleFocusVisible: toggle.state.focusVisible,
 		toggleOutline: toggle.state.outline,
-		themeToggled: darkAfterEnter !== darkBefore && darkAfterSpace === darkBefore,
+		themeToggled: themeAfterEnter.dark !== themeBefore.dark && themeAfterSpace.dark === themeBefore.dark,
+		toggleAriaTracksTheme: ariaTrail.every((checked, step) => checked === String(darkTrail[step])),
+		darkTrail,
+		ariaTrail,
 	};
 };
 
@@ -458,7 +474,7 @@ try {
 
 		await capture(sessionId, view.name, { width: view.width, height: view.height });
 		await capture(sessionId, `${view.name}-full`, { width: view.width, height: fullHeight });
-		truth.push({ view: view.name, scheme: view.scheme, ...facts });
+		truth.push({ view: view.name, scheme: view.scheme, layout: view.layout, ...facts });
 		contrast.push({ view: view.name, scheme: view.scheme, ...JSON.parse(await evaluate(contrastExpression, sessionId)) });
 
 		if (facts.tableScrolls) {
@@ -514,7 +530,7 @@ for (const entry of truth) {
 	console.log(
 		`${entry.view}: dark=${entry.dark} rows=${entry.rows} visible=${entry.visibleRows} rowDisplay=${entry.rowDisplay} pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted} ` +
 			`headline="${entry.headline}" chips=[${entry.statCards.join(" | ")}] bar="${entry.barLabel}" favicon=${entry.favicon} ` +
-			`width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight} thead=${entry.theadDisplay} sticky=${entry.headerSticky} tableScrolls=${entry.tableScrolls} pageScrolls=${entry.pageScrolls}`,
+			`width=${entry.viewportWidth} scrollWidth=${entry.scrollWidth} pageHeight=${entry.pageHeight} thead=${entry.theadDisplay} sticky=${entry.headerSticky} tableScrolls=${entry.tableScrolls} tableOverflows=${entry.tableOverflows} pageScrolls=${entry.pageScrolls}`,
 	);
 }
 
@@ -524,7 +540,7 @@ for (const entry of scrolled) {
 
 if (keyboard) {
 	console.log(
-		`keyboard: reached=${keyboard.reached} chipFocusVisible=${keyboard.chipFocusVisible} chipOutline="${keyboard.chipOutline}" chipPressed=[${keyboard.chipActivated?.pressedChips ?? ""}] spacePressed=[${keyboard.spaceActivated?.pressedChips ?? ""}] toggleFocusVisible=${keyboard.toggleFocusVisible} themeToggled=${keyboard.themeToggled}`,
+		`keyboard: reached=${keyboard.reached} chipFocusVisible=${keyboard.chipFocusVisible} chipOutline="${keyboard.chipOutline}" chipPressed=[${keyboard.chipActivated?.pressedChips ?? ""}] spacePressed=[${keyboard.spaceActivated?.pressedChips ?? ""}] toggleFocusVisible=${keyboard.toggleFocusVisible} themeToggled=${keyboard.themeToggled} toggleAria=[${keyboard.ariaTrail ?? ""}] toggleDark=[${keyboard.darkTrail ?? ""}]`,
 	);
 }
 
@@ -549,17 +565,23 @@ for (const entry of truth) {
 		failures.push(
 			`${entry.view}: the All chip must read as selected on first paint (pressed=[${entry.pressedChips}] highlighted=${entry.pressedChipHighlighted})`,
 		);
-	const wide = entry.viewportWidth >= 640;
-	if (wide && (entry.theadDisplay === "none" || !entry.headerSticky))
+	const stacked = entry.theadDisplay === "none";
+	if (stacked !== (entry.layout === "stacked"))
 		failures.push(
-			`${entry.view}: the column header is not a sticky, visible header (display=${entry.theadDisplay}, sticky=${entry.headerSticky})`,
+			`${entry.view}: the fleet table is ${stacked ? "stacked" : "in columns"} at ${entry.viewportWidth}px, expected ${entry.layout === "stacked" ? "stacked rows" : "columns in a scroll box"} (thead display=${entry.theadDisplay})`,
 		);
-	if (wide && entry.pageScrolls)
+	if (!stacked && !entry.headerSticky)
+		failures.push(`${entry.view}: the column header does not stick to the top of the table's box (sticky=${entry.headerSticky})`);
+	if (!stacked && entry.pageScrolls)
 		failures.push(
-			`${entry.view}: the page itself scrolls (${entry.pageHeight}px of content in a ${entry.viewportHeight}px viewport); in a wide layout only the fleet table scrolls, inside its box`,
+			`${entry.view}: the page itself scrolls (${entry.pageHeight}px of content in a ${entry.viewportHeight}px viewport); with the table in columns only the fleet table scrolls, inside its box`,
 		);
-	if (!wide && entry.theadDisplay !== "none")
-		failures.push(`${entry.view}: the stacked layout must drop the column header (thead display=${entry.theadDisplay})`);
+	if (!stacked && entry.tableScrolls !== entry.tableOverflows)
+		failures.push(
+			`${entry.view}: the fleet table's box ${entry.tableOverflows ? "does not scroll although the table is taller than the box's height limit" : "scrolls although the table fits the box"} (tableScrolls=${entry.tableScrolls})`,
+		);
+	if (stacked && entry.tableScrolls)
+		failures.push(`${entry.view}: the fleet table's box scrolls in the stacked layout, where the page is the scroller`);
 }
 
 for (const entry of scrolled) {
@@ -604,6 +626,10 @@ if (!keyboard || !keyboard.reached) {
 		);
 	if (!keyboard.themeToggled)
 		failures.push("keyboard: Enter and Space on the theme toggle did not flip and restore the theme");
+	if (!keyboard.toggleAriaTracksTheme)
+		failures.push(
+			`keyboard: the theme toggle's aria-checked does not follow the theme (aria-checked=[${keyboard.ariaTrail ?? ""}], dark=[${keyboard.darkTrail ?? ""}], before, after Enter, after Space)`,
+		);
 }
 
 if (filterChecks.length === 3) {

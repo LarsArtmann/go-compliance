@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# screenshot.sh — capture the fleet dashboard in light, dark, and narrow
-# (phone-width) views. scripts/screenshot.mjs drives a headless chromium over
-# the DevTools protocol and fails the run on console errors, a theme that did
-# not apply, an empty fleet table, horizontal overflow, text or control
-# contrast under WCAG AA, a fleet table that scrolls the page instead of its
-# own box or loses its pinned column header, and a keyboard pass that fails
-# to reach, focus, or activate the chips and the theme toggle.
+# screenshot.sh — capture the fleet dashboard in light, dark, just-wide
+# (768px, the narrowest common viewport above the table's stacking
+# breakpoint), and narrow (phone-width) views. scripts/screenshot.mjs drives a
+# headless chromium over the DevTools protocol and fails the run on console
+# errors, a theme that did not apply, an empty fleet table, horizontal
+# overflow, text or control contrast under WCAG AA, a fleet table that does
+# not take the layout its width calls for, scrolls the page instead of its own
+# box, or loses its pinned column header, and a keyboard pass that fails to
+# reach, focus, or activate the chips and the theme toggle.
 #
 # Without a URL argument the hub is built from the working tree and serves
 # the XDG evidence file on a loopback port, so uncommitted template changes
@@ -78,7 +80,7 @@ fi
 mkdir -p "$OUT"
 node scripts/screenshot.mjs "$URL" "$OUT"
 
-for name in dashboard-light dashboard-dark dashboard-narrow; do
+for name in dashboard-light dashboard-dark dashboard-just-wide dashboard-narrow; do
 	path="$OUT/$name.png"
 	if [ ! -s "$path" ] || [ "$(wc -c <"$path")" -lt "$MIN_PNG_BYTES" ]; then
 		echo "✗ $name.png is missing or trivially small — a blank or error page, not the dashboard" >&2
