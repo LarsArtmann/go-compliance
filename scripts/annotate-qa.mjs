@@ -17,10 +17,11 @@
 //   W  whitespace: the base's spaces are gone from the item's first line
 //   T  text: the item's first line diverges from its base text
 //   L  lost: words of the base item are missing
+//   B  blank: a struck item directly above the next numbered item
 //
 // Repairs (--fix): X (strike extended over the continuation lines, the
 // verdict moves to the item's end), W (base spaces restored), R (base
-// number restored), I (column 0 plus a blank line above). Exit code 1 when
+// number restored), B (blank line inserted). Exit code 1 when
 // any finding remains after the repair.
 
 import { execFileSync } from "node:child_process";
@@ -229,6 +230,10 @@ function inspect(lines, baseLines) {
 			add("X", item, `${item.end - closeLine} continuation line(s)${repairable ? "" : " (manual)"}`);
 			item.splitFix = repairable;
 		}
+		if (item.struck && item.end + 1 < lines.length && splitHead(lines[item.end + 1])) {
+			add("B", item, "struck item directly above the next numbered item; dprint eats spaces there");
+			item.blankFix = true;
+		}
 		if (!item.struck) {
 			const markerOffset = block.findIndex((line) => /→\s*routed/.test(line));
 			if (markerOffset >= 0 && markerOffset !== block.length - 1) add("A", item, "routed marker before the item's last line");
@@ -257,6 +262,12 @@ function applyFixes(lines, report) {
 			text = text.slice(0, closeOffset);
 			lines[item.end] = `${lines[item.end].trimEnd()}~~ ${tail}`.trimEnd();
 			changes++;
+		}
+		if (codes.has("B") && item.blankFix) {
+			if (item.end + 1 < lines.length && lines[item.end + 1].trim() !== "") {
+				lines.splice(item.end + 1, 0, "");
+				changes++;
+			}
 		}
 		if (codes.has("R") && item.base) {
 			number = item.base.number;
