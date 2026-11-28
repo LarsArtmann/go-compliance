@@ -5,7 +5,7 @@
 // the docs gates do not see. With --fix it applies the repairs that are
 // purely mechanical; everything else is listed for a human decision.
 //
-//   node scripts/annotate-qa.mjs [--base REV] [--fix] [--json] <file>...
+//   node scripts/annotate-qa.mjs --base <rev> [--fix] [--json] <file>...
 //
 // Findings:
 //   R  renumbered: the item's base text sits under another number
@@ -20,36 +20,37 @@
 //
 // Repairs (--fix): X (strike extended over the continuation lines, the
 // verdict moves to the item's end), W (base spaces restored), R (base
-// number restored), I (column 0 plus a blank line above).
+// number restored), I (column 0 plus a blank line above). Exit code 1 when
+// any finding remains after the repair.
 
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { relative, resolve } from "node:path";
 
 const NUMBERED = /^(\s*)(~~)?(\d+)\.(?:\s+|$)(.*)$/;
+const NUMBER_ONLY = /^(\s*)(~~)?(\d+)\.(?:\s+|$)/;
 const MIN_COMMON_PREFIX = 24;
 
 function parseArgs(argv) {
-	const options = { base: "HEAD", fix: false, json: false, files: [] };
+	const options = { base: null, fix: false, json: false, files: [] };
 	for (let index = 0; index < argv.length; index++) {
 		const arg = argv[index];
 		if (arg === "--base") options.base = argv[++index];
 		else if (arg === "--fix") options.fix = true;
 		else if (arg === "--json") options.json = true;
-		else if (arg === "-h" || arg === "--help") options.help = true;
 		else options.files.push(arg);
+	}
+	if (!options.base || options.files.length === 0) {
+		console.error("usage: annotate-qa.mjs --base <rev> [--fix] [--json] <file>...");
+		process.exit(2);
 	}
 	return options;
 }
 
-function usage() {
-	return readFileSync(fileURLToPath(import.meta.url), "utf8")
-		.split("\n")
-		.filter((line) => line.startsWith("// ") || line.startsWith("//"))
-		.map((line) => line.replace(/^\/\/ ?/, ""))
-		.slice(0, 26)
-		.join("\n");
+function splitHead(line) {
+	const match = NUMBERED.exec(line);
+	if (!match) return null;
+	return { indent: match[1], struck: Boolean(match[2]), number: match[3], text: match[4] };
 }
 
 function stripCode(text) {
@@ -60,8 +61,28 @@ function strikeCount(text) {
 	return (stripCode(text).match(/~~/g) ?? []).length;
 }
 
-function isBlockStart(line) {
-	return /^\d+\.(?:\s+|$)/.test(line) || /^\s*(#{1,6}\s|<!--)/.test(line);
+// Offset of the n-th code-free `~~` in the raw text.
+function rawStrikeOffset(text, nth) {
+	let seen = 0;
+	for (let index = 0; index + 1 < text.length; index++) {
+		if (text[index] === "`") {
+			const end = text.indexOf("`", index + 1);
+			if (end > index) {
+				index = end;
+				continue;
+			}
+		}
+		if (text.startsWith("~~", index)) {
+			if (seen === nth) return index;
+			seen++;
+			index++;
+		}
+	}
+	return -1;
+}
+
+function normalize(text) {
+	return text.replace(/[~*`\s]/g, "");
 }
 
 function splitItems(lines) {
@@ -69,133 +90,74 @@ function splitItems(lines) {
 	let current = null;
 	for (let index = 0; index < lines.length; index++) {
 		const line = lines[index];
-		if (line.trim() === "") {
-			current = null;
-			continue;
-		}
-		const match = NUMBERED.exec(line);
-		if (match && match[1] === "") {
-			current = {
-				index: items.length,
-				start: index,
-				end: index,
-				indent: match[1],
-				struck: Boolean(match[2]),
-				number: Number(match[3]),
-				text: match[4],
-				block: [index],
-			};
+		const head = splitHead(line);
+		if (head && head.indent === "") {
+			current = { start: index, end: index, ...head };
 			items.push(current);
 			continue;
 		}
-		if (current && !isBlockStart(line)) {
-			current.block.push(index);
-			current.end = index;
-		} else {
-			current = null;
-		}
+		if (line.trim() === "" || /^\s*(#{1,6}\s|<!--|```)/.test(line)) current = null;
+		else if (current) current.end = index;
 	}
 	return items;
 }
 
-function itemLines(item, lines) {
-	return item.block.map((index) => lines[index]);
+function firstLineText(item) {
+	return item.text;
 }
 
-function normalize(text) {
-	return text.replace(/[~*`\s]/g, "");
-}
-
-function closingLine(item, lines) {
-	if (!item.struck) return -1;
-	const block = itemLines(item, lines);
-	let seen = 0;
-	for (let offset = 0; offset < block.length; offset++) {
-		seen += strikeCount(block[offset]);
-		if (seen >= 2) return item.start + offset;
+function buildBaseIndex(baseLines) {
+	const items = splitItems(baseLines);
+	const byHead = new Map();
+	for (const item of items) {
+		item.block = baseLines.slice(item.start, item.end + 1);
+		item.key = normalize(item.block.join(""));
+		item.headKey = normalize(item.text);
+		if (!byHead.has(item.headKey)) byHead.set(item.headKey, item);
 	}
-	return -1;
+	return { items, byHead };
 }
 
-function verdictTail(item, lines) {
-	const first = lines[item.start];
-	const codeFree = stripCode(first);
-	const relative = codeFree.indexOf("~~", codeFree.indexOf("~~") + 2);
-	return relative < 0 ? "" : first.slice(relative + 2).trim();
-}
-
-function matchBase(item, lines, baseIndex) {
-	const block = itemLines(item, lines);
-	const head = block[0].replace(/^\s*(~~)?\d+\.(?:\s+|$)/, "");
-	const headKey = normalize(head);
+function matchBase(item, block, baseIndex) {
+	const headKey = normalize(
+		item.struck ? item.text.slice(0, rawStrikeOffset(item.text, 0)) : item.text,
+	);
 	const bodyKey = normalize(block.join(""));
-	let exact = baseIndex.byHead.get(headKey);
-	if (!exact) {
+	let prefix = baseIndex.byHead.get(headKey);
+	if (!prefix) {
 		for (const [key, base] of baseIndex.byHead) {
 			if (key.length >= 8 && headKey.startsWith(key)) {
-				exact = base;
+				prefix = base;
 				break;
 			}
 		}
 	}
-	if (exact) {
-		return { base: exact, kind: "prefix", missing: missingWords(exact.block, block) };
-	}
+	if (prefix) return { base: prefix, kind: "prefix" };
 	let best = null;
 	let bestLength = 0;
 	for (const base of baseIndex.items) {
-		const baseKey = base.key;
 		let length = 0;
-		const limit = Math.min(baseKey.length, bodyKey.length);
-		while (length < limit && baseKey[length] === bodyKey[length]) length++;
+		const limit = Math.min(base.key.length, bodyKey.length);
+		while (length < limit && base.key[length] === bodyKey[length]) length++;
 		if (length > bestLength) {
 			bestLength = length;
 			best = base;
 		}
 	}
-	if (best && bestLength >= MIN_COMMON_PREFIX) {
-		return { base: best, kind: "diverged", at: bestLength, missing: [] };
-	}
-	return { base: null, kind: "new", missing: [] };
+	if (best && bestLength >= MIN_COMMON_PREFIX) return { base: best, kind: "diverged", at: bestLength };
+	return { base: null, kind: "new" };
 }
 
-function missingWords(baseBlock, block) {
-	const have = new Set(
-		block.join(" ").split(/\s+/).map((word) => word.replace(/[~*]/g, "")),
-	);
-	return baseBlock
+function missingWords(base, block) {
+	const have = new Set(block.join(" ").split(/\s+/).map((word) => normalize(word)));
+	return base.block
 		.join(" ")
 		.split(/\s+/)
-		.filter((word) => word !== "" && !have.has(word.replace(/[~*]/g, "")));
+		.map((word) => normalize(word))
+		.filter((word) => word !== "" && !have.has(word));
 }
 
-function baseWhitespace(cur, ref) {
-	const refChars = [...ref];
-	const out = [];
-	let refIndex = 0;
-	let pending = "";
-	for (const ch of cur) {
-		if (/\s/.test(ch)) {
-			pending += ch;
-			continue;
-		}
-		if (refIndex >= refChars.length || refChars[refIndex] !== ch) break;
-		const refPending = [];
-		while (refIndex > 0 && /\s/.test(refChars[refIndex - 1])) {
-			refChars.unshift();
-		}
-		out.push(pending === "" && refHasSpaceBefore(ref, refIndex) ? " " : pending, ch);
-		refIndex++;
-		pending = "";
-	}
-	return null;
-}
-
-function refHasSpaceBefore() {
-	return false;
-}
-
-function reSpace(cur, ref) {
+function insertSpaces(cur, ref) {
 	let result = "";
 	let refIndex = 0;
 	let pending = "";
@@ -204,184 +166,155 @@ function reSpace(cur, ref) {
 			pending += ch;
 			continue;
 		}
-		if (refIndex >= ref.length || ref[refIndex] !== ch) break;
 		const refSpace = refIndex > 0 && /\s/.test(ref[refIndex - 1]);
 		result += (pending === "" && refSpace ? " " : pending) + ch;
 		refIndex++;
 		pending = "";
 	}
-	result += pending;
-	if (refIndex < ref.replace(/\s/g, "").length) return null;
-	return result + cur.slice([...cur].findIndex((_, index, all) => index >= 0 && all.slice(0, index).join("").length >= result.length) >= 0 ? 0 : 0);
+	return result + pending;
 }
 
-function insertBaseSpaces(cur, ref) {
-	let result = "";
-	let refIndex = 0;
-	let pending = "";
-	let consumed = 0;
-	for (const ch of cur) {
-		consumed++;
-		if (/\s/.test(ch)) {
-			pending += ch;
-			continue;
-		}
-		if (refIndex >= ref.length || ref[refIndex] !== ch) break;
-		const refSpace = refIndex > 0 && /\s/.test(ref[refIndex - 1]);
-		result += (pending === "" && refSpace ? " " : pending) + ch;
-		refIndex++;
-		pending = "";
-	}
-	return { text: result + cur.slice(consumed - (pending ? [...pending].length : 0)), refIndex };
-}
-
-function inspect(lines, baseLines, relPath) {
-	const items = splitItems(lines);
-	const baseItems = splitItems(baseLines);
-	const byHead = new Map();
-	for (const base of baseItems) {
-		base.block = base.block.map((index) => baseLines[index]);
-		base.key = normalize(base.block.join(""));
-		byHead.set(normalize(base.block[0].replace(/^\s*(~~)?\d+\.(?:\s+|$)/, "")), base);
-	}
-	const baseIndex = { items: baseItems, byHead };
+function inspect(lines, baseLines) {
+	const baseIndex = buildBaseIndex(baseLines);
 	const findings = [];
+	const items = splitItems(lines);
 	const add = (code, item, detail) =>
-		findings.push({
-			code,
-			line: item ? item.start + 1 : 0,
-			item: item ? item.number : 0,
-			detail,
-		});
+		findings.push({ code, line: item.start + 1, item: item.number, detail });
 	for (const item of items) {
-		const { base, kind, at, missing } = matchBase(item, lines, baseIndex);
+		const block = lines.slice(item.start, item.end + 1);
+		const { base, kind, at } = matchBase(item, block, baseIndex);
 		item.base = base;
-		const block = itemLines(item, lines);
-		if (kind === "diverged") {
-			add("T", item, `diverges from base item ${base.number} after ${at} chars`);
-		} else if (kind === "new" && baseItems.length > 0) {
-			add("T", item, "no base item matches");
-		}
+		if (kind === "diverged") add("T", item, `diverges from base item ${base.number} after ${at} chars`);
+		else if (kind === "new" && baseIndex.items.length > 0) add("T", item, "no base item matches");
+		const closeOffset = item.struck ? rawStrikeOffset(item.text, 1) : -1;
+		const head = item.struck && closeOffset >= 0 ? item.text.slice(0, closeOffset) : item.text;
 		if (base) {
-			if (base.number !== item.number) {
-				add("R", item, `base number ${base.number}`);
-			}
-			if (missing.length > 0) {
-				add("L", item, missing.slice(0, 8).join(" ") + (missing.length > 8 ? " ..." : ""));
-			}
-			if (item.indent !== base.indent) {
-				add("I", item, `indent ${item.indent.length}, base ${base.indent.length}`);
-			}
-			const baseFirst = base.block[0].replace(/^\s*(~~)?\d+\.(?:\s+|$)/, "");
-			const curFirst = block[0].replace(/^\s*(~~)?\d+\.(?:\s+|$)/, "");
-			const curHead = item.struck ? curFirst.slice(0, stripCode(curFirst).indexOf("~~") >= 0 ? mapToRaw(curFirst, stripCode(curFirst).indexOf("~~")) : curFirst.length) : curFirst;
-			if (
-				normalize(curHead) === normalize(baseFirst) &&
-				curHead !== baseFirst &&
-				normalize(curHead).length > 0
-			) {
-				const fixed = insertBaseSpaces(curHead, baseFirst);
-				if (fixed.text !== curHead) {
-					add("W", item, `base: ${JSON.stringify(baseFirst.slice(0, 70))}`);
-					item.whitespaceFix = fixed.text;
+			if (base.number !== item.number) add("R", item, `base number ${base.number}`);
+			if (base.indent !== item.indent) add("I", item, `indent ${item.indent.length}, base ${base.indent.length}`);
+			const lost = missingWords(base, block);
+			if (lost.length > 0) add("L", item, `${lost.length} word(s): ${lost.slice(0, 8).join(" ")}`);
+			if (head !== base.text && normalize(head) === normalize(base.headKey === undefined ? "" : base.text) && normalize(head) !== "") {
+				const fixed = insertSpaces(head, base.text);
+				if (fixed !== head) {
+					add("W", item, `base: ${JSON.stringify(base.text.slice(0, 60))}`);
+					item.whitespaceFix = fixed;
 				}
 			}
 		}
 		const strikes = strikeCount(block.join("\n"));
 		if (item.struck && strikes % 2 !== 0) add("S", item, `${strikes} strike markers`);
-		const close = closingLine(item, lines);
-		if (item.struck && close < 0) add("U", item, "strike never closes");
-		if (item.struck && close >= 0 && close !== item.end) {
-			const later = block.slice(close - item.start + 1).join("\n");
-			const repairable =
-				strikeCount(lines[item.start]) === 2 && strikeCount(later) === 0 && strikes === 2;
-			add("X", item, `${item.end - close} continuation line(s)${repairable ? "" : " (manual)"}`);
+		if (item.struck && closeOffset < 0) add("U", item, "strike never closes on its first line");
+		let closeLine = -1;
+		if (item.struck) {
+			let seen = 0;
+			for (let offset = 0; offset < block.length; offset++) {
+				seen += strikeCount(block[offset]);
+				if (seen >= 2) {
+					closeLine = item.start + offset;
+					break;
+				}
+			}
+		}
+		if (item.struck && closeLine >= 0 && closeLine !== item.end) {
+			const later = block.slice(closeLine - item.start + 1).join("\n");
+			const nested = block.slice(1).some((line) => /^\s+/.test(line));
+			const repairable = strikeCount(block[0]) === 2 && strikeCount(later) === 0 && strikes === 2 && !nested;
+			add("X", item, `${item.end - closeLine} continuation line(s)${repairable ? "" : " (manual)"}`);
 			item.splitFix = repairable;
 		}
 		if (!item.struck) {
 			const markerOffset = block.findIndex((line) => /→\s*routed/.test(line));
-			if (markerOffset >= 0 && markerOffset !== block.length - 1) {
-				add("A", item, "routed marker before the item's last line");
-			}
+			if (markerOffset >= 0 && markerOffset !== block.length - 1) add("A", item, "routed marker before the item's last line");
 		}
 	}
 	return { findings, items };
 }
 
-function mapToRaw(raw, codeIndex) {
-	let count = 0;
-	for (let index = 0; index < raw.length; index++) {
-		if (raw[index] === "`") {
-			const end = raw.indexOf("`", index + 1);
-			if (end > index) {
-				index = end;
-				continue;
-			}
-		}
-		if (count === codeIndex) return index;
-		count++;
-	}
-	return raw.length;
-}
-
 function applyFixes(lines, report) {
 	let changes = 0;
-	const spliceAt = [];
+	const codesOf = (item) =>
+		new Set(report.findings.filter((finding) => finding.line === item.start + 1).map((finding) => finding.code));
+	const inserts = [];
 	for (const item of [...report.items].sort((left, right) => right.start - left.start)) {
-		const findingCodes = new Set(
-			report.findings.filter((finding) => finding.item === item.number && finding.line === item.start + 1).map((finding) => finding.code),
-		);
-		let first = lines[item.start];
-		const match = NUMBERED.exec(first);
-		if (!match) continue;
-		let number = match[3];
-		let text = match[4];
-		let indent = match[1];
-		if (findingCodes.has("R") && item.base) {
-			number = String(item.base.number);
+		const codes = codesOf(item);
+		if (codes.size === 0) continue;
+		let { indent, struck, number, text } = item;
+		if (codes.has("W") && item.whitespaceFix) {
+			const closeOffset = struck ? rawStrikeOffset(text, 1) : -1;
+			text = item.whitespaceFix + (closeOffset >= 0 ? text.slice(closeOffset) : "");
 			changes++;
 		}
-		if (findingCodes.has("I") && item.base && item.base.indent === "") {
+		if (codes.has("X") && item.splitFix) {
+			const closeOffset = rawStrikeOffset(text, 1);
+			const tail = text.slice(closeOffset + 2).trim();
+			text = text.slice(0, closeOffset);
+			lines[item.end] = `${lines[item.end].trimEnd()}~~ ${tail}`.trimEnd();
+			changes++;
+		}
+		if (codes.has("R") && item.base) {
+			number = item.base.number;
+			changes++;
+		}
+		if (codes.has("I") && item.base && item.base.indent === "") {
+			for (let index = item.start; index <= item.end; index++) lines[index] = lines[index].trimStart();
+			if (item.start > 0 && lines[item.start - 1].trim() !== "") inserts.push(item.start);
 			indent = "";
-			for (let index = item.start; index <= item.end; index++) {
-				lines[index] = lines[index].replace(/^\s+/, "");
-			}
-			if (item.start > 0 && lines[item.start - 1].trim() !== "") spliceAt.push(item.start);
 			changes++;
 		}
-		if (findingCodes.has("X") && item.splitFix) {
-			const codeFree = stripCode(text);
-			const close = mapToRaw(text, codeFree.indexOf("~~"));
-			const tail = text.slice(close + 2).trim();
-			text = text.slice(0, close);
-			const last = item.end;
-			lines[last] = `${lines[last].trimEnd()}~~ ${tail}`.trimEnd();
-			changes++;
-		} else if (findingCodes.has("W") && item.whitespaceFix) {
-			const struckHead = item.struck ? text.slice(0, mapToRaw(text, stripCode(text).indexOf("~~"))) : text;
-			const tail = item.struck ? text.slice(mapToRaw(text, stripCode(text).indexOf("~~"))) : "";
-			text = (item.whitespaceFix ?? struckHead) + tail;
-			changes++;
-		}
-		lines[item.start] = `${indent}${match[2] ?? ""}${number}. ${text}`.trimEnd();
+		lines[item.start] = `${indent}${struck ? "~~" : ""}${number}. ${text}`.trimEnd();
 	}
-	for (const index of spliceAt.sort((left, right) => right - left)) {
-		if (lines[index - 1].trim() === "" || lines[index].trim() === "") continue;
-		lines.splice(index, 0, "");
-		changes++;
-	}
+	for (const index of inserts.sort((left, right) => right - left)) lines.splice(index, 0, "");
 	return changes;
 }
 
-function baseContent(options, relPath) {
-	const spec = options.base.split(":");
-	const revision = spec[0] === "HEAD" ? "HEAD" : spec[0];
+function run(options, file) {
+	const abs = resolve(file);
+	const rel = relative(process.cwd(), abs);
+	let baseText;
 	try {
-		return execFileSync("git", ["show", `${revision}:${relPath}`], {
+		baseText = execFileSync("git", ["show", `${options.base}:${rel}`], {
 			encoding: "utf8",
 			stdio: ["ignore", "pipe", "ignore"],
 		});
 	} catch {
-		return null;
+		return { file: rel, error: `not in ${options.base}` };
 	}
+	const baseLines = baseText.split("\n");
+	let text = readFileSync(abs, "utf8");
+	const hadFinalNewline = text.endsWith("\n");
+	let lines = text.replace(/\n$/, "").split("\n");
+	let report = inspect(lines, baseLines);
+	let changes = 0;
+	if (options.fix && report.findings.length > 0) {
+		changes = applyFixes(lines, report);
+		if (changes > 0) {
+			writeFileSync(abs, lines.join("\n") + (hadFinalNewline ? "\n" : ""));
+			report = inspect(lines, baseLines);
+		}
+	}
+	return { file: rel, changes, findings: report.findings };
 }
+
+function main() {
+	const options = parseArgs(process.argv.slice(2));
+	const results = options.files.map((file) => run(options, file));
+	const remaining = results.reduce((sum, result) => sum + (result.findings?.length ?? 0), 0);
+	if (options.json) {
+		console.log(JSON.stringify({ results, remaining }, null, 2));
+	} else {
+		for (const result of results) {
+			if (result.error) {
+				console.log(`${result.file}: ${result.error}`);
+				continue;
+			}
+			console.log(`${result.file}: ${result.changes} repaired, ${result.findings.length} remain`);
+			for (const finding of result.findings) {
+				console.log(`  ${finding.code} L${finding.line} #${finding.item}: ${finding.detail}`);
+			}
+		}
+		console.log(`total: ${remaining} finding(s) remain`);
+	}
+	process.exit(remaining > 0 || results.some((result) => result.error) ? 1 : 0);
+}
+
+main();
