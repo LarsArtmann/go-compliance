@@ -16,7 +16,10 @@
 # Usage: scripts/screenshot.sh [url]
 # Environment: OUT (default /tmp/compliance-screens), CHROMIUM_BIN,
 # SHOTS_EVIDENCE (default ~/.local/state/overview/compliance.json),
-# SHOTS_PORT (default 8479), SETTLE_MS (default 2500), ALLOW_EMPTY=1.
+# SHOTS_PORT (default 8479), SETTLE_MS (default 2500), ALLOW_EMPTY=1,
+# SHOTS_DISCOVER_PATHS (set it, even to an empty string, to override the
+# hub's discovery roots; empty switches never-covered discovery off, so an
+# empty evidence file renders an empty fleet).
 set -euo pipefail
 
 root="$(git rev-parse --show-toplevel)"
@@ -57,7 +60,11 @@ if [ -z "$URL" ]; then
 
 	TMP_DIR="$(mktemp -d)"
 	(cd hub && GOWORK=off go build -o "$TMP_DIR/compliance-hub" ./cmd/compliance-hub)
-	"$TMP_DIR/compliance-hub" serve --source file --file "$EVIDENCE" --addr "127.0.0.1:$PORT" >"$TMP_DIR/hub.log" 2>&1 &
+	discover_args=()
+	if [ -n "${SHOTS_DISCOVER_PATHS+x}" ]; then
+		discover_args=(--discover-paths "$SHOTS_DISCOVER_PATHS")
+	fi
+	"$TMP_DIR/compliance-hub" serve --source file --file "$EVIDENCE" --addr "127.0.0.1:$PORT" "${discover_args[@]}" >"$TMP_DIR/hub.log" 2>&1 &
 	HUB_PID=$!
 
 	ready=0
