@@ -65,4 +65,12 @@ const (
 	// white, and in dark mode the darkest gray, one step below the table's
 	// raised surfaces.
 	pageBodyClass = "bg-white text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100"
+
+	// pageThemeColor and pageDarkThemeColor tint the browser's own UI (the
+	// address bar on a phone) through the theme-color meta tags, one per color
+	// scheme: the hub's accent-600, and the dark canvas of pageBodyClass
+	// (gray-950). The library's defaults are indigo, which the hub palette
+	// does not contain.
+	pageThemeColor     = "#1464c6"
+	pageDarkThemeColor = "#030712"
 )

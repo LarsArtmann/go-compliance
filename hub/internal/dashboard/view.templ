@@ -17,12 +17,14 @@ import (
 // and a LiveRegion whose stream patches the summary and the fleet table.
 templ View(model ViewModel) {
 	@layout.Base(layout.PageProps{
-		Title:       model.Title,
-		CSSPath:     model.CSSSrc,
-		HTMXVersion: "",
-		Favicon:     faviconRoute,
-		BodyClass:   pageBodyClass,
-		HeadContent: headContent(model),
+		Title:          model.Title,
+		CSSPath:        model.CSSSrc,
+		HTMXVersion:    "",
+		Favicon:        faviconRoute,
+		BodyClass:      pageBodyClass,
+		ThemeColor:     pageThemeColor,
+		DarkThemeColor: pageDarkThemeColor,
+		HeadContent:    headContent(model),
 	}) {
 		@layout.Container(layout.DefaultContainerProps()) {
 			<div class="py-8">

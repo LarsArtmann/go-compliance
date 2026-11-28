@@ -172,6 +172,20 @@ var _ = Describe("fleet page render", func() {
 		))
 	})
 
+	It("tints the browser UI with the hub palette, not the library's indigo", func() {
+		var rendered bytes.Buffer
+		Expect(dashboard.View(pageWith(events.RepoRow{Repo: "one"})).
+			Render(context.Background(), &rendered)).To(Succeed())
+
+		html := rendered.String()
+		Expect(html).To(ContainSubstring(
+			`<meta name="theme-color" content="#1464c6" media="(prefers-color-scheme: light)">`,
+		), "html: %s", html)
+		Expect(html).To(ContainSubstring(
+			`<meta name="theme-color" content="#030712" media="(prefers-color-scheme: dark)">`,
+		), "html: %s", html)
+	})
+
 	It("seeds the filter and the counts, so no expression reads a missing signal", func() {
 		model := pageWith(
 			events.RepoRow{Repo: "broken", State: compliance.StateFailing},
