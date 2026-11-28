@@ -314,7 +314,9 @@ ago").
 10. templ-components release tag with the signal chip, then the hub pin bump and the deletion of the hand-rolled chip markup (the Blocked row exists). (Medium, L, Feature; needs a tag and a push)
 11. templ-components TODO rows for the three library findings: the Table scroll-box knob, the `ThemeToggle` icon contrast, the empty `BodyClass` canvas. (Medium, S, Documentation; repo: templ-components)
 12. Producer single-writer decision (question 3), then either document the many-writers model in `docs/guides/integrate.md` or change the default in library-policy. (Medium, S, Decision)
-13. Discovery daemon: report git worktrees that have a `go.mod` (`go-flightrecorder-row92` is missing from the snapshot), so the hub's 209 meets the producer's 210. (Medium, S, Bug; repo: project-discovery)
+
+13. ~~Discovery daemon: report git worktrees that have a `go.mod` (`go-flightrecorder-row92` is missing from the snapshot), so the hub's 209 meets the producer's 210. (Medium, S, Bug; repo: project-discovery)~~ done — resolved 2026-11-28: no daemon bug; the daemon reports the worktree (257 projects over the daemon socket, `go-flightrecorder-row92` present) and its eligible set equals the evidence rows (210 = 210); the rule is pinned by a regression test in the project-discovery-daemon repo (worktree_discovery_test.go, commit 2cf07dd). Details: docs/status/2026-11-28_13-55_reboot-wiped-scratch-lanes-died-on-usage-limit-repair-tools-lost.md, section a.
+
 14. Annotate items 7, 8, 25, 31 of the 2026-11-26 17-47 report: 31 done, 25 partial, 7 and 8 after item 8 of this list. (Medium, S, Documentation)
 15. Update `docs/notes/live-architecture.md`: the debounce window, the scroll box and its 254px calibration, the empty-fleet block outside the rows region, the harness check families. (Medium, S, Documentation)
 16. Owner-decisions digest upkeep: strike the rows the 2026-11-27 triage settled (branching-flow, inline vendor hashes), reword the `go-humanize` row (adopted; the `STACK.md` row exists), and sharpen the `samber/do` row in `STACK.md` (transitive only). (Medium, S, Documentation)
