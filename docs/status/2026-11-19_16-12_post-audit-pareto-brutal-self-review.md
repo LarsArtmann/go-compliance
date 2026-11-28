@@ -67,12 +67,11 @@ a-h/templ issue (blocker: upstream mandate question).
 ## f) Top things to get done next (ordered)
 
 ~~1. Push to remotes (owner policy — 40+ commits behind on the GitHub mirror) and WATCH the four new CI jobs' first real runs.~~ done — Verified 2026-11-28: the push happened and CI ran — CHANGELOG.md:90 (first push run 44611411587 12/13 green; full matrix 13/13 in run 44612235355); the residual CI debt is the docs-gates audit-all row (TODO_LIST.md:25 High)
-~~2. `--sort-by` flag parity on hub `table` (findings/failures/name).~~ done — Done, Verified 2026-11-28: hub/internal/cli/flags.go:51 `--sort-by` (findings, failures, name — tiebreak inside the state rank) + table_test.go:255-262; CHANGELOG.md:81
+~~2. `--sort-by` flag parity on hub `table` (findings/failures/name).~~ done — Verified 2026-11-28: hub/internal/cli/flags.go:51 `--sort-by` (findings, failures, name — tiebreak inside the state rank) + table_test.go:255-262; CHANGELOG.md:81
 ~~3. Tag core v0.1.1 (current tree), then execute the hub replace-drop row (require v0.1.1, drop `=> ../`, tidy, vendorHash ritual, simplify the `_core_only` postPatchExtra story).~~ done — Executed at v0.2.0 instead, Verified 2026-11-28: v0.2.0 = f906ae5 (2026-11-20 17:12 +0100); hub/go.mod:12 requires core v0.2.0, no replace; flake.nix:150 "no _core_only copy needed"
 4. cmdguard next tag: adopt `AssertDescribeContract`; re-evaluate the **→ routed to TODO_LIST Low Impact row "cmdguard follow-ups: cmdguard-lint CI gate DONE 2026-11-19 ..." (AssertDescribeContract verified on master but NOT in v5.1.0 — adopt at the next tag; Nd-codec + lint-replaces drafts voice-checked; filing waits on the OG.5 mandate). Verified 2026-11-28: zero AssertDescribeContract uses under hub/**
 lint CI recipe if upstream drops the replace directives.
-~~5. Screenshot `docs/review/libs/index.html` (owner or `permissions safe~~ done — Done, Verified 2026-11-28: docs/assets/libs-index.png (2026-11-27) captured by scripts/screenshot-page.sh, linked from the audit index (11-52 report :138)
-   firefox`).
+~~5. Screenshot `docs/review/libs/index.html` (owner or `permissions safe firefox`).~~ done — Verified 2026-11-28: docs/assets/libs-index.png (2026-11-27) captured by scripts/screenshot-page.sh, linked from the audit index (11-52 report :138)
 6. go-humanize adopt/suppress/accept decision (gates 6 buildflow **→ routed to docs/status/owner-decisions-digest.md, row "go-humanize adopt/accept-with-reason" (linter/policy verdicts table). Verified 2026-11-28: hub/go.mod:10 still requires go-humanize v1.1.0 directly**
 error-severity findings every full run).
 7. samber/lo adoption-or-suppress policy (fleet-wide). **→ routed to docs/status/owner-decisions-digest.md, row "samber/lo adopt-or-suppress" (owner verdict; ROADMAP owner queue). Verified 2026-11-28: samber/do is still a transitive dependency only (`hub/go.mod`, through cmdguard)**
@@ -85,7 +84,7 @@ templ-components FilterChips, cmdguard/lint replace-directive bug,
 11. M26 overview endgame (replace vs coexist) — owner question g2. **→ routed to TODO_LIST Blocked (owner decisions) row "M26: overview endgame (replace vs coexist) + migration note" (also ROADMAP "Endgame question (owner, g2 — BLOCKED)")**
 12. Repo visibility decision; VACUUM buildflow state DB (1.04 GB); **→ routed to TODO_LIST Blocked (owner decisions) rows "Forgejo repo visibility (lars/go-compliance → public?)", "`sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB)", "Delete the expendable 0.51 GB cache DB (`~/.cache/buildflow/cache.db`)"**
 delete the 0.51 GB cache DB (owner machine hygiene).
-~~13. `check-rows --strict` + `bare-rows` validation pass over the remaining aged status reports as their items close (archive cadence).~~ done — Standing practice, re-verified 2026-11-28: `docs-gates rows --strict` + `--bare` over docs/status/archived/_.md + docs/planning/archived/_.md → "20 file(s) clean", exit 0 (my runs)
+~~13. `check-rows --strict` + `bare-rows` validation pass over the remaining aged status reports as their items close (archive cadence).~~ done — Standing practice, re-verified 2026-11-28: `docs-gates rows --strict` + `--bare` over `docs/status/archived/*.md` + `docs/planning/archived/*.md` → "20 file(s) clean", exit 0 (my runs)
 ~~14. shellcheck + `rg` pin hardening for `scripts/check-citations.sh` / CI job.~~ done — Verified 2026-11-28: CHANGELOG.md:83 records the 2026-11-20 hardening (rg-preferred, grep -ERE fallback, shellcheck clean); re-verified today: shellcheck 0.11.0 clean + checked=427 stale=0 (my runs)
 15. Consider verifying EXTERNAL (lib-side) citations against local
 checkouts when `~/projects/<lib>` exists (140 cites currently
@@ -102,7 +101,7 @@ per-bundle diff-size budget would catch accidental explosions.
 http's implicit HEAD body suppression; ScriptHandler handles HEAD
 explicitly — match that bar if it ever matters).
 ~~21. FEATURES.md: consider a row for the citation/stack/css CI gates (infra inventory completeness).~~ done — Verified 2026-11-28: FEATURES.md:60 CI row names the 14-job matrix incl. dupl-gate, templ-fmt, citation-gate, cmdguard-usage, branded-ID, css-freshness — "all with real green runner executions"
-~~22. AGENTS.md docs-health workflow line for the @substring rule (from §e2).~~ done — Done, Verified 2026-11-28: AGENTS.md:193 carries the `N@substring` rule
+~~22. AGENTS.md docs-health workflow line for the @substring rule (from §e2).~~ done — Verified 2026-11-28: AGENTS.md:193 carries the `N@substring` rule
 
 ## g) Questions I can NOT answer myself
 

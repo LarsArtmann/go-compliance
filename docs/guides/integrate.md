@@ -40,11 +40,8 @@ err := compliance.RecordTo(ctx, compliance.NewFileStore(path),
     })
 ```
 
-Or with the default fleet document
-(`/var/lib/overview/compliance.json` on a system deployment; user
-deployments point `GO_COMPLIANCE_EVIDENCE_FILE` at
-`~/.local/state/overview/compliance.json`, the file the user-level
-compliance-hub reads):
+Or with the default fleet document (see [Where the evidence
+lives](#where-the-evidence-lives) for its location):
 
 ```go
 err := compliance.Record(ctx, compliance.NewRepoName("my-repo"),
@@ -66,6 +63,46 @@ A runnable version of the above lives in
 ```bash
 go run ./examples/reporter compliance-example.json
 ```
+
+## Where the evidence lives
+
+One fleet document holds every repository's rows. Where it sits:
+
+| Deployment             | Fleet document                             |
+| ---------------------- | ------------------------------------------ |
+| System (the default)   | `/var/lib/overview/compliance.json`        |
+| User (`systemctl --user`) | `~/.local/state/overview/compliance.json` |
+| Override               | `GO_COMPLIANCE_EVIDENCE_FILE`              |
+
+The system path is the core's `DefaultEvidenceFile` constant
+(`reporter.go`) and the `Record` helper's fallback; user deployments pass
+the XDG state file explicitly, which is what both deploy scripts
+(`scripts/deploy-hub.sh`, `scripts/deploy-fleet-evidence.sh`) do.
+`GO_COMPLIANCE_EVIDENCE_FILE` overrides the `Record` default for every
+caller of the SDK; the commands that take a path directly override it per
+invocation (`--file` on the hub, `--evidence-file` on `library-policy`).
+
+## Who writes the evidence
+
+A producer is any process that records rows into the fleet document, and
+there is more than one:
+
+- Every `library-policy` run records its own repository's evidence unless
+  `--no-record` is passed: a plain scan records each git repository it
+  reaches, and `fleet` records every repository under its root.
+- The daily producer timer (`fleet-evidence.timer`, 05:10, installed by
+  `scripts/deploy-fleet-evidence.sh`) runs `library-policy fleet` from a
+  nix build of library-policy's committed tree, so its rows carry the
+  commit as the producer version.
+
+A hand-built `library-policy` binary carries no stamp and therefore writes
+a `dev` version; the next timed scan records the same repository again,
+newer, and replaces the row. Mixed version stamps in the fleet document
+are expected, not a defect.
+
+Rows are replaced only when the new result is at least as new as the
+stored one (the core's write rule), so parallel writers cannot regress the
+document.
 
 ## Viewing
 
