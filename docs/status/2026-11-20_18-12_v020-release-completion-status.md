@@ -106,7 +106,7 @@
 14. Post-release AGENTS.md check: the Module Rules go-daemon/_local_deps text vs the post-replace-drop reality (partially updated; verify no stale `_core_only` references remain anywhere: `rg _core_only`)
 15. STACK.md decision-log entry for the replace-drop + the go-humanize adoption (new direct dep)
 16. `go work sync` / go.work.sum drift check after the replace-drop tides
-~~17. Verify `go.work` still gives local dev the live-core experience post-replace (documented expectation, untested explicitly)~~ done — verified 2026-11-28: `go.work` is `use .` plus `use ./hub`; with the workspace on, `go list -m` resolves the core to `/home/lars/projects/go-compliance`; `hub/go.mod` carries no replace
+    ~~17. Verify `go.work` still gives local dev the live-core experience post-replace (documented expectation, untested explicitly)~~ done — verified 2026-11-28: `go.work` is `use .` plus `use ./hub`; with the workspace on, `go list -m` resolves the core to `/home/lars/projects/go-compliance`; `hub/go.mod` carries no replace
 
 **Fleet/hardening:**
 19. FLAKE_PAT secret decision (GitHub + Forgejo) — hub/flake CI jobs still skip; vendorHash has ZERO CI coverage

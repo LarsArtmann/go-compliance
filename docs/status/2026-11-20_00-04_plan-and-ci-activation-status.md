@@ -170,17 +170,17 @@ not duplicated. New items beyond the plan are marked ★._
 2. T3: bench verify + re-record per g2 answer (3.1–3.3).
 3. T4: `--sort-by` parity (4.1–4.5).
 4. T5: `queryRows` error-path specs (5.1–5.3).
-~~5. T6: check-citations shellcheck + `rg` pin (6.1–6.5).~~ done — citation-gate hardening, `a204282` (2026-11-20): `extract_cites` prefers ripgrep and falls back to `grep -oE`, shellcheck clean (CHANGELOG [0.1.0])
-6. T7: embedder-docs five-checks sweep (7.1–7.3).
-7. T8: corpus drain — strike the done-subset of 23-09/23-40/00-53, owner
+   ~~5. T6: check-citations shellcheck + `rg` pin (6.1–6.5).~~ done — citation-gate hardening, `a204282` (2026-11-20): `extract_cites` prefers ripgrep and falls back to `grep -oE`, shellcheck clean (CHANGELOG [0.1.0])
+5. T7: embedder-docs five-checks sweep (7.1–7.3).
+6. T8: corpus drain — strike the done-subset of 23-09/23-40/00-53, owner
    digest, archive two (8.1–8.5).
    ~~8. T9: docs-gates pin-vs-skill verdict (9.1–9.3).~~ done — 2026-11-20: T9 verdict recorded in AGENTS.md (fleet pin e305834 lacks ONLY the rows verb; its freshness surface is complete; writer aliases cover the row gates) + TODO_LIST carries the BLOCKED bump row
-8. T10: cmdguard next-tag readiness + upstream drafts (10.1–10.3).
-9. **→ 21-25 plan T11** — TODO/ROADMAP reconcile + FULL battery (11.1–11.4), executed with the wave that precedes it.
-10. ★ Re-run the FULL CI matrix once more after T2–T11 land (the run history
-    now exists — keep it green, not "green last week").
-11. ★ Soften or test the css warm-step comment's "loud errors" claim (§e6).
-12. ★ Confirm the FLAKE_PAT-guarded jobs' skip shape is still exactly
+7. T10: cmdguard next-tag readiness + upstream drafts (10.1–10.3).
+8. **→ 21-25 plan T11** — TODO/ROADMAP reconcile + FULL battery (11.1–11.4), executed with the wave that precedes it.
+9. ★ Re-run the FULL CI matrix once more after T2–T11 land (the run history
+   now exists — keep it green, not "green last week").
+10. ★ Soften or test the css warm-step comment's "loud errors" claim (§e6).
+11. ★ Confirm the FLAKE_PAT-guarded jobs' skip shape is still exactly
     "skip-not-fail" on a real run (observed green-skip this session; pin the
     observation in README if it differs).
 
@@ -188,13 +188,13 @@ not duplicated. New items beyond the plan are marked ★._
 
 14. FLAKE_PAT secrets — ALSO the only way CI ever proves the flake truth
     (§b3); until then CI's flake green is a skip.
-~~15. v0.1.1 go-signal → T21 replace-drop executes (~34m).~~ done — the replace directive was dropped at the `v0.2.0` tag (`5010082`, 2026-11-20) instead of a v0.1.1 tag; `hub/go.mod` requires `go-compliance v0.2.0` with no replace
-16. go-humanize + samber/lo verdicts (the findings-gate blocker).
-17. M26 overview endgame (g2).
-18. Forgejo visibility click.
-19. Upstream-TODO filing mandate (5 queued candidates; T10 pre-writes drafts).
-20. VACUUM buildflow DB + delete the 0.51 GB cache DB.
-21. Firefox permission → index.html screenshot row closes.
+    ~~15. v0.1.1 go-signal → T21 replace-drop executes (~34m).~~ done — the replace directive was dropped at the `v0.2.0` tag (`5010082`, 2026-11-20) instead of a v0.1.1 tag; `hub/go.mod` requires `go-compliance v0.2.0` with no replace
+15. go-humanize + samber/lo verdicts (the findings-gate blocker).
+16. M26 overview endgame (g2).
+17. Forgejo visibility click.
+18. Upstream-TODO filing mandate (5 queued candidates; T10 pre-writes drafts).
+19. VACUUM buildflow DB + delete the 0.51 GB cache DB.
+20. Firefox permission → index.html screenshot row closes.
 
 **Watch / standing:**
 

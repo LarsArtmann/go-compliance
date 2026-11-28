@@ -50,9 +50,10 @@
 
 ## Fleet-layer (outside this repo)
 
-| Item                                                                                | Source                                               | What it needs                                                           |
-| ----------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| docs-gates fleet pin bump past `e305834` (adds the `rows` verb the skill documents) | AGENTS annotate-writer errata, T9 verdict 2026-11-20 | crush-config / fleet nix pin bump; in-repo writer aliases cover the gap |
+| Item                                                                                | Source                                               | What it needs                                                                                      |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| docs-gates fleet pin bump past `e305834` (adds the `rows` verb the skill documents) | AGENTS annotate-writer errata, T9 verdict 2026-11-20 | crush-config / fleet nix pin bump; in-repo writer aliases cover the gap                            |
+| go-idempotency Q2 parent exemption + Q3 idemtest release prep                       | 22-27 §f37 (routed 2026-11-28)                       | owner verdict in the go-idempotency repo; library-policy's companion rule already demands idemtest |
 
 ## Still-gated from the CI-activation report (00-04 §g)
 

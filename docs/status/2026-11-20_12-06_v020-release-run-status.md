@@ -122,10 +122,10 @@ Nothing destroyed or corrupted. The honest entries:
 7. Push master to github; watch CI to green (14 jobs); push forgejo for parity
 8. Create annotated tag `v0.2.0` at the green commit; push tag to both remotes
 9. Post-push: proxy `.info` shows v0.2.0 (wait 2–10 min propagation)
-~~10. pkg.go.dev fetch trigger + render check~~ done — pkg.go.dev renders the module at v0.2.0, published 2026-11-20 (README, examples, and godoc verified by fetch on 2026-11-28)
-11. Clean-dir `go get github.com/larsartmann/go-compliance@v0.2.0` (GONOSUMDB='*' then without)
-12. `gh release create v0.2.0` with notes — decide `--prerelease` (§g)
-13. Retro-create v0.1.0 GitHub Release so the releases page isn't a hole
+   ~~10. pkg.go.dev fetch trigger + render check~~ done — pkg.go.dev renders the module at v0.2.0, published 2026-11-20 (README, examples, and godoc verified by fetch on 2026-11-28)
+10. Clean-dir `go get github.com/larsartmann/go-compliance@v0.2.0` (GONOSUMDB='*' then without)
+11. `gh release create v0.2.0` with notes — decide `--prerelease` (§g)
+12. Retro-create v0.1.0 GitHub Release so the releases page isn't a hole
 
 **Post-tag (the recorded row):**
 14. Drop `replace github.com/larsartmann/go-compliance => ../` from hub/go.mod

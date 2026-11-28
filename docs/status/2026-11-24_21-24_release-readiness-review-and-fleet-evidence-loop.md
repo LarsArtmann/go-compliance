@@ -118,7 +118,7 @@ tree at probe time).
 4. Propagate core v0.2.0 to md-go-validator + BuildFlow (go-ecosystem-upgrade sweep)
 5. Decide the evidence-file deployment: chown `/var/lib/overview` to a Lars-writable group, or run `fleet --record` as the overview user via systemd
 6. Wire the compliance-hub `serve --source file` against the recorded evidence as a long-lived dashboard (the hub deployment follow-up)
-~~7. CI rev-vs-lock drift-check (css pin moves WITH flake.lock bumps) — still open from 18-12 §f3~~ done — 2026-11-28: the CSS gate job reads the nixpkgs rev from `flake.lock` at run time (`jq -r ".nodes.nixpkgs.locked.rev"`), so no second copy exists to drift; the handwritten rev it replaces had been behind the lock since 2026-11-23 (`0bb82723` against `2786a2a7`)
+   ~~7. CI rev-vs-lock drift-check (css pin moves WITH flake.lock bumps) — still open from 18-12 §f3~~ done — 2026-11-28: the CSS gate job reads the nixpkgs rev from `flake.lock` at run time (`jq -r ".nodes.nixpkgs.locked.rev"`), so no second copy exists to drift; the handwritten rev it replaces had been behind the lock since 2026-11-23 (`0bb82723` against `2786a2a7`)
 
 **Fleet/hardening:**
 

@@ -103,16 +103,16 @@ _Docs/tooling hygiene (small, unblocked):_
 38. Re-run `scripts/check-citations.sh` after the NEXT refactor that moves cited code (ratchet ritual; currently 0 stale).
 39. Pre-flight usage: adopt `docs-gates freshness . --pre-flight` for future living-doc line edits (the flag exists on the installed pin; nobody has used it in-repo yet).
 40. `--land-parity` stamp adoption after the first pre-flight batch (closes the retyped-bullet class).
-~~41. dprint-check the digest at every future touch (it IS dprint-managed, unlike CHANGELOG).~~ done — standing rule, held: `dprint check docs/status/owner-decisions-digest.md` passes on 2026-11-28 and the CI `dprint + actionlint` job checks it on every push
-42. Domain-language drift check after the next feature (T7-style sweep took 5m; keep it per-feature).
-43. Bench: record the T3 deltas into `benchmarks/` as a SECOND file (`baseline-2026-11-20.txt`, untracked or tracked per owner call) IF g2 says keep history — cheap, preserves the comparison chain.
-44. CI: consider a `dprint fmt`-parity job on the digest + drafts (markdown-heavy files the daemon touches often).
-45. TODO_LIST: the High/Medium sections are empty — consider folding the Blocked table's med-impact rows up when g-answers land (structure, not content).
-46. AGENTS: add the stale-context/disk-wins bullet (§e6) next to the daemon-race rule.
-47. AGENTS: consider one line on nixOS-realistic PATH simulation for scripts (§e8) — or drop; it's marginal.
-48. Next session start: `git log v0.1.0..HEAD --oneline | wc -l` — if the daemon-commit count since the tag grows past ~40, consider nudging the owner toward the v0.1.1 tag (release-history hygiene, not a blocker).
-49. The two upstream drafts: after OG.5 says file, use `gh issue create --body-file <extracted>` (never `--body-file -`), then `gh issue view` to confirm landing (github-voice procedure step 8).
-50. Nothing else queued: the corpus is drained, the backlog is TODO_LIST + digest, and both are small.
+    ~~41. dprint-check the digest at every future touch (it IS dprint-managed, unlike CHANGELOG).~~ done — standing rule, held: `dprint check docs/status/owner-decisions-digest.md` passes on 2026-11-28 and the CI `dprint + actionlint` job checks it on every push
+41. Domain-language drift check after the next feature (T7-style sweep took 5m; keep it per-feature).
+42. Bench: record the T3 deltas into `benchmarks/` as a SECOND file (`baseline-2026-11-20.txt`, untracked or tracked per owner call) IF g2 says keep history — cheap, preserves the comparison chain.
+43. CI: consider a `dprint fmt`-parity job on the digest + drafts (markdown-heavy files the daemon touches often).
+44. TODO_LIST: the High/Medium sections are empty — consider folding the Blocked table's med-impact rows up when g-answers land (structure, not content).
+45. AGENTS: add the stale-context/disk-wins bullet (§e6) next to the daemon-race rule.
+46. AGENTS: consider one line on nixOS-realistic PATH simulation for scripts (§e8) — or drop; it's marginal.
+47. Next session start: `git log v0.1.0..HEAD --oneline | wc -l` — if the daemon-commit count since the tag grows past ~40, consider nudging the owner toward the v0.1.1 tag (release-history hygiene, not a blocker).
+48. The two upstream drafts: after OG.5 says file, use `gh issue create --body-file <extracted>` (never `--body-file -`), then `gh issue view` to confirm landing (github-voice procedure step 8).
+49. Nothing else queued: the corpus is drained, the backlog is TODO_LIST + digest, and both are small.
 
 ## g) Three questions I cannot answer myself
 

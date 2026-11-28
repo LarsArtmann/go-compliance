@@ -89,55 +89,55 @@ Nothing authored this session is broken — but three honest entries:
 Format: task — Impact / Effort / Category.
 
 1. Re-run the canonical full `buildflow` gate to convert go-test-green into BuildFlow-green. — Critical / S / Quality
-~~2. Recover the original gomega failure diff from the failed run's artifacts (see Q1). — High / S / Bug~~ **NOT-DO — the stored artifact cannot hold it. BuildFlow keeps the failed run as `step_outputs` row `20261120-105922-fc096d59`, step `test-race`, git head `80afd3a`: a 1855-byte head-and-tail excerpt whose middle is truncated. It names the failure (`FileSource` "backs off repeated reads of a missing file", `adapter_test.go:104`) but not the gomega block. The mechanism is proven by the mutation test in item 3.**
-~~3. Mutation-verify the corrupt-doc trip-wire (disable `rememberMiss`, expect ErrParse failure, revert). — High / S / Quality~~ done — 2026-11-28, in a scratch copy of the core module: with `rememberMiss` made a no-op the spec fails at `adapter_test.go:102` (`[parse] parse compliance document: jsontext: invalid character`, "to match error" `<io>`), exactly the parse error the trip-wire exists to raise; unmutated it passes
-4. Replay the ORIGINAL failure red: recreate the old spec body in a scratch worktree, run `-race -shuffle=1795172402955618615` under CPU load until red. — Medium / M / Quality
-5. Verify hub module: `cd hub && GOWORK=off go build ./... && go vet ./... && go test -race -count=1 ./...`. — Medium / S / Quality
-6. Run the `docs-gates run .` 5-gate battery after the AGENTS.md edits (mine + slimming session) land. — High / S / Quality
-7. HARVEST this report's (f) into `TODO_LIST.md` / `ROADMAP.md` via docs-health. — Medium / S / Documentation
-8. Verify vendoring claim with a build: confirm `adapter_test.go` absent from the FOD vendor set / vendorHash unchanged (`nix build .#compliance-hub`). — Low / M / Quality
-9. Record the flake-replay recipe in AGENTS.md (how to replay: `-shuffle=<seed>` + Ginkgo seed + load). — Medium / S / Documentation
-10. Decide and record a Ginkgo `FlakeAttempts` policy (recommend: banned — masks real flakes). — Medium / S / Quality
-11. Owner decision on the deterministic clock seam for `FileSource` (Q2); if adopted: `now func() time.Time` field + internal deterministic spec. — Medium / M / Feature
-12. Repo-wide timing-assertion audit: classify every `time.Sleep` / tight-margin assertion safe vs unsafe direction; record results in AGENTS.md. — Medium / M / Quality
-13. Pin the sliding-window semantics with a spec: consecutive misses refresh the TTL (current behavior at `adapter.go:106`+`rememberMiss`) — document intent or change it. — Low / M / Quality
-14. Add a concurrent-readers spec for `FileSource` (parallel `QueryEvidence`, `-race`) exercising the mutex path directly. — Low / S / Quality
-15. Add a `WithMissingBackoff` godoc example (zero-value semantics: `<=0` ⇒ no caching). — Low / S / Documentation
-16. Execute the libs-audit TODO_LIST rows (4 High/Med + 7 Low, routed 2026-11-19). — High / M–L / Feature
-17. Finish the templ-components recovery follow-ups (audit verdict: "recovering"). — Medium / M / Quality **→ routed to TODO_LIST Medium Impact row "Adopt the templ-components signal chip once it is tagged" (the audit verdict is still "recovering": FilterChips and the empty-state ladder wait on a tagged release)**
-18. Widen cmdguard usage per its UNDERUSED verdict (`docs/review/libs/`). — Medium / L / Feature
-19. Widen go-datastar usage per its UNDERUSED verdict. — Medium / L / Feature
-20. Widen go-output usage per its UNDERUSED verdict. — Medium / L / Feature
-21. Widen go-daemon usage per its UNDERUSED verdict. — Medium / L / Feature
-22. Tag-watch: check go-daemon for a new tag since 2026-11-19; append executed-addendum to its report on next touch. — Low / S / Cleanup
-23. Check brandid-lint linter for tags newer than the pinned `v0.5.1`; bump the CI pin if found. — Low / S / Cleanup
-24. Run `golangci-lint config verify` on both modules (wrapcheck kebab-case silent-drop guard). — Medium / S / Quality
-25. Count cache query sites in `hub/internal/cache` (≥4 ⇒ extract the scan-callback collector; art-dupl re-open trigger). — Low / S / Quality
-26. Re-audit `// art-dupl:accept` directive proximity if any refactor touched near-clone code since 2026-11-18 (5-line drift window). — Low / S / Quality
-27. docs-health VERIFY pass on the new `docs/notes/*.md` (fresh pointer docs, existence verified, content unverified). — Medium / S / Documentation
-28. After the slimming session lands, re-check my Testing-Conventions bullet placement/context survived the reorg. — Low / S / Documentation
-29. Capture BuildFlow failure artifacts in CI (full gomega diff as an upload step / verbose log retention). — High / M / Quality
-30. Decide on a scheduled flake-hunt job (suite × N seeds); document the cost/benefit call either way. — Low / M / Quality
-31. Read `.buildflow.yml` to confirm `test-race` really runs `-race -count=1` (parity claim). — Low / S / Documentation
-32. Consider replacing blind arming sleeps in `refresher_internal_test.go:47` with a subscriber/state-condition wait (verify feasibility first). — Low / M / Quality
-33. Same idea for `watcher_internal_test.go:53` (300ms arming). — Low / M / Quality
-34. Write the cross-project timing-spec lesson into crush-config `references/lessons.md` (commit there, not in-session global). — Medium / S / Documentation
-35. Make the backoff spec hermetic: replace the golden-fixture length assert with a tiny inline v1 doc (drops 170KB IO from the spec entirely). — Low / S / Quality
-~~36. Mirror the zero-value TTL note in `WithMissingBackoff` godoc (currently only on the field comment). — Low / S / Documentation~~ done — 2026-11-28: the `WithMissingBackoff` godoc in `adapter.go` states that a ttl of zero or less caches nothing, and that the TTL is set before the source serves queries
-37. ROADMAP idea: failing-producer backoff for `CommandSource` (mirror of FileSource miss-backoff) — likely YAGNI, record the flip trigger. — Low / L / Feature
-38. ROADMAP idea: should the miss-cache also cache parse failures? (Probably no — corrupt file is actionable immediately; record the decision.) — Low / L / Feature
-39. Verify `compliance-hub report` exit-75 contract still holds after the next core error-model change (probe ritual). — Low / S / Quality
-40. Run `nix flake check` on the next natural occasion (hash-site hygiene; no trigger now). — Low / M / Quality
-41. Check `docs/notes/federation-interop.md` and `cmdguard-describe-adoption-sketch.md` for staleness (spotted during notes listing; content unreviewed). — Low / S / Cleanup
-42. Confirm the auto-commit daemon merged the two concurrent AGENTS.md edits cleanly after the slimming session finishes. — Low / S / Cleanup
-43. Record the owner decision from Q2 in AGENTS.md once answered. — Low / S / Documentation
-44. Verify the 2026-11-20 morning status reports (11-29 / 11-30 / 12-06) were harvested into `TODO_LIST.md` (docs-health ritual continuity). — Medium / S / Documentation
-45. Normalize older `docs/status/` filenames lacking the date prefix (e.g. `owner-decisions-digest.md`) during the next docs-health pass. — Low / S / Cleanup
-46. Annotate THIS report via docs-health ANNOTATE as its items resolve. — Low / S / Documentation
-47. Consider a docs-gates pre-commit hook for AGENTS.md edits (gate batteries currently run on demand only). — Low / M / Quality
-48. Assess whether `CommandSource` producer-timeout errors deserve a cache/short-circuit analogous to miss-backoff for daemon loops (design note before code). — Low / M / Feature
-49. Add `-race` parity statement to the AGENTS.md testing bullet (CI runs both modules; local runs often core-only). — Low / S / Documentation
-50. When item 4 reproduces red, capture the failing timing distribution (in-window work duration samples) to size margins with data instead of folklore. — Medium / M / Quality
+   ~~2. Recover the original gomega failure diff from the failed run's artifacts (see Q1). — High / S / Bug~~ **NOT-DO — the stored artifact cannot hold it. BuildFlow keeps the failed run as `step_outputs` row `20261120-105922-fc096d59`, step `test-race`, git head `80afd3a`: a 1855-byte head-and-tail excerpt whose middle is truncated. It names the failure (`FileSource` "backs off repeated reads of a missing file", `adapter_test.go:104`) but not the gomega block. The mechanism is proven by the mutation test in item 3.**
+   ~~3. Mutation-verify the corrupt-doc trip-wire (disable `rememberMiss`, expect ErrParse failure, revert). — High / S / Quality~~ done — 2026-11-28, in a scratch copy of the core module: with `rememberMiss` made a no-op the spec fails at `adapter_test.go:102` (`[parse] parse compliance document: jsontext: invalid character`, "to match error" `<io>`), exactly the parse error the trip-wire exists to raise; unmutated it passes
+2. Replay the ORIGINAL failure red: recreate the old spec body in a scratch worktree, run `-race -shuffle=1795172402955618615` under CPU load until red. — Medium / M / Quality
+3. Verify hub module: `cd hub && GOWORK=off go build ./... && go vet ./... && go test -race -count=1 ./...`. — Medium / S / Quality
+4. Run the `docs-gates run .` 5-gate battery after the AGENTS.md edits (mine + slimming session) land. — High / S / Quality
+5. HARVEST this report's (f) into `TODO_LIST.md` / `ROADMAP.md` via docs-health. — Medium / S / Documentation
+6. Verify vendoring claim with a build: confirm `adapter_test.go` absent from the FOD vendor set / vendorHash unchanged (`nix build .#compliance-hub`). — Low / M / Quality
+7. Record the flake-replay recipe in AGENTS.md (how to replay: `-shuffle=<seed>` + Ginkgo seed + load). — Medium / S / Documentation
+8. Decide and record a Ginkgo `FlakeAttempts` policy (recommend: banned — masks real flakes). — Medium / S / Quality
+9. Owner decision on the deterministic clock seam for `FileSource` (Q2); if adopted: `now func() time.Time` field + internal deterministic spec. — Medium / M / Feature
+10. Repo-wide timing-assertion audit: classify every `time.Sleep` / tight-margin assertion safe vs unsafe direction; record results in AGENTS.md. — Medium / M / Quality
+11. Pin the sliding-window semantics with a spec: consecutive misses refresh the TTL (current behavior at `adapter.go:106`+`rememberMiss`) — document intent or change it. — Low / M / Quality
+12. Add a concurrent-readers spec for `FileSource` (parallel `QueryEvidence`, `-race`) exercising the mutex path directly. — Low / S / Quality
+13. Add a `WithMissingBackoff` godoc example (zero-value semantics: `<=0` ⇒ no caching). — Low / S / Documentation
+14. Execute the libs-audit TODO_LIST rows (4 High/Med + 7 Low, routed 2026-11-19). — High / M–L / Feature
+15. Finish the templ-components recovery follow-ups (audit verdict: "recovering"). — Medium / M / Quality **→ routed to TODO_LIST Medium Impact row "Adopt the templ-components signal chip once it is tagged" (the audit verdict is still "recovering": FilterChips and the empty-state ladder wait on a tagged release)**
+16. Widen cmdguard usage per its UNDERUSED verdict (`docs/review/libs/`). — Medium / L / Feature
+17. Widen go-datastar usage per its UNDERUSED verdict. — Medium / L / Feature
+18. Widen go-output usage per its UNDERUSED verdict. — Medium / L / Feature
+19. Widen go-daemon usage per its UNDERUSED verdict. — Medium / L / Feature
+20. Tag-watch: check go-daemon for a new tag since 2026-11-19; append executed-addendum to its report on next touch. — Low / S / Cleanup
+21. Check brandid-lint linter for tags newer than the pinned `v0.5.1`; bump the CI pin if found. — Low / S / Cleanup
+22. Run `golangci-lint config verify` on both modules (wrapcheck kebab-case silent-drop guard). — Medium / S / Quality
+23. Count cache query sites in `hub/internal/cache` (≥4 ⇒ extract the scan-callback collector; art-dupl re-open trigger). — Low / S / Quality
+24. Re-audit `// art-dupl:accept` directive proximity if any refactor touched near-clone code since 2026-11-18 (5-line drift window). — Low / S / Quality
+25. docs-health VERIFY pass on the new `docs/notes/*.md` (fresh pointer docs, existence verified, content unverified). — Medium / S / Documentation
+26. After the slimming session lands, re-check my Testing-Conventions bullet placement/context survived the reorg. — Low / S / Documentation
+27. Capture BuildFlow failure artifacts in CI (full gomega diff as an upload step / verbose log retention). — High / M / Quality
+28. Decide on a scheduled flake-hunt job (suite × N seeds); document the cost/benefit call either way. — Low / M / Quality
+29. Read `.buildflow.yml` to confirm `test-race` really runs `-race -count=1` (parity claim). — Low / S / Documentation
+30. Consider replacing blind arming sleeps in `refresher_internal_test.go:47` with a subscriber/state-condition wait (verify feasibility first). — Low / M / Quality
+31. Same idea for `watcher_internal_test.go:53` (300ms arming). — Low / M / Quality
+32. Write the cross-project timing-spec lesson into crush-config `references/lessons.md` (commit there, not in-session global). — Medium / S / Documentation
+33. Make the backoff spec hermetic: replace the golden-fixture length assert with a tiny inline v1 doc (drops 170KB IO from the spec entirely). — Low / S / Quality
+    ~~36. Mirror the zero-value TTL note in `WithMissingBackoff` godoc (currently only on the field comment). — Low / S / Documentation~~ done — 2026-11-28: the `WithMissingBackoff` godoc in `adapter.go` states that a ttl of zero or less caches nothing, and that the TTL is set before the source serves queries
+34. ROADMAP idea: failing-producer backoff for `CommandSource` (mirror of FileSource miss-backoff) — likely YAGNI, record the flip trigger. — Low / L / Feature
+35. ROADMAP idea: should the miss-cache also cache parse failures? (Probably no — corrupt file is actionable immediately; record the decision.) — Low / L / Feature
+36. Verify `compliance-hub report` exit-75 contract still holds after the next core error-model change (probe ritual). — Low / S / Quality
+37. Run `nix flake check` on the next natural occasion (hash-site hygiene; no trigger now). — Low / M / Quality
+38. Check `docs/notes/federation-interop.md` and `cmdguard-describe-adoption-sketch.md` for staleness (spotted during notes listing; content unreviewed). — Low / S / Cleanup
+39. Confirm the auto-commit daemon merged the two concurrent AGENTS.md edits cleanly after the slimming session finishes. — Low / S / Cleanup
+40. Record the owner decision from Q2 in AGENTS.md once answered. — Low / S / Documentation
+41. Verify the 2026-11-20 morning status reports (11-29 / 11-30 / 12-06) were harvested into `TODO_LIST.md` (docs-health ritual continuity). — Medium / S / Documentation
+42. Normalize older `docs/status/` filenames lacking the date prefix (e.g. `owner-decisions-digest.md`) during the next docs-health pass. — Low / S / Cleanup
+43. Annotate THIS report via docs-health ANNOTATE as its items resolve. — Low / S / Documentation
+44. Consider a docs-gates pre-commit hook for AGENTS.md edits (gate batteries currently run on demand only). — Low / M / Quality
+45. Assess whether `CommandSource` producer-timeout errors deserve a cache/short-circuit analogous to miss-backoff for daemon loops (design note before code). — Low / M / Feature
+46. Add `-race` parity statement to the AGENTS.md testing bullet (CI runs both modules; local runs often core-only). — Low / S / Documentation
+47. When item 4 reproduces red, capture the failing timing distribution (in-window work duration samples) to size margins with data instead of folklore. — Medium / M / Quality
 
 ## g) Questions I cannot answer myself
 
