@@ -107,7 +107,9 @@ function buildBaseIndex(baseLines) {
 	for (const item of items) {
 		item.block = baseLines.slice(item.start, item.end + 1);
 		item.key = normalize(item.block.join(""));
-		item.headKey = normalize(item.text);
+		const close = item.struck ? rawStrikeOffset(item.text, 0) : -1;
+		item.headText = close >= 0 ? item.text.slice(0, close) : item.text;
+		item.headKey = normalize(item.headText);
 		if (!byHead.has(item.headKey)) byHead.set(item.headKey, item);
 	}
 	return { items, byHead };
@@ -198,10 +200,10 @@ function inspect(lines, baseLines) {
 			if (base.indent === "" && item.indent !== "") add("I", item, `indent ${item.indent.length}, base 0`);
 			const lost = missingWords(base, block);
 			if (lost.length > 0) add("L", item, `${lost.length} word(s): ${lost.slice(0, 8).join(" ")}`);
-			if (head !== base.text && normalize(head) === normalize(base.text) && normalize(head) !== "") {
-				const fixed = insertSpaces(head, base.text);
+			if (head !== base.text && normalize(head) === normalize(base.headText) && normalize(head) !== "") {
+				const fixed = insertSpaces(head, base.headText);
 				if (fixed !== head) {
-					add("W", item, `base: ${JSON.stringify(base.text.slice(0, 60))}`);
+					add("W", item, `base: ${JSON.stringify(base.headText.slice(0, 60))}`);
 					item.whitespaceFix = fixed;
 				}
 			}
