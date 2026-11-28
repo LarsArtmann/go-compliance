@@ -192,13 +192,10 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   (the daemon commits unformatted files and CI's dprint job goes red).
   Multi-section annotate keys need the `N@substring` disambiguator; run
   `emit-keys` and `--dry-run` first
-  (`docs/notes/docs-health-annotate-writer.md`). After EVERY `dprint fmt`
+  (`docs/notes/docs-health-annotate-writer.md`). After every `dprint fmt`
   on a swept report run `node scripts/annotate-qa.mjs --base add --fix
-  <file>` (renumbered items, split strikes, eaten spaces; dprint nests a
-  struck item that touches a bare neighbour, so keep blank lines around
-  struck items). The CI docs-gates
-  job checks out the full history because its annotate gate resolves
-  `done at <sha>` verdicts.
+  <file>` (it undoes dprint's renumbering and de-spacing around struck
+  items). The CI docs-gates job needs the full history for `done at <sha>`.
 - Library audits: `docs/review/libs/`; rerun `scripts/check-citations.sh`
   after any refactor that moves cited code.
 - Nix: go.mod changes flip `vendorHash` — tidy per module, then
