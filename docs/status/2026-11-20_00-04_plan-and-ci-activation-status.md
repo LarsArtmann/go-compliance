@@ -37,20 +37,20 @@ a side effect of the push).
 
 ## a) FULLY DONE
 
-1. **Plan written per the owner's format** — `docs/planning/2026-11-19_21-25_corpus-drain-ci-activation-pareto-plan.md`:
+~~1. **Plan written per the owner's format** — `docs/planning/2026-11-19_21-25_corpus-drain-ci-activation-pareto-plan.md`:~~ done — verified 2026-11-28: the plan file exists with the 1/4/20 breakdown and mermaid graph at docs/planning/2026-11-19_21-25_corpus-drain-ci-activation-pareto-plan.md; committed in `c994836` (2026-11-19; `git show --stat`: the plan + TODO_LIST reconcile)
    1%/4%/20%/other-20% breakdown, 13 medium packages (≈7h agent work), 50 fine
    tasks (≤12m), mermaid execution graph, errata + anti-verschlimmbessern rules,
    ALL open TODOs included (the three §c owner items and demand-gated ROADMAP
    ideas are listed, not scheduled).
-2. **Step-0 errata with evidence** — 3 stale TODO rows removed (importance =
+~~2. **Step-0 errata with evidence** — 3 stale TODO rows removed (importance =~~ done — at `c994836` (2026-11-19): `git show --stat c994836` shows TODO_LIST.md rewritten (rows removed and minted) plus the 00-53 §f4 house-grammar fix. Verified 2026-11-28
    decided-not-blocked; all-systems = done 2026-11-19; push = ordered by this
    directive), 4 rows minted (CI watch, corpus drain, docs-gates verify,
    cmdguard readiness), 1 CHANGELOG all-systems gap covered by annotating
    00-53 §f4 done at the tree.
-3. **The push executed plan task T1 LIVE** — both remotes at `7433adf`; the push
+~~3. **The push executed plan task T1 LIVE** — both remotes at `7433adf`; the push~~ done — at `7433adf` (2026-11-19, "CI first-run watch closes green — all 13 jobs pass"); `gh run view 44612235355` shows the run green on the GitHub mirror. Verified 2026-11-28
    triggered the repo's FIRST real CI execution ever (every previous "CI green"
    claim had zero runner evidence — the four newest gates existed only as YAML).
-4. **Three latent first-run bugs found and fixed across three fix commits:**
+~~4. **Three latent first-run bugs found and fixed across three fix commits:**~~ done — at `01762cb`, `156610a`, `6f31054` (all 2026-11-19; `git show --stat`: ci.yml PATH + five-zip warm-up, the 00-53 strike rewrite, dprint.json https plugin URLs). Verified 2026-11-28
    - dprint job: `GITHUB_PATH` pointed at `$PWD/bin`; the dprint.dev installer
      targets `~/.dprint/bin` → exit 127. Fixed; actionlint's CWD-invocation
      hardened in the same step.
@@ -62,13 +62,13 @@ a side effect of the push).
      (`/home/lars/.local/state/buildflow/...`) — fleet drift vs all four sibling
      repos, which use the fleet-canonical https URLs (same versions, so
      formatting is byte-identical; proven by full-repo `dprint check` green).
-5. **A formatter-unstable strike caught before it could distort history**: my
+~~5. **A formatter-unstable strike caught before it could distort history**: my~~ done — corrected state stands: docs/status/archived/2026-11-19_00-53_samber-do-health-rereview-status.md:69 is house grammar `4. ~~item~~ done — …`; the fix commit `156610a` touches exactly that file + ci.yml. Verified 2026-11-28
    00-53 §f4 annotation struck the LIST MARKER (`~~4. …~~`); dprint's markdown
    parser then wanted to indent the line as a paragraph and RENUMBER items
    5→4, 6→5, 7→6. Rewritten to house grammar (`4. ~~item~~ verdict`); the
    lesson (a strike that swallows the digit is unstable exactly inside an
    otherwise-unstruck list) is recorded in the fix commit.
-6. **CI-watch closed green**: TODO row removed as DONE, CHANGELOG carries the
+~~6. **CI-watch closed green**: TODO row removed as DONE, CHANGELOG carries the~~ done — at `7433adf`: CHANGELOG.md:90 carries the CI-activation entry naming all three latent bugs and the 10/13 → 12/13 → 12/13 → 13/13 matrix in run 44612235355; the commit removes the watch TODO row. Verified 2026-11-28
    CI-activation entry (10/13 → 12/13 → 12/13 → 13/13 with each latent bug
    named), all gates green at every commit point (docs-gates 5/5, full-repo
    dprint, actionlint).
