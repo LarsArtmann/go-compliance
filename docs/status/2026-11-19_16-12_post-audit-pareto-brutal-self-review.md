@@ -26,10 +26,10 @@ WHAT shipped; this one covers what I did WRONG, forgot, and should improve).
 
 ~~1. **CI end-to-end verification**: four new jobs (citation-gate, css-freshness, cmdguard-usage, templ-fmt) are actionlint-clean and locally de-risked (each command ran green here), but ZERO real runner executions. `css-freshness` has the most novel surface (nix shell on the runner + module downloads); `citation-gate` assumes `rg` exists on ubuntu-latest (it is in the runner image, but I did not pin it).~~ done — Overtaken by events, Verified 2026-11-28: real runner executions happened — CHANGELOG.md:90 ("the owner-ordered push ran the workflow for the FIRST time ... full matrix 13/13 in run 44612235355; the four newest gates now hold real green runner executions (citation-gate, css-freshness, cmdguard-usage, templ-fmt)"); the rg assumption was made moot by the grep -ERE fallback (scripts/check-citations.sh:53-60); the remaining CI debt is the docs-gates audit-all row (TODO_LIST.md:25)
 ~~2. **T10.4 index screenshot**: firefox blocked by the session permission hook — needs the owner (or `permissions safe firefox`).~~ done — Verified 2026-11-28: docs/assets/libs-index.png exists (2026-11-27), captured headlessly by scripts/screenshot-page.sh and linked from the audit index (11-52 report :138: "capture rendered and checked by eye") — no firefox permission was ultimately needed
-3. **Upstream findings queue**: I PROVED two new upstream bugs (published **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", owner-decision row "mandate for consumer sessions filing upstream TODOs in library repos" (lists the cmdguard/lint published-go.mod replace-directive bug and the a-h/templ LSP embedlit false positive). Verified 2026-11-28: both drafts sit voice-checked in docs/drafts/ (TODO_LIST.md:40)**
+3. **Upstream findings queue**: I PROVED two new upstream bugs (published
 `cmdguard/lint` go.mod carries local-dev replace directives breaking
 `go run @version`; templ LSP `embedlit` suggests invalid Go) — recorded
-in repo docs, but filing them upstream is owner-mandate-gated.
+in repo docs, but filing them upstream is owner-mandate-gated. **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", owner-decision row "mandate for consumer sessions filing upstream TODOs in library repos" (lists the cmdguard/lint published-go.mod replace-directive bug and the a-h/templ LSP embedlit false positive). Verified 2026-11-28: both drafts sit voice-checked in docs/drafts/ (TODO_LIST.md:40)**
 
 ## c) NOT STARTED (deliberately untouched, not in the plan's waves)
 
@@ -58,60 +58,67 @@ mangling); better: a YAML anchor or a single reusable step.
 4. **Living-doc sweep as part of "done"**: when a session changes
 user-visible behavior, FEATURES.md + AGENTS.md counts update in the
 SAME breath as CHANGELOG — not at self-review time.
+
 ~~5. **CI jobs need a first-run observation note**: 4 new jobs, 0 runner executions — treat "pushed but never run" as PARTIALLY DONE honestly (this report does).~~ done — Overtaken by events, Verified 2026-11-28: all four jobs hold real green runner executions (CHANGELOG.md:90; FEATURES.md:60 "all with real green runner executions") — "pushed but never run" is no longer true of any gate
 ~~6. **Pin `rg` in the citation-gate job** (or switch the script to grep-able extraction) so runner-image drift can't break the gate.~~ done — Done differently 2026-11-20, Verified 2026-11-28: no pin needed — `extract_cites` prefers ripgrep and falls back to `grep -ERE` (scripts/check-citations.sh:53-60; CHANGELOG.md:83 "runner-image drift cannot break the gate and no install step is needed")
 ~~7. **shellcheck the two new scripts** (they run green, but are not shellcheck-verified; dprint does not cover shell).~~ done — Verified 2026-11-28: shellcheck 0.11.0 clean on scripts/check-citations.sh (my run, exit 0); the second script (stack-drift-check.sh) is fetched by CI from the tooling repo (ci.yml:154), not in-tree
-8. **templ LSP false-positive upstream**: the embedlit proof is worth an **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", owner-decision row "a-h/templ LSP embedlit false positive" (upstream-mandate queue). Verified 2026-11-28: the in-tree FP verdict stands at AGENTS.md:88-90**
-a-h/templ issue (blocker: upstream mandate question).
+8. **templ LSP false-positive upstream**: the embedlit proof is worth an
+a-h/templ issue (blocker: upstream mandate question). **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", owner-decision row "a-h/templ LSP embedlit false positive" (upstream-mandate queue). Verified 2026-11-28: the in-tree FP verdict stands at AGENTS.md:88-90**
 
 ## f) Top things to get done next (ordered)
 
 ~~1. Push to remotes (owner policy — 40+ commits behind on the GitHub mirror) and WATCH the four new CI jobs' first real runs.~~ done — Verified 2026-11-28: the push happened and CI ran — CHANGELOG.md:90 (first push run 44611411587 12/13 green; full matrix 13/13 in run 44612235355); the residual CI debt is the docs-gates audit-all row (TODO_LIST.md:25 High)
 ~~2. `--sort-by` flag parity on hub `table` (findings/failures/name).~~ done — Verified 2026-11-28: hub/internal/cli/flags.go:51 `--sort-by` (findings, failures, name — tiebreak inside the state rank) + table_test.go:255-262; CHANGELOG.md:81
 ~~3. Tag core v0.1.1 (current tree), then execute the hub replace-drop row (require v0.1.1, drop `=> ../`, tidy, vendorHash ritual, simplify the `_core_only` postPatchExtra story).~~ done — Executed at v0.2.0 instead, Verified 2026-11-28: v0.2.0 = f906ae5 (2026-11-20 17:12 +0100); hub/go.mod:12 requires core v0.2.0, no replace; flake.nix:150 "no _core_only copy needed"
-4. cmdguard next tag: adopt `AssertDescribeContract`; re-evaluate the **→ routed to TODO_LIST Low Impact row "cmdguard follow-ups: cmdguard-lint CI gate DONE 2026-11-19 ..." (AssertDescribeContract verified on master but NOT in v5.1.0 — adopt at the next tag; Nd-codec + lint-replaces drafts voice-checked; filing waits on the OG.5 mandate). Verified 2026-11-28: zero AssertDescribeContract uses under hub/**
-lint CI recipe if upstream drops the replace directives.
+4. cmdguard next tag: adopt `AssertDescribeContract`; re-evaluate the
+lint CI recipe if upstream drops the replace directives. **→ routed to TODO_LIST Low Impact row "cmdguard follow-ups: cmdguard-lint CI gate DONE 2026-11-19 ..." (AssertDescribeContract verified on master but NOT in v5.1.0 — adopt at the next tag; Nd-codec + lint-replaces drafts voice-checked; filing waits on the OG.5 mandate). Verified 2026-11-28: zero AssertDescribeContract uses under hub/**
+
 ~~5. Screenshot `docs/review/libs/index.html` (owner or `permissions safe firefox`).~~ done — Verified 2026-11-28: docs/assets/libs-index.png (2026-11-27) captured by scripts/screenshot-page.sh, linked from the audit index (11-52 report :138)
-6. go-humanize adopt/suppress/accept decision (gates 6 buildflow **→ routed to docs/status/owner-decisions-digest.md, row "go-humanize adopt/accept-with-reason" (linter/policy verdicts table). Verified 2026-11-28: hub/go.mod:10 still requires go-humanize v1.1.0 directly**
-error-severity findings every full run).
+6. go-humanize adopt/suppress/accept decision (gates 6 buildflow
+error-severity findings every full run). **→ routed to docs/status/owner-decisions-digest.md, row "go-humanize adopt/accept-with-reason" (linter/policy verdicts table). Verified 2026-11-28: hub/go.mod:10 still requires go-humanize v1.1.0 directly**
 7. samber/lo adoption-or-suppress policy (fleet-wide). **→ routed to docs/status/owner-decisions-digest.md, row "samber/lo adopt-or-suppress" (owner verdict; ROADMAP owner queue). Verified 2026-11-28: samber/do is still a transitive dependency only (`hub/go.mod`, through cmdguard)**
 8. Fleet SSE-parser canonical owner decision (ParseSSEData vs sseparse). **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", row "Owner decisions pending: fleet SSE-parser canonical owner (`daemon.ParseSSEData` vs `go-sse/sseparse`)"**
-9. Upstream-TODO mandate decision — queue now holds FOUR candidates: **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", row "mandate for consumer sessions filing upstream TODOs in library repos" (queue: cmdguard Nd codec, cmdguard/lint replace-directive bug, go-datastar MarshalSignals, templ-components FilterChips, a-h/templ embedlit FP)**
+9. Upstream-TODO mandate decision — queue now holds FOUR candidates:
 cmdguard Nd codec, go-datastar MarshalSignals determinism,
 templ-components FilterChips, cmdguard/lint replace-directive bug,
-(+ templ LSP embedlit false positive as a fifth).
+(+ templ LSP embedlit false positive as a fifth). **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", row "mandate for consumer sessions filing upstream TODOs in library repos" (queue: cmdguard Nd codec, cmdguard/lint replace-directive bug, go-datastar MarshalSignals, templ-components FilterChips, a-h/templ embedlit FP)**
 10. FLAKE_PAT secrets (CI hub/flake jobs still skip without them). **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" (FEATURES.md:60: hub/flake jobs skip until the secret exists)**
 11. M26 overview endgame (replace vs coexist) — owner question g2. **→ routed to TODO_LIST Blocked (owner decisions) row "M26: overview endgame (replace vs coexist) + migration note" (also ROADMAP "Endgame question (owner, g2 — BLOCKED)")**
-12. Repo visibility decision; VACUUM buildflow state DB (1.04 GB); **→ routed to TODO_LIST Blocked (owner decisions) rows "Forgejo repo visibility (lars/go-compliance → public?)", "`sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB)", "Delete the expendable 0.51 GB cache DB (`~/.cache/buildflow/cache.db`)"**
-delete the 0.51 GB cache DB (owner machine hygiene).
+12. Repo visibility decision; VACUUM buildflow state DB (1.04 GB);
+delete the 0.51 GB cache DB (owner machine hygiene). **→ routed to TODO_LIST Blocked (owner decisions) rows "Forgejo repo visibility (lars/go-compliance → public?)", "`sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB)", "Delete the expendable 0.51 GB cache DB (`~/.cache/buildflow/cache.db`)"**
+
 ~~13. `check-rows --strict` + `bare-rows` validation pass over the remaining aged status reports as their items close (archive cadence).~~ done — Standing practice, re-verified 2026-11-28: `docs-gates rows --strict` + `--bare` over `docs/status/archived/*.md` + `docs/planning/archived/*.md` → "20 file(s) clean", exit 0 (my runs)
 ~~14. shellcheck + `rg` pin hardening for `scripts/check-citations.sh` / CI job.~~ done — Verified 2026-11-28: CHANGELOG.md:83 records the 2026-11-20 hardening (rg-preferred, grep -ERE fallback, shellcheck clean); re-verified today: shellcheck 0.11.0 clean + checked=427 stale=0 (my runs)
 15. Consider verifying EXTERNAL (lib-side) citations against local
 checkouts when `~/projects/<lib>` exists (140 cites currently
 presumed).
+
 ~~16. Watch the cross-process watcher spec on CI for timing flakiness (2s budget; loosen only with evidence).~~ done — Overtaken, Verified 2026-11-28: the watcher spec rides CI's build+test jobs (core/hub -race, ci.yml:37-39, 60), green in the first real runs (CHANGELOG.md:90 full matrix 13/13); no watcher-spec flake recorded in CI to date
 17. io_metrics ratchet: now that the churn correlation is understood,
 consider a per-run churn-normalized expectation (upstream buildflow
 idea, not this repo's to fix).
-18. app.min.css + library-classes.txt (3.5 MB) churn on every **→ routed to ROADMAP "Dashboard/UI raw ideas (2026-11-19 self-review)", row "a per-bundle diff-size budget for the `app.min.css` + `library-classes.txt` churn on templ-components bumps"**
+18. app.min.css + library-classes.txt (3.5 MB) churn on every
 templ-components bump — acceptable per fleet pattern, but a
-per-bundle diff-size budget would catch accidental explosions.
+per-bundle diff-size budget would catch accidental explosions. **→ routed to ROADMAP "Dashboard/UI raw ideas (2026-11-19 self-review)", row "a per-bundle diff-size budget for the `app.min.css` + `library-classes.txt` churn on templ-components bumps"**
+
 ~~19. CSS: `errorpage`'s `text-[8rem]` etc. ride the shared artifact; a visual smoke (screenshot diff) would catch unstyled-class regressions the byte-gate cannot see.~~ done — Shipped stronger, Verified 2026-11-28: scripts/screenshot.sh renders light/dark/just-wide/narrow headlessly and fails on console errors, theme, empty-fleet table, overflow, WCAG-AA contrast, layout, pinned-header and keyboard findings (script header :3-11); the visual smoke exists well beyond a byte-gate
-20. HEAD-request explicit test for `/app.css` (the handler relies on net/ **→ routed to ROADMAP "Dashboard/UI raw ideas (2026-11-19 self-review)", row "an explicit HEAD-request test for `/app.css`". Verified 2026-11-28: still no explicit HEAD test under hub/ (grep empty)**
+20. HEAD-request explicit test for `/app.css` (the handler relies on net/
 http's implicit HEAD body suppression; ScriptHandler handles HEAD
-explicitly — match that bar if it ever matters).
+explicitly — match that bar if it ever matters). **→ routed to ROADMAP "Dashboard/UI raw ideas (2026-11-19 self-review)", row "an explicit HEAD-request test for `/app.css`". Verified 2026-11-28: still no explicit HEAD test under hub/ (grep empty)**
+
 ~~21. FEATURES.md: consider a row for the citation/stack/css CI gates (infra inventory completeness).~~ done — Verified 2026-11-28: FEATURES.md:60 CI row names the 14-job matrix incl. dupl-gate, templ-fmt, citation-gate, cmdguard-usage, branded-ID, css-freshness — "all with real green runner executions"
 ~~22. AGENTS.md docs-health workflow line for the @substring rule (from §e2).~~ done — Verified 2026-11-28: AGENTS.md:193 carries the `N@substring` rule
 
 ## g) Questions I can NOT answer myself
 
-1. **go-humanize + samber/lo policy** (23-40 §g2, carried): adopt, **→ routed to docs/status/owner-decisions-digest.md, rows "samber/lo adopt-or-suppress" and "go-humanize adopt/accept-with-reason" (linter/policy verdicts table). Verified 2026-11-28: hub/go.mod:10 (go-humanize direct) and :115 (samber/do/v2 indirect only)**
+1. **go-humanize + samber/lo policy** (23-40 §g2, carried): adopt,
    suppress with baseline, or accept-with-reason? Gates 6 error-severity
    findings on every buildflow full run — the ONLY thing keeping
-   `buildflow --build-mode=full` from exit 0 on this repo.
-   ~~2. **Core v0.1.1 timing** (new): v0.1.0 predates the Wave 1-3 core splits (no filestore.go, no toolchain line). Tag v0.1.1 as-is so the hub replace-drop can execute, or hold for a review pass / more changes first?~~ superseded by docs/status/2026-11-20_12-06_v020-release-run-status.md — Verified 2026-11-28: the question answered itself; core was tagged v0.2.0 (f906ae5, 2026-11-20 17:12 +0100) and the hub replace-drop executed (hub/go.mod:12, no replace); no v0.1.1 was ever needed
-2. **Upstream-filing mandate** (carried Q3, now 5 candidates): may **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", row "mandate for consumer sessions filing upstream TODOs in library repos" (both proven findings listed; drafts voice-checked per TODO_LIST.md:40)**
-   sessions file issues/PRs in library repos (cmdguard, go-datastar,
-   templ-components, a-h/templ) in your name? Two of this session's
-   findings (lint-module replace directives; templ embedlit suggesting
-   invalid Go) are proven, reproducible, and waiting on this answer.
+   `buildflow --build-mode=full` from exit 0 on this repo. **→ routed to docs/status/owner-decisions-digest.md, rows "samber/lo adopt-or-suppress" and "go-humanize adopt/accept-with-reason" (linter/policy verdicts table). Verified 2026-11-28: hub/go.mod:10 (go-humanize direct) and :115 (samber/do/v2 indirect only)**
+
+~~2. **Core v0.1.1 timing** (new): v0.1.0 predates the Wave 1-3 core splits (no filestore.go, no toolchain line). Tag v0.1.1 as-is so the hub replace-drop can execute, or hold for a review pass / more changes first?~~ superseded by docs/status/2026-11-20_12-06_v020-release-run-status.md — Verified 2026-11-28: the question answered itself; core was tagged v0.2.0 (f906ae5, 2026-11-20 17:12 +0100) and the hub replace-drop executed (hub/go.mod:12, no replace); no v0.1.1 was ever needed
+3. **Upstream-filing mandate** (carried Q3, now 5 candidates): may
+sessions file issues/PRs in library repos (cmdguard, go-datastar,
+templ-components, a-h/templ) in your name? Two of this session's
+findings (lint-module replace directives; templ embedlit suggesting
+invalid Go) are proven, reproducible, and waiting on this answer. **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", row "mandate for consumer sessions filing upstream TODOs in library repos" (both proven findings listed; drafts voice-checked per TODO_LIST.md:40)**

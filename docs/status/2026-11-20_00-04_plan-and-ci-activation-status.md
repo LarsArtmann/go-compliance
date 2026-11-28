@@ -55,6 +55,7 @@ a side effect of the push).
 
 ~~1. T2 — CHANGELOG `[0.1.0]` cut at the 77881b3 boundary (agent-executable, no gate; simply not in this session's mandate).~~ done — 2026-11-20: `## [0.1.0] - 2026-11-19` exists in CHANGELOG.md:109 at the 77881b3 boundary (11-30 execution report §a1). Verified 2026-11-28
 2. T3 — bench verify (+ re-record per the owner's g2 answer). **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)" — the VERIFY half is done (claim PROVEN 2026-11-20: fold @341 = 107µs vs the ≈150µs claim; 11-30 report §a2); Verified 2026-11-28: row still BLOCKED**
+
 ~~3. T4 — hub `table --sort-by` parity; T5 — `queryRows` error-path test; T6 — check-citations shellcheck + `rg` pin; T7 — embedder-docs five-checks sweep.~~ done — 2026-11-20 (T4–T7, 11-30 report §a3-§a6): hub/internal/cli/table_sort.go + README "Fleet table" section (README.md:120); error-path pins at hub/internal/cache/cache_test.go:40-57 and the wrapIterateErr DescribeTable (queries_internal_test.go:13); citation hardening at `a204282`; the five-checks table at docs/guides/integrate.md:86-90. Verified 2026-11-28
 ~~4. T8 — open-corpus drain + owner-decisions digest + archive 23-40/00-53; T9 — docs-gates installed-pin vs skill surface; T10 — cmdguard next-tag readiness; T11 — reconcile + full battery.~~ done — 2026-11-20 (T8–T11, 11-30 report §a7-§a10): digest minted (docs/status/owner-decisions-digest.md), 23-40 + 00-53 archived, T9 verdict recorded, cmdguard drafts + adoption sketch written, TODO_LIST reconciled, full battery green. Verified 2026-11-28
 ~~5. T21 — hub replace-drop (gated on the v0.1.1 go-signal).~~ done — resolved 2026-11-20, differently from the gate: the replace directive was dropped at the `v0.2.0` tag (`5010082`) instead of a v0.1.1 tag; hub/go.mod:12 requires go-compliance v0.2.0 with no replace. Verified 2026-11-28
@@ -78,6 +79,7 @@ commit — three red runs each exposed one layer of the same neglected class.
 4. **Read fleet siblings BEFORE first execution**: the dprint.json norm, the
 installer target, the CWD-invocation pattern — all were one sibling-peek
 away and none were taken before push one.
+
 ~~5. **House grammar is also formatter law**: a strike that includes the list digit is parser-hostile; annotate via the writer's canonical shape only (`N. ~~item~~ verdict`), and run the formatter BEFORE declaring an annotation pass done (the canon said this; I scoped it away).~~ done — adopted: the docs-health skill canon pins the writer shape `N. ~~item~~ verdict` and the annotate→gate→fmt→gate order (SKILL.md:281, 299). Verified 2026-11-28
 ~~6. **Empirical fixes need failure-mode claims that are tested**: the css warm step's comment promises "loud fetch errors" — either test that shape once (break the proxy deliberately) or soften the comment to what is proven.~~ done — tested 2026-11-28 (the deliberate shape this item asked for): cold GOMODCACHE + broken proxy (GOPROXY=http://127.0.0.1:9) → the warm `go mod download` fails LOUD — exit 1, visible `connect: connection refused`; the comment's claim holds (ci.yml:214-220)
 ~~7. **The `docs-gates rows`/`--pre-flight` verb mismatch** (21-17 §e5) remains open — T9 resolves it; do not re-try the ghost verb before then.~~ done — resolved by T9 (2026-11-20): the pin-vs-skill diff lives in TODO_LIST Low row "Fleet docs-gates pin bump past `e305834`" and the digest Fleet-layer row; AGENTS.md:187-197 documents the CI build vs the PATH wrapper. Verified 2026-11-28
@@ -91,6 +93,7 @@ not duplicated. New items beyond the plan are marked ★._
 
 ~~1. T2: CHANGELOG `[0.1.0]` cut at 77881b3 (2.1–2.4 in the plan).~~ done — 2026-11-20: CHANGELOG.md:109 `## [0.1.0] - 2026-11-19` (11-30 execution report §a1). Verified 2026-11-28
 2. T3: bench verify + re-record per g2 answer (3.1–3.3). **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)"; VERIFY half done 2026-11-20 — claim PROVEN (fold @341 = 107µs vs ≈150µs; 11-30 report §a2). Verified 2026-11-28: row still BLOCKED**
+
 ~~3. T4: `--sort-by` parity (4.1–4.5).~~ done — 2026-11-20: hub/internal/cli/table_sort.go + README "Fleet table" section (README.md:120-129). Verified 2026-11-28
 ~~4. T5: `queryRows` error-path specs (5.1–5.3).~~ done — 2026-11-20: error-path pins hub/internal/cache/cache_test.go:40-57 (ErrIO + Transient family) + the wrapIterateErr DescribeTable (queries_internal_test.go:13). Verified 2026-11-28
 ~~5. T6: check-citations shellcheck + `rg` pin (6.1–6.5).~~ done — citation-gate hardening, `a204282` (2026-11-20): `extract_cites` prefers ripgrep and falls back to `grep -oE`, shellcheck clean (CHANGELOG [0.1.0])
@@ -106,7 +109,8 @@ not duplicated. New items beyond the plan are marked ★._
 **Owner-gated (rows exist):**
 
 14. FLAKE_PAT secrets — ALSO the only way CI ever proves the flake truth (§b3); until then CI's flake green is a skip. **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" (digest §00-04 §g row "g3: FLAKE_PAT creation"). Verified 2026-11-28: still OPEN, ci.yml still guards**
-    ~~15. v0.1.1 go-signal → T21 replace-drop executes (~34m).~~ done — the replace directive was dropped at the `v0.2.0` tag (`5010082`, 2026-11-20) instead of a v0.1.1 tag; `hub/go.mod` requires `go-compliance v0.2.0` with no replace
+
+~~15. v0.1.1 go-signal → T21 replace-drop executes (~34m).~~ done — the replace directive was dropped at the `v0.2.0` tag (`5010082`, 2026-11-20) instead of a v0.1.1 tag; `hub/go.mod` requires `go-compliance v0.2.0` with no replace
 15. go-humanize + samber/lo verdicts (the findings-gate blocker). **→ routed to docs/status/owner-decisions-digest.md Linter/policy rows "samber/lo adopt-or-suppress" and "go-humanize adopt/accept-with-reason" (ROADMAP owner queue). Verified 2026-11-28: both rows open**
 16. M26 overview endgame (g2). **→ routed to TODO_LIST Blocked (owner decisions) row "M26: overview endgame (replace vs coexist) + migration note" (ROADMAP section "Endgame question (owner, g2 — BLOCKED)"). Verified 2026-11-28: open**
 17. Forgejo visibility click. **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)". Verified 2026-11-28: open**
@@ -117,9 +121,10 @@ not duplicated. New items beyond the plan are marked ★._
 **Watch / standing:**
 
 22. Every future push: full-repo dprint + docs-gates battery pre-push (§e1).
-    ~~23. The CI run history now anchors "the gates have RUN" — FEATURES' zero-runs note and the README CI section should be softened to "first runs green 2026-11-19" (one-line doc fix, fold into T11).~~ done — in the T11-era doc pass: FEATURES.md:60 CI row now reads "all with real green runner executions" and README.md:167-175 lists the full matrix without a zero-runs caveat. Verified 2026-11-28
-    ~~24. Keep the annotate→gate→fmt→gate order; add "full-repo fmt scope" to the canon (§e1) — crush-config lesson candidate (owner commit).~~ done — adopted: the docs-health skill's formatter-order canon is SKILL.md:299 (annotate → check-rows → format → check-rows again) plus the 2026-11-20 keyed-spec lesson at SKILL.md:303; repo-side rule at AGENTS.md:190-192. Verified 2026-11-28
-    ~~25. 16-12 §f16's watcher-spec CI flake watch: the watcher spec has now run on a real runner twice (green) — the row's evidence base improved; revisit the TODO row wording at T11.~~ done — resolved at T11 (2026-11-20): the reconcile rebuilt TODO_LIST and the watcher watch row is gone (today's TODO_LIST carries no watcher row; 11-30 report §a10); the hub test job that runs the watcher spec is green on the latest CI runs — only docs-gates is red (TODO_LIST High row; gh run list 2026-11-28)
+
+~~23. The CI run history now anchors "the gates have RUN" — FEATURES' zero-runs note and the README CI section should be softened to "first runs green 2026-11-19" (one-line doc fix, fold into T11).~~ done — in the T11-era doc pass: FEATURES.md:60 CI row now reads "all with real green runner executions" and README.md:167-175 lists the full matrix without a zero-runs caveat. Verified 2026-11-28
+~~24. Keep the annotate→gate→fmt→gate order; add "full-repo fmt scope" to the canon (§e1) — crush-config lesson candidate (owner commit).~~ done — adopted: the docs-health skill's formatter-order canon is SKILL.md:299 (annotate → check-rows → format → check-rows again) plus the 2026-11-20 keyed-spec lesson at SKILL.md:303; repo-side rule at AGENTS.md:190-192. Verified 2026-11-28
+~~25. 16-12 §f16's watcher-spec CI flake watch: the watcher spec has now run on a real runner twice (green) — the row's evidence base improved; revisit the TODO row wording at T11.~~ done — resolved at T11 (2026-11-20): the reconcile rebuilt TODO_LIST and the watcher watch row is gone (today's TODO_LIST carries no watcher row; 11-30 report §a10); the hub test job that runs the watcher spec is green on the latest CI runs — only docs-gates is red (TODO_LIST High row; gh run list 2026-11-28)
 
 (25 items; slots 26-50 are the existing TODO_LIST rows — 14 open — and the
 plan's fine tables, referenced not duplicated.)

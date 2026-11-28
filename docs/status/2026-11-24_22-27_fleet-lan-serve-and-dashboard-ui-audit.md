@@ -78,13 +78,16 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
 
 ~~11. `@theme` re-skin pass in `library-custom.css`: one deliberate accent + muted severity ramp, light/dark parity — the sanctioned fix for the generic look.~~ done — `hub/internal/dashboard/app.css:42` carries the `@theme` block (one accent, muted severity ramps, system fonts; CHANGELOG purge row 2026-11-27) (Verified 2026-11-28)
 12. ~~Typography decision: intentional typeface (CSP-safe) + `tabular-nums` for counts.~~ done — shipped: the system font stack is set in the `@theme` block of `app.css` (no web font to load, CSP-safe), and `tabular-nums` sits on the chip counts, the findings cells, and the last-run column
+
 ~~13. Hierarchy pass: make the failing ratio the page's story; demote zero-value cards (Stale 0, Never covered —) to inline chips.~~ done — the stat cards are gone (zero StatCard in `hub/internal/dashboard/`); `view.templ:47` "The headline and the freshness line carry the story" + count chips and per-filter empty states (CHANGELOG Added row) (Verified 2026-11-28)
 14. ~~Density pass on the fleet table using library Table knobs (CellPadding/Flush) for 204 rows.~~ done — shipped: `display.TableCellPaddingCompact` with `px-4 py-1.5` row cells and `LazyRows` on the fleet table (`view.templ`, `rows.templ`)
+
 ~~15. Bump templ-components v1.27.0 → v1.27.2 (ScriptComponent `</script>` escape guard; toast fix).~~ done — `hub/go.mod:28-31` pins templ-components v1.27.2 (CHANGELOG purge row; CSS artifacts regenerated) (Verified 2026-11-28)
 ~~16. Screenshot-based visual QA of the dashboard (pixels, not DOM).~~ done — shipped: `scripts/screenshot.sh` renders light, dark, just-wide, and narrow views in headless Chromium and fails on contrast, keyboard, layout, and console findings; `scripts/deploy-hub.sh` refuses a red page
 ~~17. Decide design direction: quiet/disciplined vs distinctive (§g q1).~~ done — decided by shipping: the dashboard runs the quiet, data-first direction (the `@theme` re-skin in `app.css`: one accent, muted severity ramps, the system font stack). §g q1 was never answered, so the choice stands unless the owner reopens it
 16. Contribute a Datastar signal-mode chip variant upstream to
 templ-components (justifies retiring hand-rolled `chips.templ`). **→ routed to TODO_LIST Blocked (owner decisions) row "Adopt the templ-components signal chip once it is tagged" — the chip sits on templ-components master (`5eaa2696`/`bb6b3197`, 2026-11-27) with no release tag; adoption + chips.templ retirement wait on the tag (Verified 2026-11-28)**
+
 ~~17. After the pin bump, evaluate StatusBadge/StatusDot vs the local StateBadge→Badge mapping.~~ done — decided 2026-11-26 — `display.SimpleEmptyState` adopted; the local `StateBadge` stays because it encodes the four compliance states (`rows.templ:77-86`; CHANGELOG purge row) (Verified 2026-11-28)
 ~~18. EmptyState/DataState for never-covered/stale empty views.~~ done — `display.SimpleEmptyState` per filter and for the no-evidence case (`view.templ:141`, `view.templ:151`) (Verified 2026-11-28)
 
@@ -120,6 +123,7 @@ templ-components (justifies retiring hand-rolled `chips.templ`). **→ routed to
 ~~33. library-policy M15: migrate the ADR-0009 gate remnants to `WhenAnyPresent` (still zero call sites).~~ done — library-policy `policies/ecosystem_combos.go:9` "Migrated 2026-11-20 from the ADR-0009 mixed-list hack"; `WhenAnyPresent` gates at `ecosystem.go:132` and `banned_libraries_doc.go:190-195` (Verified 2026-11-28)
 ~~34. Route the 7 raw CVE literals in `policies/security.go` through `policy.NewCVE`.~~ done — library-policy `policies/security.go:14-24` declares CVEs as `[]policy.CVE` via `mustCVE` → `policy.NewCVE` (parsed once); no raw literals remain (Verified 2026-11-28)
 35. ~~Severity wire-enum fork: `SeverityInfo` sorts as priority 0 and coerces to Moderate on round-trip (routed previously).~~ done — in library-policy (2026-11-20): an exhaustive severity mapper at the DSL bridge; `SeverityInfo` and `SeverityRecommended` no longer sort as priority 0 and "info" no longer coerces (library-policy CHANGELOG, "Severity sort + round-trip"; commit `5f6168e` of 2026-11-24 keeps info companions at info level)
+
 ~~36. `companion_checker.go:60` invalid `finding.Finding` literal (routed).~~ done — in library-policy at `8812c22` (2026-11-20): missing-companion findings go through `detection.NewMissingCompanionFinding` with a `Validate()` guard (library-policy CHANGELOG, "Invalid `finding.Finding` literal")
 36. go-idempotency Q2 parent exemption + Q3 idemtest release prep (owner, prior session). **→ routed to docs/status/owner-decisions-digest.md, row "go-idempotency Q2 parent exemption + Q3 idemtest release prep"**
 
@@ -137,4 +141,5 @@ which bind (LAN IP `192.168.1.150:8477` vs unix socket per
 bind-posture.md), and does the evidence file move to
 `/var/lib/overview/compliance.json` (overview-user writer) or stay under
 `~/.local/state/overview/`? **→ routed to TODO_LIST Blocked (owner decisions) row "Move both user units (`compliance-hub.service`, `fleet-evidence.timer`) and the library-policy pin into SystemNix" — the user-unit shape was decided by shipping (LAN unicast bind, XDG evidence, unit active 2026-11-28); the SystemNix/dedicated-user move is the open decision**
+
 ~~3. **Push + sweep timing**: push go-compliance master (~9 commits) and sweep the consumers (library-policy, md-go-validator, BuildFlow) onto core v0.2.0 now, or hold both until a natural trigger?~~ done — push verified (master...github/master 0 ahead/0 behind, 2026-11-28) and the sweep landed (v0.2.0 in `hub/go.mod:12`, library-policy `go.mod:15`, md-go-validator `go.mod:8`, BuildFlow `go.mod:40`) (Verified 2026-11-28)

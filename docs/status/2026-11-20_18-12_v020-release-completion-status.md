@@ -55,7 +55,7 @@
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ~~1~~ done — resolved since: the c5b6ae7 run was cancelled (44781303527) and the drift class closed with 0cf9562 (2026-11-28): CI reads the tool rev from flake.lock (ci.yml:232), css-freshness is green on the latest master run 46105857772, worktree clean — no regen pending. Verified 2026-11-28 | ~~Master tip trust~~ | ~~`c5b6ae7` re-modified the css artifacts AFTER the green run (parallel session, old tool) — no CI run on it yet; the pinned-tool regen in my worktree differs from committed again~~ |
 | ~~2~~ done — since: README.md:7-8+25 carry @v0.2.0 snippets, README.md:167-174 the CI gate list with branded-ID, FEATURES.md:60 the 14-job row (verified 2026-11-28)                                                                                                                                   | ~~Living-docs sync~~ | ~~CHANGELOG/AGENTS updated; README CI-gate list + FEATURES 14-job row + README install snippets (`@v0.2.0`) NOT yet touched~~                                                         |
-| 3 **→ routed to TODO_LIST High Impact row "Make CI green on master: the tip `0c65dcf` is pushed" (its docs-gates audit-all failure over ten 2026-11-18..25 reports IS this harvest queue)**                                                                                                            | §f harvest coverage  | 2 flagged items + replace-drop row landed in TODO_LIST; the remaining release-runbook/propagation items matched TODO tokens incidentally, not by real rows                            |
+| 3                                                                                                                                                                                                                                                                                                      | §f harvest coverage  | 2 flagged items + replace-drop row landed in TODO_LIST; the remaining release-runbook/propagation items matched TODO tokens incidentally, not by real rows                            |
 
 ## c) NOT STARTED
 
@@ -68,6 +68,7 @@
 7. FLAKE_PAT decision (hub/flake CI jobs still skip without it — vendorHash has no CI coverage) **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs"**
 8. Benchmark re-record decision (107µs vs 127µs baseline; owner call) **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)"**
 9. Forgejo release mirroring policy
+
 ~~10. AGENTS.md line for "css tool pin moves WITH flake.lock bumps" (drift-check or documented ritual)~~ done — superseded by structure: ci.yml:232 reads the tailwind tool rev from flake.lock at run time (0cf9562, 2026-11-28), so the pin cannot drift from the lock; the ritual is documented anyway (AGENTS.md:29, docs/notes/release-runbook.md:73-77). Verified 2026-11-28
 
 ## d) TOTALLY FUCKED UP
@@ -97,19 +98,22 @@
 ~~6. Re-run the exit-code probe on the RELEASED binary (`nix run .#compliance-hub -- report --db /nonexistent/x.db` → 75)~~ done — verified 2026-11-28 by running it: nix run .#compliance-hub -- report --db /nonexistent/x.db exits 75 (transient IO), the exit code captured outside any pipe
 ~~7. Retro-create the v0.1.0 GitHub Release (notes from CHANGELOG [0.1.0]) so the releases page isn't a hole~~ done — gh release view v0.1.0 shows the retro release published 2026-11-24T20:18:41Z (verified 2026-11-28); docs/notes/v0.1.0-release-notes.md exists too
 ~~8. Consumer propagation: md-go-validator → core v0.2.0; BuildFlow binding → v0.2.0 (go-ecosystem-upgrade)~~ done — md-go-validator/go.mod:8 and BuildFlow/go.mod:40 require github.com/larsartmann/go-compliance v0.2.0 (both sibling repos read 2026-11-28)
-~~9. Tag-triggered CI workflow (`on: push: tags: ['v*']`) running the battery on the frozen tag~~ done — .github/workflows/ci.yml:15 declares tags: ["v*"] and docs/notes/release-runbook.md:78-79 documents that the tag run is the release verdict. Verified 2026-11-28
+~~3. Tag-triggered CI workflow (`on: push: tags: ['v*']`) running the battery on the frozen tag~~ done — .github/workflows/ci.yml:15 declares tags: ["v*"] and docs/notes/release-runbook.md:78-79 documents that the tag run is the release verdict. Verified 2026-11-28
 ~~10. Document the v0.2.0 tag's red css check as known-and-fixed-on-master (release notes addendum or AGENTS note)~~ done 2026-11-27: the CI css-freshness job regenerates and diffs the artifacts, AGENTS.md states the rule, and CI re-runs the matrix on v* tags so a tag carries its own verdict
 10. `docs-health` HARVEST: real TODO_LIST/ROADMAP rows for the remaining §f items below that aren't incidental token matches **→ routed to TODO_LIST High Impact row "Make CI green on master: the tip `0c65dcf` is pushed" (its docs-gates audit-all failure over ten 2026-11-18..25 reports IS this harvest queue)**
+
 ~~11. `scripts/pre-release-check.sh` (the go-release skill's assumed pre-flight, in-repo)~~ done — scripts/pre-release-check.sh exists (177 lines; its header encodes the v0.2.0 lessons: piped exits lie, canonical buildflow, both remotes before tagging, notes file, proxy verify). Verified 2026-11-28
 ~~12. Release runbook: `docs/notes/release-runbook.md` (collision check → CI-first → canonical buildflow → tag → post-push → replace-drop ritual)~~ done — docs/notes/release-runbook.md exists (82 lines, "distilled from the v0.2.0 run (2026-11-20)" and the v0.1.0 tag-only gap). Verified 2026-11-28
 ~~13. AGENTS.md line: css pin + flake.lock bump ritual (regenerate artifacts in the same commit as the lock bump)~~ done — superseded by structure: ci.yml:232 reads the tool rev from flake.lock at run time (0cf9562, 2026-11-28), so no pin/lock pair is left to sync; the local ritual is documented anyway (AGENTS.md:29, docs/notes/release-runbook.md:73-77). Verified 2026-11-28
 14. Post-release AGENTS.md check: the Module Rules go-daemon/_local_deps text vs the post-replace-drop reality (partially updated; verify no stale `_core_only` references remain anywhere: `rg _core_only`)
+
 ~~15. STACK.md decision-log entry for the replace-drop + the go-humanize adoption (new direct dep)~~ done — the STACK.md decision log carries "2026-11-20 — The hub consumes the released core, not a replace" (STACK.md:169-177) and the 2026-11-28 entry adding rows for go-humanize, lipgloss/v2, and colorprofile (STACK.md:178-185). Verified 2026-11-28
 ~~16. `go work sync` / go.work.sum drift check after the replace-drop tides~~ done — verified 2026-11-28: with the workspace on, go list -m resolves the core to this working tree; with GOWORK=off in hub/ it resolves v0.2.0 from the proxy; go.work.sum present — no drift after the replace tides
 ~~17. Verify `go.work` still gives local dev the live-core experience post-replace (documented expectation, untested explicitly)~~ done — verified 2026-11-28: `go.work` is `use .` plus `use ./hub`; with the workspace on, `go list -m` resolves the core to `/home/lars/projects/go-compliance`; `hub/go.mod` carries no replace
 
 **Fleet/hardening:**
 19. FLAKE_PAT secret decision (GitHub + Forgejo) — hub/flake CI jobs still skip; vendorHash has ZERO CI coverage **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" (same item as docs/status/owner-decisions-digest.md "g3: FLAKE_PAT creation")**
+
 ~~20. Pipe-masking lesson → crush-config `references/lessons.md` (by commit, not in-session)~~ done — the entry landed in crush-config references/lessons.md:469 ("Redirect verification output to a file and read $? — never cmd | tail; echo OK") with the pipeline-masking background at lines 60-71 (read 2026-11-28)
 21. Crush hook proposal: block `$?`reads after pipelines in this repo's rc (or a lint for the agents' shell snippets)
 22.`--all-systems`flake check or an aarch64 runner eventually (current check omits darwin/arm64)
@@ -118,11 +122,14 @@
 25. go-humanize ROADMAP decision: dustin promoted to direct today — confirm the first-party go-humanize queue item is still wanted (swap path documented in the H003 fix) **→ routed to docs/status/owner-decisions-digest.md row "go-humanize adopt/accept-with-reason" (dustin is a direct dep since v0.2.0: hub/go.mod, verified 2026-11-28)**
 26. Benchmark re-record decision (107µs measured vs 127µs baseline; owner g2 call) **→ routed to TODO_LIST Low Impact row "Re-record`benchmarks/baseline.txt`(owner call g2)" (the VERIFY half was proven 2026-11-20; same item as docs/status/owner-decisions-digest.md "g2: bench baseline re-record policy")**
 27. Tag-watch: go-daemon / go-filewatcher / go-branded-id new tags → executed-addenda to lib reports
+
 ~~28.`library-classes.txt`@source inventory: confirm the scanner skips the module cache's`datastar`JS (belt-and-braces after the pin)~~ done — verified 2026-11-28 by reading the scanner: scripts/gen-library-classes.sh:55 concatenates only *.templ and *.go files (never *.js) from the go-list-resolved module dirs, so the module cache's datastar JS structurally cannot enter hub/internal/dashboard/library-classes.txt
 29. Consider caching the tailwind store path in CI (`nix build .#tailwindcss`warm) — css job took 26-35s each run
+
 ~~30. Retire`/tmp/test-core` scratch dirs (consumer-verify leftovers)~~ done — resolved 2026-11-24: /tmp/test-core does not exist anymore (tmp cleanup retired the consumer-verify leftovers; nothing to delete)
 
 **Docs/docs-health:**
+
 ~~31. Annotate the 12-06 release-run status report with its post-run resolutions (done-at verdicts; §f1-13 now history)~~ done — verified 2026-11-28: the 12-06 release-run report now carries inline post-run resolutions (docs/status/2026-11-20_12-06_v020-release-run-status.md was annotated in the 2026-11-28 docs-health sweep; its pkg.go.dev and STACK.md entries re-verified today)
 ~~32. Annotate THIS report's predecessor items as they close (docs-health cadence)~~ done — 2026-11-28: this report's open items were annotated inline in this docs-health pass (see the verdicts below)
 ~~33. CHANGELOG [Unreleased]: promote the HTML-comment-era replace-drop row styling consistency check (dprint already green; just verify section headers stayed canonical)~~ done — verified 2026-11-28: CHANGELOG.md headers are canonical (## [Unreleased] line 7, ## [0.2.0] line 68, ## [0.1.0] line 109); dprint.json:18 excludes CHANGELOG.md, so no formatter styling applies to it
@@ -140,8 +147,10 @@
 41. Consider `git-cliff`-style CHANGELOG automation from commit history (the daemon's commit messages are the only signal today)
 42. Consider a `compliance-hub version` subcommand stamping the ldflags version (release verification would stop needing proxy round-trips)
 43. Nightly `nix flake update` bot with auto-regen of css artifacts (keeps the pin honest)
+
 ~~44. Add the hub module to the release shape QUESTION: hub/vX.Y.Z tags were deliberately never cut (binary-via-nix posture) — document that decision in STACK.md so future sessions don't re-litigate~~ done — in the release runbook rather than STACK.md: docs/notes/release-runbook.md:12-18 records the never-tagged hub posture and the do-not-re-litigate rule; note the runbook's own pointer "STACK.md records the decision" is dangling — STACK.md carries no such entry (checked 2026-11-28)
 45. Release smoke test: `nix build .#compliance-hub` + `serve --help` boot probe as a release-gate step
+
 ~~46. Evaluate GoReleaser for the compliance-hub binary (GitHub Release currently ships no artifacts)~~ **Won't implement — the hub ships as a nix flake package built from the committed tree (`scripts/deploy-hub.sh`, `git+file://<repo>?rev=HEAD#compliance-hub`) and the hub module is deliberately not go-get-able; nothing downloads a GitHub Release artifact, so a second release pipeline would be a split brain. Revisit if the hub must run on a host without nix (verdict 2026-11-28).**
 47. Wire the exit-code probe + BD003 + stack-drift into a single local `just`-style script (flake.nix app) so the battery is one command
 48. Cross-repo: go-health-dashboard citation (`handlers.go:280`) lives in a SIBLING repo — its own citation drift is invisible to this gate; propose the fleet citation checker

@@ -59,9 +59,7 @@ verification. Verdicts were executed under the owner's blanket green light with 
 Forgejo), Forgejo repo visibility, and M26 endgame remain untouched (they need UI/credential access or an
 owner decision, not work). **→ routed to TODO_LIST Blocked (owner decisions) rows: "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs", "Forgejo repo visibility (lars/go-compliance → public?)", "M26: overview endgame (replace vs coexist) + migration note" (all three verified present 2026-11-28)**
 
-~~3. **WP-12 (docs sweep)** — the ANNOTATE half is done; the archive `git mv` sweep (18-06 §8 remainder) became a~~ resolved: partial — the two fully-resolved reports archived with manifest (2026-11-19, docs/status/archived/README.md records the every-item-resolved rule); the other candidates still carry open items and archive as they close
-new TODO row instead of being executed: cadence is 10/15, deliberately not urgent, and doing repo-history
-moves mid-session would have churned every path this report cites.
+~~3. **WP-12 (docs sweep)** — the ANNOTATE half is done; the archive `git mv` sweep (18-06 §8 remainder) became a new TODO row instead of being executed: cadence is 10/15, deliberately not urgent, and doing repo-history moves mid-session would have churned every path this report cites.~~ resolved: partial — the two fully-resolved reports archived with manifest (2026-11-19, docs/status/archived/README.md records the every-item-resolved rule); the other candidates still carry open items and archive as they close
 3. **LSP hygiene** — gopls served stale diagnostics for health_internal_test.go/refresher_internal_test.go for
 most of the session (old signatures long after the compiler accepted the new ones). I restarted it once
 (early), it helped only briefly. I treated compiler+tests as ground truth — correct — but never fixed the
