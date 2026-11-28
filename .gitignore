@@ -62,6 +62,21 @@ result
 result-*
 .envrc
 .direnv/
+
+## Javascript and typescript
+node_modules/
+build/
+*.tsbuildinfo
+.next/
+.nuxt/
+.docusaurus/
+.eslintcache
+.cache/
+.parcel-cache/
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 # <<< buildflow-managed (.gitignore) <<<
 
 # Generated templ output (*_templ.go) IS committed, deliberately: the

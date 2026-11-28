@@ -194,7 +194,11 @@
     inset-block-end: 0;
     block-size: 0.75rem;
     margin-block-start: -0.75rem;
-    background: radial-gradient(farthest-side at 50% 100%, var(--scroll-shadow), transparent);
+    background: radial-gradient(
+      farthest-side at 50% 100%,
+      var(--scroll-shadow),
+      transparent
+    );
     pointer-events: none;
     z-index: 1;
     opacity: 0;

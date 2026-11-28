@@ -35,8 +35,22 @@ const profileDir = join(outDir, "chromium-profile");
 const views = [
 	{ name: "dashboard-light", width: 1440, height: 900, scale: 1, scheme: "light", layout: "wide" },
 	{ name: "dashboard-dark", width: 1440, height: 900, scale: 1, scheme: "dark", layout: "wide" },
-	{ name: "dashboard-just-wide", width: 768, height: 900, scale: 1, scheme: "light", layout: "wide" },
-	{ name: "dashboard-narrow", width: 390, height: 844, scale: 2, scheme: "light", layout: "stacked" },
+	{
+		name: "dashboard-just-wide",
+		width: 768,
+		height: 900,
+		scale: 1,
+		scheme: "light",
+		layout: "wide",
+	},
+	{
+		name: "dashboard-narrow",
+		width: 390,
+		height: 844,
+		scale: 2,
+		scheme: "light",
+		layout: "stacked",
+	},
 ];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -166,7 +180,11 @@ async function waitForPage(sessionId) {
 async function capture(sessionId, name, clip, beyondViewport = true) {
 	const shot = await send(
 		"Page.captureScreenshot",
-		{ format: "png", captureBeyondViewport: beyondViewport, clip: { ...clip, x: 0, y: 0, scale: 1 } },
+		{
+			format: "png",
+			captureBeyondViewport: beyondViewport,
+			clip: { ...clip, x: 0, y: 0, scale: 1 },
+		},
 		sessionId,
 	);
 	writeFileSync(join(outDir, `${name}.png`), Buffer.from(shot.data, "base64"));
@@ -341,7 +359,12 @@ const clickChip = async (label, sessionId) => {
 
 const press = async (key, sessionId) => {
 	const [down, up] = keyText[key] ?? ["", ""];
-	const base = { key, code: key === " " ? "Space" : key, windowsVirtualKeyCode: keyCodes[key], nativeVirtualKeyCode: keyCodes[key] };
+	const base = {
+		key,
+		code: key === " " ? "Space" : key,
+		windowsVirtualKeyCode: keyCodes[key],
+		nativeVirtualKeyCode: keyCodes[key],
+	};
 	await send("Input.dispatchKeyEvent", { type: "keyDown", ...base, text: down }, sessionId);
 	await send("Input.dispatchKeyEvent", { type: "keyUp", ...base, text: up }, sessionId);
 	await sleep(150);
@@ -380,14 +403,23 @@ const keyboardPass = async (sessionId) => {
 	const afterSpace = JSON.parse(await evaluate(truthExpression, sessionId));
 	const toggle = await tabUntil("button:Toggle dark mode", sessionId);
 	if (!toggle.reached)
-		return { reached: false, stops: toggle.stops, chipActivated: afterChip, spaceActivated: afterSpace };
+		return {
+			reached: false,
+			stops: toggle.stops,
+			chipActivated: afterChip,
+			spaceActivated: afterSpace,
+		};
 	const themeBefore = JSON.parse(await evaluate(keyboardExpression, sessionId));
 	await press("Enter", sessionId);
 	const themeAfterEnter = JSON.parse(await evaluate(keyboardExpression, sessionId));
 	await press(" ", sessionId);
 	const themeAfterSpace = JSON.parse(await evaluate(keyboardExpression, sessionId));
 	const darkTrail = [themeBefore.dark, themeAfterEnter.dark, themeAfterSpace.dark];
-	const ariaTrail = [themeBefore.toggleChecked, themeAfterEnter.toggleChecked, themeAfterSpace.toggleChecked];
+	const ariaTrail = [
+		themeBefore.toggleChecked,
+		themeAfterEnter.toggleChecked,
+		themeAfterSpace.toggleChecked,
+	];
 
 	return {
 		reached: true,
@@ -400,7 +432,8 @@ const keyboardPass = async (sessionId) => {
 		stopsToToggle: toggle.stops,
 		toggleFocusVisible: toggle.state.focusVisible,
 		toggleOutline: toggle.state.outline,
-		themeToggled: themeAfterEnter.dark !== themeBefore.dark && themeAfterSpace.dark === themeBefore.dark,
+		themeToggled:
+			themeAfterEnter.dark !== themeBefore.dark && themeAfterSpace.dark === themeBefore.dark,
 		toggleAriaTracksTheme: ariaTrail.every((checked, step) => checked === String(darkTrail[step])),
 		darkTrail,
 		ariaTrail,
@@ -490,7 +523,11 @@ try {
 		await capture(sessionId, view.name, { width: view.width, height: view.height });
 		await capture(sessionId, `${view.name}-full`, { width: view.width, height: fullHeight });
 		truth.push({ view: view.name, scheme: view.scheme, layout: view.layout, ...facts });
-		contrast.push({ view: view.name, scheme: view.scheme, ...JSON.parse(await evaluate(contrastExpression, sessionId)) });
+		contrast.push({
+			view: view.name,
+			scheme: view.scheme,
+			...JSON.parse(await evaluate(contrastExpression, sessionId)),
+		});
 
 		if (facts.tableScrolls) {
 			await scrollFleetTable(sessionId);
@@ -558,7 +595,9 @@ for (const entry of truth) {
 }
 
 for (const entry of scrolled) {
-	console.log(`scrolled ${entry.view}: scrollTop=${entry.scrollTop} headerPinOffset=${entry.headerPinOffset} scrollShadow=${entry.scrollShadow}->${entry.scrollShadowAtEnd}`);
+	console.log(
+		`scrolled ${entry.view}: scrollTop=${entry.scrollTop} headerPinOffset=${entry.headerPinOffset} scrollShadow=${entry.scrollShadow}->${entry.scrollShadowAtEnd}`,
+	);
 }
 
 if (keyboard) {
@@ -595,7 +634,9 @@ for (const entry of truth) {
 			`${entry.view}: the fleet table is ${stacked ? "stacked" : "in columns"} at ${entry.viewportWidth}px, expected ${entry.layout === "stacked" ? "stacked rows" : "columns in a scroll box"} (thead display=${entry.theadDisplay})`,
 		);
 	if (!stacked && !entry.headerSticky)
-		failures.push(`${entry.view}: the column header does not stick to the top of the table's box (sticky=${entry.headerSticky})`);
+		failures.push(
+			`${entry.view}: the column header does not stick to the top of the table's box (sticky=${entry.headerSticky})`,
+		);
 	if (!stacked && entry.pageScrolls)
 		failures.push(
 			`${entry.view}: the page itself scrolls (${entry.pageHeight}px of content in a ${entry.viewportHeight}px viewport); with the table in columns only the fleet table scrolls, inside its box`,
@@ -605,7 +646,9 @@ for (const entry of truth) {
 			`${entry.view}: the fleet table's box ${entry.tableOverflows ? "does not scroll although the table is taller than the box's height limit" : "scrolls although the table fits the box"} (tableScrolls=${entry.tableScrolls})`,
 		);
 	if (stacked && entry.tableScrolls)
-		failures.push(`${entry.view}: the fleet table's box scrolls in the stacked layout, where the page is the scroller`);
+		failures.push(
+			`${entry.view}: the fleet table's box scrolls in the stacked layout, where the page is the scroller`,
+		);
 
 	// The stream replaces the table body on every publish, so an empty fleet
 	// must not rely on markup inside it: the table is hidden and the page
@@ -618,12 +661,16 @@ for (const entry of truth) {
 			`${entry.view}: an empty fleet must hide the table and say that no evidence exists (table display=${entry.tableDisplay}, messages=[${entry.emptyMessages}])`,
 		);
 	if (!emptyFleet && entry.tableDisplay === "none")
-		failures.push(`${entry.view}: the fleet table is hidden although the All chip is selected and the fleet has ${entry.rows} repos`);
+		failures.push(
+			`${entry.view}: the fleet table is hidden although the All chip is selected and the fleet has ${entry.rows} repos`,
+		);
 }
 
 for (const entry of scrolled) {
 	if (entry.scrollTop === 0)
-		failures.push(`scrolled ${entry.view}: the fleet table's box did not scroll although its table overflows`);
+		failures.push(
+			`scrolled ${entry.view}: the fleet table's box did not scroll although its table overflows`,
+		);
 	if (entry.headerPinOffset > 1)
 		failures.push(
 			`scrolled ${entry.view}: the column header moved ${entry.headerPinOffset}px away from the top of the table box`,
@@ -659,7 +706,9 @@ const requireRing = (control, visible, outline) => {
 };
 
 if (!keyboard || !keyboard.reached) {
-	failures.push(`keyboard: Tab never reached the chips and the theme toggle (stops: ${(keyboard?.stops ?? []).join(" > ")})`);
+	failures.push(
+		`keyboard: Tab never reached the chips and the theme toggle (stops: ${(keyboard?.stops ?? []).join(" > ")})`,
+	);
 } else {
 	requireRing("chip", keyboard.chipFocusVisible, keyboard.chipOutline);
 	requireRing("theme toggle", keyboard.toggleFocusVisible, keyboard.toggleOutline);
@@ -672,7 +721,9 @@ if (!keyboard || !keyboard.reached) {
 			`keyboard: Space on the Stale chip did not select it (pressed=[${keyboard.spaceActivated?.pressedChips ?? ""}])`,
 		);
 	if (!keyboard.themeToggled)
-		failures.push("keyboard: Enter and Space on the theme toggle did not flip and restore the theme");
+		failures.push(
+			"keyboard: Enter and Space on the theme toggle did not flip and restore the theme",
+		);
 	if (!keyboard.toggleAriaTracksTheme)
 		failures.push(
 			`keyboard: the theme toggle's aria-checked does not follow the theme (aria-checked=[${keyboard.ariaTrail ?? ""}], dark=[${keyboard.darkTrail ?? ""}], before, after Enter, after Space)`,
@@ -728,7 +779,11 @@ if (filterChecks.length === 3) {
 		return null;
 	})();
 
-	for (const failure of [stateFilterFailure(stale, "No stale repos"), stateFilterFailure(failing, "No failing repos"), allFilterFailure]) {
+	for (const failure of [
+		stateFilterFailure(stale, "No stale repos"),
+		stateFilterFailure(failing, "No failing repos"),
+		allFilterFailure,
+	]) {
 		if (failure) failures.push(failure);
 	}
 
