@@ -206,9 +206,15 @@ who prefers light-mode-on-a-dark-OS (or vice versa) cannot switch. One line in
 
 ### Row 13 — hand-rolled in-table empty state (Partial, low priority)
 
-`view.templ:97-104` renders its own "No compliance evidence yet" colspan row.
+~~`view.templ:97-104` renders its own "No compliance evidence yet" colspan row.~~
+Resolved 2026-11-28: the colspan row is gone. The first SSE patch of an
+empty fleet replaced the tbody and erased it, leaving a bare column header
+(seen in the real-browser harness, `ALLOW_EMPTY=1` run). The message is now
+the library's `display.SimpleEmptyState` in a block of its own under the
+hidden table (`data-show="$total===0"` in `view.templ`), so the hand-roll
+this row recorded no longer exists. The remaining finding stands:
 `display.EmptyState`/`DataState` target block-level regions, not a `<td>` inside
-a patchable tbody — the hand-roll is a reasonable special case. If the library
+a patchable tbody. If the library
 ever grows a table-native empty row (an `EmptyRow` helper), swap; otherwise leave.
 
 ### Row 6 — `Sortable` headers unused (Partial, low priority)
