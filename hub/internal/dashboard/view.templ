@@ -141,7 +141,7 @@ templ fleetTable(rows []events.RepoRow, counts map[string]int, total int, select
 					@display.SimpleEmptyState(chip.Empty)
 				</div>
 			}
-			}
+		}
 		<div
 			data-show={ noEvidenceShowExpression }
 			if total != 0 {
@@ -159,17 +159,18 @@ templ fleetTable(rows []events.RepoRow, counts map[string]int, total int, select
 const tableShowExpression = "$total > 0 && ($stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0)"
 
 // noEvidenceShowExpression shows the page's no-evidence message for a fleet
-// without a single row.
-const noEvidenceShowExpression = "$total===0"
+// without a single row; noEvidenceMessage says what an empty fleet means and
+// what fills it.
+const (
+	noEvidenceShowExpression = "$total===0"
+	noEvidenceMessage        = "No compliance evidence yet. The first refresh publishes it here."
+)
 
 // chipEmptyShowExpression shows a state chip's message while that chip is
 // selected, the fleet has evidence, and no repo is in that state.
 func chipEmptyShowExpression(state string) string {
 	return fmt.Sprintf("$total > 0 && $stateFilter==='%s' && !$counts['%s']", state, state)
 }
-
-// noEvidenceMessage says what an empty fleet means and what fills it.
-const noEvidenceMessage = "No compliance evidence yet. The first refresh publishes it here."
 
 // tableShownAtPaint is tableShowExpression evaluated for the first paint, so
 // the markup agrees with the signals the page seeds before the stream

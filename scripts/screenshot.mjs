@@ -662,7 +662,12 @@ if (filterChecks.length === 3) {
 		if (check.pressedChips.join() !== check.clicked || !check.pressedChipHighlighted)
 			return `filter: after clicking ${check.clicked}, pressed=[${check.pressedChips}], highlighted=${check.pressedChipHighlighted}`;
 		if (wanted === 0) {
-			if (check.visibleRows !== 0 || check.tableDisplay !== "none" || check.emptyMessages.join() !== emptyMessage)
+			// An empty fleet is explained once, whatever the chip.
+			const fleetEmpty = (light?.rows ?? 0) === 0;
+			const saysExpected = fleetEmpty
+				? check.emptyMessages.length === 1 && check.emptyMessages[0].startsWith(noEvidenceMessage)
+				: check.emptyMessages.join() === emptyMessage;
+			if (check.visibleRows !== 0 || check.tableDisplay !== "none" || !saysExpected)
 				return `filter: after clicking ${check.clicked}, which holds no repo of this fleet: ${check.visibleRows} rows are visible, table display is ${check.tableDisplay}, messages are [${check.emptyMessages}]`;
 
 			return null;

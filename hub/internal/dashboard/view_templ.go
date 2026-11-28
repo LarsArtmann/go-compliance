@@ -355,14 +355,14 @@ func fleetTable(rows []events.RepoRow, counts map[string]int, total int, selecte
 		}
 		for _, chip := range filterChips {
 			if chip.State != "all" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<div data-show=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "  <div data-show=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var12 string
-				templ_7745c5c3_Var12, templ_7745c5c3_Err = templruntime.NewAttributeExpression(fmt.Sprintf("$stateFilter==='%s' && !$counts['%s']", chip.State, chip.State)).Resolve(ctx)
+				templ_7745c5c3_Var12, templ_7745c5c3_Err = templruntime.NewAttributeExpression(chipEmptyShowExpression(chip.State)).Resolve(ctx)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 134, Col: 93}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 136, Col: 52}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
 				if templ_7745c5c3_Err != nil {
@@ -372,7 +372,7 @@ func fleetTable(rows []events.RepoRow, counts map[string]int, total int, selecte
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				if !(len(rows) == 0 && chip.State == selected) {
+				if !(total > 0 && len(rows) == 0 && chip.State == selected) {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, " style=\"display:none\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
@@ -399,7 +399,7 @@ func fleetTable(rows []events.RepoRow, counts map[string]int, total int, selecte
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templruntime.NewAttributeExpression(noEvidenceShowExpression).Resolve(ctx)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 144, Col: 39}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/view.templ`, Line: 146, Col: 39}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
 		if templ_7745c5c3_Err != nil {
@@ -437,11 +437,18 @@ func fleetTable(rows []events.RepoRow, counts map[string]int, total int, selecte
 const tableShowExpression = "$total > 0 && ($stateFilter==='all' || $stateFilter==='unknown' || $counts[$stateFilter] > 0)"
 
 // noEvidenceShowExpression shows the page's no-evidence message for a fleet
-// without a single row.
-const noEvidenceShowExpression = "$total===0"
+// without a single row; noEvidenceMessage says what an empty fleet means and
+// what fills it.
+const (
+	noEvidenceShowExpression = "$total===0"
+	noEvidenceMessage        = "No compliance evidence yet. The first refresh publishes it here."
+)
 
-// noEvidenceMessage says what an empty fleet means and what fills it.
-const noEvidenceMessage = "No compliance evidence yet. The first refresh publishes it here."
+// chipEmptyShowExpression shows a state chip's message while that chip is
+// selected, the fleet has evidence, and no repo is in that state.
+func chipEmptyShowExpression(state string) string {
+	return fmt.Sprintf("$total > 0 && $stateFilter==='%s' && !$counts['%s']", state, state)
+}
 
 // tableShownAtPaint is tableShowExpression evaluated for the first paint, so
 // the markup agrees with the signals the page seeds before the stream
