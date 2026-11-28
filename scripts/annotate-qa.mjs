@@ -28,7 +28,6 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 
 const NUMBERED = /^(\s*)(~~)?(\d+)\.(?:\s+|$)(.*)$/;
-const NUMBER_ONLY = /^(\s*)(~~)?(\d+)\.(?:\s+|$)/;
 const MIN_COMMON_PREFIX = 24;
 
 function parseArgs(argv) {
@@ -91,7 +90,7 @@ function splitItems(lines) {
 	for (let index = 0; index < lines.length; index++) {
 		const line = lines[index];
 		const head = splitHead(line);
-		if (head && head.indent === "") {
+		if (head) {
 			current = { start: index, end: index, ...head };
 			items.push(current);
 			continue;
@@ -100,10 +99,6 @@ function splitItems(lines) {
 		else if (current) current.end = index;
 	}
 	return items;
-}
-
-function firstLineText(item) {
-	return item.text;
 }
 
 function buildBaseIndex(baseLines) {
@@ -184,7 +179,10 @@ function inspect(lines, baseLines) {
 		const block = lines.slice(item.start, item.end + 1);
 		const { base, kind, at } = matchBase(item, block, baseIndex);
 		item.base = base;
-		if (kind === "diverged") add("T", item, `diverges from base item ${base.number} after ${at} chars`);
+		if (kind === "diverged") {
+			const marker = normalize(block.join("")).slice(Math.max(0, at - 20), at + 50);
+			add("T", item, `diverges from base item ${base.number} at "${marker}"`);
+		}
 		else if (kind === "new" && baseIndex.items.length > 0) add("T", item, "no base item matches");
 		const closeOffset = item.struck ? rawStrikeOffset(item.text, 1) : -1;
 		const head = item.struck && closeOffset >= 0 ? item.text.slice(0, closeOffset) : item.text;
@@ -203,7 +201,6 @@ function inspect(lines, baseLines) {
 		}
 		const strikes = strikeCount(block.join("\n"));
 		if (item.struck && strikes % 2 !== 0) add("S", item, `${strikes} strike markers`);
-		if (item.struck && closeOffset < 0) add("U", item, "strike never closes on its first line");
 		let closeLine = -1;
 		if (item.struck) {
 			let seen = 0;
@@ -215,6 +212,7 @@ function inspect(lines, baseLines) {
 				}
 			}
 		}
+		if (item.struck && closeLine < 0) add("U", item, "strike never closes");
 		if (item.struck && closeLine >= 0 && closeLine !== item.end) {
 			const later = block.slice(closeLine - item.start + 1).join("\n");
 			const nested = block.slice(1).some((line) => /^\s+/.test(line));
