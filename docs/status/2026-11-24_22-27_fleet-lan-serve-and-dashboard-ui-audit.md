@@ -166,12 +166,10 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
 11. `@theme` re-skin pass in `library-custom.css`: one deliberate accent +
     muted severity ramp, light/dark parity — the sanctioned fix for the
     generic look.
-12. Typography decision: intentional typeface (CSP-safe) + `tabular-nums`
-    for counts.
+12. ~~Typography decision: intentional typeface (CSP-safe) + `tabular-nums` for counts.~~ done — shipped: the system font stack is set in the `@theme` block of `app.css` (no web font to load, CSP-safe), and `tabular-nums` sits on the chip counts, the findings cells, and the last-run column
 13. Hierarchy pass: make the failing ratio the page's story; demote
     zero-value cards (Stale 0, Never covered —) to inline chips.
-14. Density pass on the fleet table using library Table knobs
-    (CellPadding/Flush) for 204 rows.
+14. ~~Density pass on the fleet table using library Table knobs (CellPadding/Flush) for 204 rows.~~ done — shipped: `display.TableCellPaddingCompact` with `px-4 py-1.5` row cells and `LazyRows` on the fleet table (`view.templ`, `rows.templ`)
 15. Bump templ-components v1.27.0 → v1.27.2 (ScriptComponent `</script>`
     escape guard; toast fix).
 ~~16. Screenshot-based visual QA of the dashboard (pixels, not DOM).~~ done — shipped: `scripts/screenshot.sh` renders light, dark, just-wide, and narrow views in headless Chromium and fails on contrast, keyboard, layout, and console findings; `scripts/deploy-hub.sh` refuses a red page
@@ -210,11 +208,9 @@ evidence timer; library-policy M15/CVE-literal/severity-fork policy items
     (still zero call sites).
 34. Route the 7 raw CVE literals in `policies/security.go` through
     `policy.NewCVE`.
-35. Severity wire-enum fork: `SeverityInfo` sorts as priority 0 and coerces
-    to Moderate on round-trip (routed previously).
+35. ~~Severity wire-enum fork: `SeverityInfo` sorts as priority 0 and coerces to Moderate on round-trip (routed previously).~~ done — in library-policy (2026-11-20): an exhaustive severity mapper at the DSL bridge; `SeverityInfo` and `SeverityRecommended` no longer sort as priority 0 and "info" no longer coerces (library-policy CHANGELOG, "Severity sort + round-trip"; commit `5f6168e` of 2026-11-24 keeps info companions at info level)
 ~~36. `companion_checker.go:60` invalid `finding.Finding` literal (routed).~~ done — in library-policy at `8812c22` (2026-11-20): missing-companion findings go through `detection.NewMissingCompanionFinding` with a `Validate()` guard (library-policy CHANGELOG, "Invalid `finding.Finding` literal")
-37. go-idempotency Q2 parent exemption + Q3 idemtest release prep (owner,
-    prior session).
+37. go-idempotency Q2 parent exemption + Q3 idemtest release prep (owner, prior session). **→ routed to docs/status/owner-decisions-digest.md, row "go-idempotency Q2 parent exemption + Q3 idemtest release prep"**
 
 **Hygiene:**
 

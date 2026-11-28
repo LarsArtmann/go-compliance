@@ -179,7 +179,7 @@ session) and 4 in BLOCKED — referenced here, not duplicated. The rest,
 impact-ordered; real items beat padding._
 
 1. Full `-race` + lint battery re-run post-docs-pass **→ TODO_LIST Low row**
-2. STACK.md + CONTRIBUTING.md verification **→ TODO_LIST Low row**
+2. ~~STACK.md + CONTRIBUTING.md verification → TODO_LIST Low row~~ done 2026-11-28: both files checked against `go.mod` and the code. STACK.md: the stale `replace → ../` and indirect-block notes corrected, rows added for `go-humanize` and for `lipgloss/v2` + `colorprofile`, the Logging row corrected to stdlib `slog` (decision log, 2026-11-28). CONTRIBUTING.md: the replace-drift rationale, the raw golangci commands, and "the full gate: nix flake check" replaced with the current commands. No TODO row was ever written for it
 3. ~~DOMAIN_LANGUAGE.md row-by-row verify~~ done 2026-11-18 ~22:40 — every core-term row's file/symbol anchor verified against the tree; one drift fixed (EvidenceWriter: reporter.go, not source.go); evidence in the 20-29 plan execution.
 4. Annotate 13-31 §f 2–7 (unblocks archive) **→ TODO_LIST Low row**
 5. Reconcile 42-vs-40 annotate count **→ TODO_LIST Low row**
