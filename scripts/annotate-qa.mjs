@@ -128,6 +128,9 @@ function matchBase(item, block, baseIndex) {
 		}
 	}
 	if (prefix) return { base: prefix, kind: "prefix" };
+	for (const base of baseIndex.items) {
+		if (base.key.length >= 8 && bodyKey.startsWith(base.key)) return { base, kind: "prefix" };
+	}
 	let best = null;
 	let bestLength = 0;
 	for (const base of baseIndex.items) {
@@ -188,7 +191,7 @@ function inspect(lines, baseLines) {
 		const head = item.struck && closeOffset >= 0 ? item.text.slice(0, closeOffset) : item.text;
 		if (base) {
 			if (base.number !== item.number) add("R", item, `base number ${base.number}`);
-			if (base.indent !== item.indent) add("I", item, `indent ${item.indent.length}, base ${base.indent.length}`);
+			if (base.indent === "" && item.indent !== "") add("I", item, `indent ${item.indent.length}, base 0`);
 			const lost = missingWords(base, block);
 			if (lost.length > 0) add("L", item, `${lost.length} word(s): ${lost.slice(0, 8).join(" ")}`);
 			if (head !== base.text && normalize(head) === normalize(base.headKey === undefined ? "" : base.text) && normalize(head) !== "") {
