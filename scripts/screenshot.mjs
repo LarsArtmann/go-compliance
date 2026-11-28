@@ -51,6 +51,11 @@ const chrome = spawn(
 		"--disable-gpu",
 		"--disable-dev-shm-usage",
 		"--hide-scrollbars",
+		// A fresh profile is not an empty one on a managed host: policy
+		// force-installs extensions into every profile, and their content
+		// scripts inject into the measured page (a passkey helper threw an
+		// exception into the console-error gate on 2026-11-28).
+		"--disable-extensions",
 		`--user-data-dir=${profileDir}`,
 		"--remote-debugging-port=0",
 		"about:blank",
@@ -89,9 +94,11 @@ function handleMessage(message) {
 	}
 	if (msg.method === "Runtime.exceptionThrown") {
 		const details = msg.params.exceptionDetails;
-		pageErrors.push(
-			`exception ${details.url ?? ""}:${details.lineNumber ?? 0} ${details.exception?.description ?? details.text}`,
-		);
+		const text = `exception ${details.url ?? ""}:${details.lineNumber ?? 0} ${details.exception?.description ?? details.text}`;
+		// An extension's content script runs in an isolated world of the page,
+		// out of the page's reach: its failures are the browser's, not the page's.
+		if ((details.url ?? "").startsWith("chrome-extension://")) browserNoise.push(text);
+		else pageErrors.push(text);
 		return;
 	}
 	if (msg.method === "Runtime.consoleAPICalled" && msg.params.type === "error") {
