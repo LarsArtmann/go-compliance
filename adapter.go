@@ -50,8 +50,13 @@ func NewBuildFlowFileSource() *FileSource {
 	return source
 }
 
-// WithMissingBackoff sets the missing-file backoff TTL and returns the
-// source for chaining.
+// WithMissingBackoff sets how long a missing file is remembered and returns
+// the source for chaining. Inside the TTL after a miss, reads return the
+// cached miss without touching disk, so a refresher that queries every few
+// seconds does not poll the disk for a producer that is not running. A ttl
+// of zero or less (the default) caches nothing: every read consults the
+// file, so the first evidence shows with no delay. Set it before the source
+// serves queries; the TTL must not change while reads are in flight.
 func (s *FileSource) WithMissingBackoff(ttl time.Duration) *FileSource {
 	s.missingTTL = ttl
 
