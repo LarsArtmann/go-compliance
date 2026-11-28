@@ -175,8 +175,8 @@ contracts (TODO row, minted today).~~ done — Done, Verified 2026-11-28: real r
 ~~2. Cut the `## [0.1.0]` CHANGELOG section at the tag date (77881b3, 2026-11-19
 13:28); split `[Unreleased]` at the post-audit-wave boundary (TODO row).~~ done — Done, Verified 2026-11-28: CHANGELOG.md:109 `## [0.1.0] - 2026-11-19` exists at the tag boundary (v0.1.0 = 77881b3, 2026-11-19 13:28 +0100, `git log -1 v0.1.0`)
 
-3. Re-run benchmarks; re-record `benchmarks/baseline.txt` (it predates the file
-   splits + watcher; verifies the FEATURES perf row) (TODO row). **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2) ..." (VERIFY half proven 2026-11-20; only the re-record remains) and docs/status/owner-decisions-digest.md row "g2: bench baseline re-record policy". Verified 2026-11-28: benchmarks/baseline.txt mtime still 2026-11-18 13:24**
+~~3. Re-run benchmarks; re-record `benchmarks/baseline.txt` (it predates the file
+   splits + watcher; verifies the FEATURES perf row) (TODO row).~~ **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2) ..." (VERIFY half proven 2026-11-20; only the re-record remains) and docs/status/owner-decisions-digest.md row "g2: bench baseline re-record policy". Verified 2026-11-28: benchmarks/baseline.txt mtime still 2026-11-18 13:24**
 
 ~~4. `queryRows` error-path test: pin the wrapped IO-error message strings
 (TODO row).~~ done — Done, Verified 2026-11-28: hub/internal/cache/cache_test.go:32-46 — a dead-store query pins `errors.Is(err, compliance.ErrIO)`, the Transient family, and the wrapped "query window health"/"closed" message strings
@@ -203,27 +203,30 @@ it).~~ done — Verified 2026-11-28: scripts/refresh-fixture.sh:7-13 documents t
 
 **Owner-gated (rows exist; unchanged):**
 
-11. go-humanize adopt/suppress/accept + samber/lo verdicts (ROADMAP owner
-    decisions — the buildflow findings-gate blocker). **→ routed to docs/status/owner-decisions-digest.md, rows "go-humanize adopt/accept-with-reason" and "samber/lo adopt-or-suppress" (linter/policy verdicts table). Verified 2026-11-28: hub/go.mod:10 (go-humanize direct), :115 (samber/do/v2 indirect only)**
+~~11. go-humanize adopt/suppress/accept + samber/lo verdicts (ROADMAP owner
+    decisions — the buildflow findings-gate blocker).~~ **→ routed to docs/status/owner-decisions-digest.md, rows "go-humanize adopt/accept-with-reason" and "samber/lo adopt-or-suppress" (linter/policy verdicts table). Verified 2026-11-28: hub/go.mod:10 (go-humanize direct), :115 (samber/do/v2 indirect only)**
 
 ~~12. Core v0.1.1 tag go-signal → then the hub replace-drop executes (~15m) (TODO
 row + ROADMAP).~~ done — Executed at v0.2.0, Verified 2026-11-28: tag = f906ae5 (2026-11-20 17:12 +0100); hub/go.mod:12 requires core v0.2.0 with no replace; flake.nix:150 "no _core_only copy needed" — the replace-drop ran and the go-signal row is consumed
 
-13. FLAKE_PAT secrets (GitHub + Forgejo) (TODO Blocked). **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" (FEATURES.md:60: hub/flake jobs skip until the secret exists)**
-14. M26 overview endgame (owner g2) (TODO Blocked + ROADMAP). **→ routed to TODO_LIST Blocked (owner decisions) row "M26: overview endgame (replace vs coexist) + migration note"**
-15. Forgejo repo visibility (TODO Blocked). **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)"**
+~~13. FLAKE_PAT secrets (GitHub + Forgejo) (TODO Blocked).~~ **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs" (FEATURES.md:60: hub/flake jobs skip until the secret exists)**
+
+~~14. M26 overview endgame (owner g2) (TODO Blocked + ROADMAP).~~ **→ routed to TODO_LIST Blocked (owner decisions) row "M26: overview endgame (replace vs coexist) + migration note"**
+
+~~15. Forgejo repo visibility (TODO Blocked).~~ **→ routed to TODO_LIST Blocked (owner decisions) row "Forgejo repo visibility (lars/go-compliance → public?)"**
 
 ~~16. Push master (mirror 40+ behind; first CI runs wait on it) (TODO Blocked).~~ done — Done by cadence, Verified 2026-11-28: the mirror has been pushed repeatedly since (CHANGELOG.md:90 first push + full matrix; TODO_LIST.md:25 "the tip `0c65dcf` is pushed"; today master is 1 ahead of github/master — routine daemon cadence)
 
-17. Upstream-TODO mandate — queue now: cmdguard Nd codec, cmdguard/lint
+~~17. Upstream-TODO mandate — queue now: cmdguard Nd codec, cmdguard/lint
     replace-directive bug, go-datastar MarshalSignals, templ-components
-    FilterChips, a-h/templ embedlit FP (ROADMAP). **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", row "mandate for consumer sessions filing upstream TODOs in library repos" (five candidates listed)**
+    FilterChips, a-h/templ embedlit FP (ROADMAP).~~ **→ routed to ROADMAP "Fleet adoption waves (raw, from the 2026-11-19 utilization audit)", row "mandate for consumer sessions filing upstream TODOs in library repos" (five candidates listed)**
 
 ~~18. Firefox permission for the index.html screenshot (TODO row).~~ done — Done, Verified 2026-11-28: docs/assets/libs-index.png exists (2026-11-27), captured headlessly by scripts/screenshot-page.sh (11-52 report :138) — the firefox permission became unnecessary
 
-19. VACUUM buildflow state DB (1.04 GB) + delete the 0.51 GB cache DB (TODO
-    Blocked). **→ routed to TODO_LIST Blocked (owner decisions) rows "`sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB)" and "Delete the expendable 0.51 GB cache DB (`~/.cache/buildflow/cache.db`)"**
-20. go-nix-helpers FOD double-cd upstream fix + push (ROADMAP cross-repo line). **→ routed to ROADMAP "Conditions watched — library flip triggers (2026-11-19 audit)", row "Cross-repo upstream fix (owner-gated push): the go-nix-helpers FOD double-`cd` bug"**
+~~19. VACUUM buildflow state DB (1.04 GB) + delete the 0.51 GB cache DB (TODO
+    Blocked).~~ **→ routed to TODO_LIST Blocked (owner decisions) rows "`sqlite3 ~/.local/state/buildflow/buildflow.db VACUUM` (1.03 GB)" and "Delete the expendable 0.51 GB cache DB (`~/.cache/buildflow/cache.db`)"**
+
+~~20. go-nix-helpers FOD double-cd upstream fix + push (ROADMAP cross-repo line).~~ **→ routed to ROADMAP "Conditions watched — library flip triggers (2026-11-19 audit)", row "Cross-repo upstream fix (owner-gated push): the go-nix-helpers FOD double-`cd` bug"**
 
 **Watch / next cycles:**
 
