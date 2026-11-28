@@ -7,7 +7,10 @@ when that file crossed the 220-line ceiling of the structure linter.
 ## Liveness (M27)
 
 `refresher` (`hub/internal/cli/refresher.go`) owns liveness: a trigger
-channel (cap 1, coalescing), a 500ms debounce, a 5-minute safety-net ticker
+channel (cap 1, coalescing), a 500ms debounce (a fixed window from the
+first trigger of a burst: a burst costs one refresh, a steady stream keeps
+producing one refresh per window, pinned by two specs in
+`refresher_internal_test.go`), a 5-minute safety-net ticker
 (backstop), discovery `/v1/watch` with a 30s backoff, and, since 2026-11-19,
 a go-filewatcher/v2 directory watch (`cli/watcher.go`) over the cache DB and
 its WAL sidecars (and over the evidence file's directory for `--source
@@ -94,8 +97,46 @@ shipped inert for that reason: these rules are load-bearing.
   200-row table on every patch would flood assistive technology.
 
 `scripts/screenshot.sh` is the gate for all of the above. It drives a real
-headless chromium over the DevTools protocol, checks theme, favicon, filter
-clicks, and the empty selection, and fails on any console error.
+headless Chromium over the DevTools protocol through four views (light,
+dark, just-wide at 768px, narrow at 390px), each naming the layout it must
+produce, with one check family per concern: the layout the page actually
+produced (the column header's display, and the table's box scrolling
+exactly when the table is taller than the box's height limit); the scroll
+of that box and the column-header pin after a 1400px scroll; the keyboard
+walk (chips via Enter and Space, the theme toggle with its
+`aria-checked` trail, focus rings on everything it stops at); filter
+clicks judged against the fleet the page rendered, never against a fleet
+the harness assumes; WCAG AA contrast for every text pair; the empty fleet
+(`ALLOW_EMPTY=1` with `SHOTS_DISCOVER_PATHS=` switched off); and console
+errors, of which only classified browser noise is exempt (exception from
+`chrome-extension://` scripts and Chromium's own `runtime.lastError`;
+Chromium starts `--disable-extensions` because a managed host's policy
+force-installs extensions into every profile).
+
+## Fleet table geometry (2026-11-28)
+
+In a wide layout the fleet table scrolls inside the box the library wraps
+it in: a container query at 40rem of container width gives that box
+`max-height: max(20rem, calc(100dvh - 254px))` and `overflow: auto`
+(`app.css`). The 254px is calibrated against the rest of the page: the
+summary block above the table is 222px tall at every width from 640px up,
+plus the page's bottom padding, so the box takes exactly the height the
+viewport leaves and the page itself never scrolls (the harness fails when
+it does). `TableProps.StickyHeader` pins the column header to the top of
+that box over 200 rows. Below 40rem a second container query hides the
+header, stacks each row into a two-column grid, and hands scrolling back
+to the page.
+
+The empty-fleet state shares the patch contract's one hard rule: nothing
+the stream replaces may carry a message. The "No compliance evidence yet"
+block sits outside the rows region (`view.templ`
+`noEvidenceShowExpression`, `$total===0`), the table hides through
+`tableShowExpression` (`$total > 0 ...`), and a selected chip whose state
+holds no rows gets its own message (`chipEmptyShowExpression`). The first
+version kept the message inside the tbody, and the first patch of an
+empty fleet erased it (found by the harness's `ALLOW_EMPTY=1` run on
+2026-11-28, fixed and pinned by a view spec and the empty-fleet harness
+run).
 
 ## templ-components verdict
 
