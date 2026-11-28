@@ -1,0 +1,10 @@
+{
+  "recorded": "2026-11-28T08:26:26Z",
+  "lines": [
+    "| Collapse the parallel refresh-freshness and discovery check bodies in `buildHealthProbe` into one age-check factory (same shape, two call sites; the art-dupl baseline covers them today) | 🔴 `TODO` | Low | 30m | hub/internal/cli/health.go; 2026-11-18_23-09 status report §f5 |",
+    "| CONTRIBUTING.md fork and pull-request section: name the cmdguard flag-struct convention and the STACK.md decision-log expectation for contributors | 🔴 `TODO` | Low | 30m | CONTRIBUTING.md; 2026-11-18_23-09 status report §f44 |",
+    "| Sweep `docs/notes/federation-interop.md` for the five readiness checks (`evidence`, `cache-disk`, `refresh-freshness`, `discovery`, `sse-backpressure`); the note predates them | 🔴 `TODO` | Low | 15m | docs/notes/federation-interop.md; 2026-11-18_23-09 status report §f47 |",
+    "| (repo: crush-config) Port the TODO_LIST-edit lesson into crush-config `references/lessons.md` by commit: row edits go through asserted replaces or `safe-strike.sh --purge`, never long exact-match strings on formatter-padded rows | 🔴 `TODO` | Low | 15m | 2026-11-18_23-09 status report §e1; /home/lars/projects/docs-gates/scripts/safe-strike.sh |",
+    "| Record the first-execution rituals in the AGENTS.md \"Gates and Notes\" section: `dprint check` and the docs-gates battery over the whole repo before a push is called green; when a first-run gate fails on plumbing, audit every other job's plumbing in the same pass; read a fleet sibling's formatter config before its first execution | 🔴 `TODO` | Low | 10m | 2026-11-20_00-04 status report §e1, §e3, §e4 and §f22 |"
+  ]
+}

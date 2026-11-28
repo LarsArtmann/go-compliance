@@ -127,6 +127,18 @@ that box over 200 rows. Below 40rem a second container query hides the
 header, stacks each row into a two-column grid, and hands scrolling back
 to the page.
 
+A shadow at the box's bottom edge says that more rows follow, also when
+the last visible row happens to end exactly at the edge: the box is a
+scroll-state container (`container-type: scroll-state`) and its `::after`,
+a sticky last child that takes no space, shows while content remains
+below (`@container scroll-state(scrollable: block-end)`). Browsers
+without scroll-state queries get the same cue from a scroll-driven
+animation on the same pseudo-element (`@supports not
+(container-type: scroll-state)`). The colour is a `--scroll-shadow`
+variable (15% black in light mode, 55% in dark), and the harness asserts
+the opacity trail in the scrolled captures (`scrollShadow=1` mid-fleet,
+`0` at the fleet's end, in the light, dark, and just-wide views).
+
 The empty-fleet state shares the patch contract's one hard rule: nothing
 the stream replaces may carry a message. The "No compliance evidence yet"
 block sits outside the rows region (`view.templ`
