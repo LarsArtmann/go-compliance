@@ -174,11 +174,53 @@
    222px at every width from 640px up, plus the page's bottom padding), so
    the page itself never scrolls; the browser harness fails when it does.
    The header row (TableProps.StickyHeader) pins to the top of that box over
-   200 rows; the summary above never moves. */
+   200 rows; the summary above never moves. A shadow at the box's bottom
+   edge says that more rows follow, also when the last visible row happens
+   to end exactly at the edge: the box is a scroll-state container and its
+   ::after, a sticky last child that takes no space, shows while content
+   remains below. Browsers without scroll-state queries get the same cue
+   from a scroll-driven animation on the same pseudo-element. */
 @container (width >= 40rem) {
   :has(> .fleet-table) {
     max-height: max(20rem, calc(100dvh - 254px));
     overflow: auto;
+    container-type: scroll-state;
+  }
+
+  :has(> .fleet-table)::after {
+    content: "";
+    display: block;
+    position: sticky;
+    inset-block-end: 0;
+    block-size: 0.75rem;
+    margin-block-start: -0.75rem;
+    background: radial-gradient(farthest-side at 50% 100%, var(--scroll-shadow), transparent);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+}
+
+@container scroll-state(scrollable: block-end) {
+  :has(> .fleet-table)::after {
+    opacity: 1;
+  }
+}
+
+@supports not (container-type: scroll-state) {
+  @container (width >= 40rem) {
+    :has(> .fleet-table)::after {
+      animation: show-scroll-shadow linear both reverse;
+      animation-timeline: scroll();
+      animation-range: calc(100% - 2rem) 100%;
+    }
+  }
+}
+
+@keyframes show-scroll-shadow {
+  to {
+    opacity: 1;
   }
 }
 
@@ -195,8 +237,10 @@
 
 :root {
   color-scheme: light;
+  --scroll-shadow: rgb(0 0 0 / 15%);
 }
 
 .dark {
   color-scheme: dark;
+  --scroll-shadow: rgb(0 0 0 / 55%);
 }
