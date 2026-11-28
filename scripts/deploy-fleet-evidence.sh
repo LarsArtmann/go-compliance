@@ -34,7 +34,7 @@ discovered_go_projects() {
 	local socket="${DISCOVERY_SOCKET:-/run/project-discovery/daemon.sock}"
 	local roots
 	[ -S "$socket" ] || return 0
-	roots="$(jq -cn --arg root "${DISCOVER_ROOT:-$HOME/projects}" '{searchPaths: [$arg.root]}')"
+	roots="$(jq -cn --arg root "${DISCOVER_ROOT:-$HOME/projects}" '{searchPaths: [$root]}')"
 	curl -sS --max-time 10 --unix-socket "$socket" -X POST http://daemon/v1/discover \
 		-H 'content-type: application/json' -d "$roots" 2>/dev/null |
 		jq -r '.projects[].path // empty' 2>/dev/null |
