@@ -134,11 +134,9 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   harness on the live address) and rolls the unit file and out-link back on
   a failed gate. Verify afterwards with `scripts/screenshot.sh
   http://192.168.1.150:8477/` and `journalctl --user -u compliance-hub`.
-- **Evidence file defaults align** across README, the integrate guide, and
-  `docs/decisions/bind-posture.md`: system `/var/lib/overview/compliance.json`
-  (the core's `DefaultEvidenceFile`), user
-  `~/.local/state/overview/compliance.json`; `GO_COMPLIANCE_EVIDENCE_FILE`
-  overrides both.
+- **Evidence-file locations** have one home, the table in
+  `docs/guides/integrate.md` (`DefaultEvidenceFile`, the user path, and the
+  `GO_COMPLIANCE_EVIDENCE_FILE` override); link to it, never restate it.
 - **Producer**: `scripts/deploy-fleet-evidence.sh --run` builds library-policy
   the same way into `~/.local/state/compliance-fleet/current`, installs and
   starts the `fleet-evidence` timer (daily 05:10, `Persistent=true`) that
@@ -193,7 +191,8 @@ scripts/deploy-fleet-evidence.sh --run                     # producer build, dai
   every annotation sweep; `dprint fmt` in the same minute as a markdown edit
   (the daemon commits unformatted files and CI's dprint job goes red).
   Multi-section annotate keys need the `N@substring` disambiguator; run
-  first (`docs/notes/docs-health-annotate-writer.md`). The CI docs-gates
+  `emit-keys` and `--dry-run` first
+  (`docs/notes/docs-health-annotate-writer.md`). The CI docs-gates
   job checks out the full history because its annotate gate resolves
   `done at <sha>` verdicts.
 - Library audits: `docs/review/libs/`; rerun `scripts/check-citations.sh`
