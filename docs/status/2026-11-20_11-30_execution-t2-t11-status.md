@@ -26,12 +26,10 @@
 
 10. ~~**T11 — reconcile + battery**: TODO_LIST 8 completed rows removed (logged in CHANGELOG), bench row rewritten to its owner-gated remainder, cmdguard row updated with draft pointers, 2 rows minted (README install section; fleet docs-gates bump BLOCKED). CHANGELOG `[Unreleased]` gained 5 Added + 3 Changed entries carrying the harvest tokens — freshness gate green again after it correctly flagged the unharvested T4/T6 §f items mid-reconcile.~~ done — TODO_LIST.md:39 carries the minted fleet-bump BLOCKED row; the minted README-install row executed 2026-11-24 (README.md:19 `## Install`; CHANGELOG.md:51 marks the row DONE); CHANGELOG `[Unreleased]` carries the harvest entries (CHANGELOG.md:90-103)
 
-
 ## b) PARTIALLY DONE
 
 1. **T3 re-record** — verify done, claim proven; the re-record itself waits on g2 (owner). The stale baseline is now KNOWN-stale with evidence, not unknown-stale. **→ routed to TODO_LIST Low Impact row "Re-record `benchmarks/baseline.txt` (owner call g2)" and docs/status/owner-decisions-digest.md row "g2: bench baseline re-record policy" (claim PROVEN 2026-11-20; benchmarks/baseline.txt mtime still 2026-11-18 13:24)**
 2. ~~**T21 (hub replace-drop)** — unchanged, gated on the v0.1.1 go-signal (OG.8). Nothing this session changed its prerequisites.~~ done — overtaken by the owner's answer 2026-11-20: v0.2.0 = f906ae5 (2026-11-20 17:12 +0100) and hub/go.mod:12 requires core v0.2.0 with no replace directive (rg "replace" hub/go.mod: none) — the replace-drop executed
-
 
 ## c) NOT STARTED (owner-gated, unchanged)
 
@@ -49,10 +47,8 @@ core build+vet+`-race` (1 ok) · hub build+vet+`-race` (6 ok) · golangci 0+0 ·
 
 3. ~~**Stale-context trap hit twice** (AGENTS annotate-writer section; dprint CHANGELOG exclusion) — project-context copies lag the disk; re-read before editing.~~ done — standing session-history note; the sweep discipline it points at is codified in AGENTS.md "Gates and Notes" (AGENTS.md:186-196: battery before AND after every sweep, `emit-keys` + dry-run first, the qa script after every fmt)
 
-
 ## f) Next
 
 1. ~~Owner answers: g2 (bench re-record — now optional, claim proven), g3 (FLAKE_PAT), OG.8 (v0.1.1 go-signal → T21), OG.5 (upstream mandate → the two drafts are ready to file).~~ routed — OG.8 answered 2026-11-20 (v0.2.0 = f906ae5; hub/go.mod:12 requires core v0.2.0, no replace — the T21 replace-drop executed); g2 **→ routed to docs/status/owner-decisions-digest.md row "g2: bench baseline re-record policy"** (also TODO_LIST.md:41); g3 **→ routed to TODO_LIST Blocked (owner decisions) row "Create `FLAKE_PAT` secrets (GitHub + Forgejo) for CI hub/flake jobs"** (digest row "g3: FLAKE_PAT creation (GitHub + Forgejo, read-only Contents on go-daemon)"); OG.5 **→ routed to TODO_LIST Low Impact row "cmdguard follow-ups: ..."** (both drafts unfiled in docs/drafts/, TODO_LIST.md:40)
 
 2. ~~Agent-executable remainders: README install section (new TODO row); everything else drains to `docs/status/owner-decisions-digest.md`.~~ done — README Install section exists (README.md:19 `## Install`); its minted TODO row executed 2026-11-24 (CHANGELOG.md:51 marks the row DONE); the drain target exists (docs/status/owner-decisions-digest.md with source-cited rows)
-
